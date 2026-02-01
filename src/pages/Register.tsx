@@ -362,7 +362,7 @@ const Register = () => {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-card/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all text-sm"
-                    placeholder="John Doe"
+                    placeholder="Enter your full name"
                     disabled={isLoading}
                   />
                 </div>
@@ -377,7 +377,7 @@ const Register = () => {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="w-full px-3 py-2.5 rounded-lg bg-card/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all text-sm"
-                      placeholder="john@example.com"
+                      placeholder="Enter your email address"
                       disabled={isLoading}
                     />
                   </div>
@@ -389,7 +389,7 @@ const Register = () => {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="w-full px-3 py-2.5 rounded-lg bg-card/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all text-sm"
-                      placeholder="+91 9876543210"
+                      placeholder="Enter your mobile number"
                       disabled={isLoading}
                     />
                   </div>
@@ -466,7 +466,7 @@ const Register = () => {
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-card/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all text-sm resize-none"
-                    placeholder="Enter your full address"
+                    placeholder="Enter your complete residential address"
                     rows={2}
                     disabled={isLoading}
                   />
@@ -481,7 +481,7 @@ const Register = () => {
                     value={formData.pincode}
                     onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-card/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all text-sm"
-                    placeholder="Enter pincode"
+                    placeholder="Enter your area pincode"
                     disabled={isLoading}
                   />
                 </div>
@@ -497,7 +497,7 @@ const Register = () => {
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         className="w-full px-3 py-2.5 rounded-lg bg-card/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all pr-10 text-sm"
-                        placeholder="••••••••"
+                        placeholder="Enter your password"
                         disabled={isLoading}
                       />
                       <button
@@ -518,7 +518,7 @@ const Register = () => {
                         value={formData.confirmPassword}
                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                         className="w-full px-3 py-2.5 rounded-lg bg-card/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all pr-10 text-sm"
-                        placeholder="••••••••"
+                        placeholder="Confirm your password"
                         disabled={isLoading}
                       />
                       <button

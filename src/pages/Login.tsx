@@ -73,10 +73,10 @@ const Login = () => {
         <div className="absolute top-20 left-20 w-72 h-72 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 blur-3xl animate-pulse" />
         <div className="absolute bottom-32 right-16 w-96 h-96 rounded-full bg-gradient-to-br from-accent/15 to-accent/5 blur-3xl animate-pulse delay-1000" />
         <div className="absolute top-1/2 left-1/3 w-48 h-48 rounded-full bg-gradient-gold opacity-10 blur-3xl animate-pulse delay-500" />
-        
+
         {/* Floating Particles */}
         {[...Array(6)].map((_, i) => (
-          <div 
+          <div
             key={i}
             className="absolute w-2 h-2 rounded-full bg-primary/30"
             style={{
@@ -87,22 +87,22 @@ const Login = () => {
             }}
           />
         ))}
-        
+
         <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20 w-full">
           <Link to="/" className="mb-12 relative inline-block">
             <div className="absolute inset-0 bg-primary/25 blur-2xl rounded-full" />
             <img src={logo} alt="Skill Learners" className="relative h-20 w-auto drop-shadow-[0_0_20px_rgba(251,191,36,0.5)]" />
           </Link>
-          
+
           <h1 className="text-4xl xl:text-5xl font-bold font-display mb-6 leading-tight">
             Welcome Back to{" "}
             <span className="text-gradient-gold">Skill Learners</span>
           </h1>
-          
+
           <p className="text-xl text-muted-foreground mb-10 leading-relaxed max-w-md">
             Continue your journey to financial freedom. Your courses and community await.
           </p>
-          
+
           <div className="space-y-4">
             {features.map((feature, i) => (
               <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/50 group hover:border-primary/30 transition-all duration-300">
@@ -134,7 +134,7 @@ const Login = () => {
           <div className="relative">
             {/* Glow Effect */}
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-[2rem] blur-xl opacity-50" />
-            
+
             <div className="relative glass-card p-8 md:p-10 rounded-3xl border border-border/50 backdrop-blur-xl">
               <div className="text-center mb-8">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25">
@@ -154,7 +154,7 @@ const Login = () => {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-4 py-3.5 rounded-xl bg-card/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all backdrop-blur-sm placeholder:text-muted-foreground/50"
-                    placeholder="your@email.com"
+                    placeholder="Enter your email address"
                     disabled={isLoading}
                   />
                 </div>
@@ -169,7 +169,7 @@ const Login = () => {
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       className="w-full px-4 py-3.5 rounded-xl bg-card/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all pr-12 backdrop-blur-sm placeholder:text-muted-foreground/50"
-                      placeholder="••••••••"
+                      placeholder="Enter your password"
                       disabled={isLoading}
                     />
                     <button

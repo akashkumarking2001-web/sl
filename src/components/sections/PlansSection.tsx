@@ -288,11 +288,11 @@ const PlanCard = ({ plan, index }: { plan: Package; index: number }) => {
             </ul>
 
             {/* CTA Button */}
-            <Link to={`/register?plan=${plan.code}`} className="block mt-auto">
+            <Link to={`/package/${plan.code}`} className="block mt-auto">
               <Button
                 className={`w-full h-12 text-sm font-bold rounded-xl shadow-lg transition-all duration-300 ${tier.buttonColor}`}
               >
-                Get Started Now
+                View Details & Enroll
               </Button>
             </Link>
 
