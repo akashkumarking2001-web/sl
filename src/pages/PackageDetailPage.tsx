@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
     CheckCircle2, ArrowRight, Shield, Crown, Sparkles, TrendingUp,
@@ -14,6 +15,14 @@ const PackageDetailPage = () => {
 
     // Find package by name (case insensitive)
     const pkg = packages.find(p => p.name.toLowerCase() === packageId?.toLowerCase());
+
+    // Update SEO Title
+    useEffect(() => {
+        if (pkg) {
+            document.title = `${pkg.name} Package - Skill Learners Academy`;
+        }
+    }, [pkg]);
+
 
     if (!pkg) {
         return (
