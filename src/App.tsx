@@ -39,8 +39,6 @@ const AffiliateEarningsPage = lazy(() => import("./pages/AffiliateEarningsPage")
 const MyOrdersPage = lazy(() => import("./pages/MyOrdersPage"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const UserOrders = lazy(() => import("./pages/UserOrders"));
-const DirectShoppingTest = lazy(() => import("./pages/DirectShoppingTest"));
-const DebugProducts = lazy(() => import("./pages/DebugProducts"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminForgotPassword = lazy(() => import("./pages/AdminForgotPassword"));
@@ -171,8 +169,6 @@ const App = () => (
                     } />
                     {/* Shopping & E-Commerce Routes */}
                     <Route path="/shopping" element={<ShoppingWrapper />} />
-                    <Route path="/test-shop" element={<DirectShoppingTest />} />
-                    <Route path="/debug-shop" element={<DebugProducts />} />
                     <Route path="/product/:slug" element={<ProductDetailPage />} />
                     <Route path="/affiliate-program" element={<AffiliateApplicationPage />} />
                     <Route path="/dashboard/affiliate-earnings" element={
