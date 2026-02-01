@@ -28,6 +28,7 @@ const ShoppingPage = () => {
 
     // Dynamic Sections State
     const [sections, setSections] = useState<any[]>([]);
+    const [loadingSections, setLoadingSections] = useState(true);
 
     const { addToCart } = useCart();
     const { toast } = useToast();
@@ -53,12 +54,19 @@ const ShoppingPage = () => {
     }, [searchQuery, selectedCategory, priceRange, minRating]);
 
     const fetchSections = async () => {
-        const { data } = await supabase
-            .from("store_sections")
-            .select("*")
-            .eq("is_active", true)
-            .order("display_order");
-        setSections(data || []);
+        setLoadingSections(true);
+        try {
+            const { data } = await supabase
+                .from("store_sections")
+                .select("*")
+                .eq("is_active", true)
+                .order("display_order");
+            setSections(data || []);
+        } catch (error) {
+            console.error("Error fetching sections:", error);
+        } finally {
+            setLoadingSections(false);
+        }
     };
 
     const fetchFilteredProducts = async () => {
@@ -229,73 +237,85 @@ const ShoppingPage = () => {
                         {!isSearchMode ? (
                             // HOME VIEW
                             <div className="animate-in fade-in duration-500">
-                                {/* Hero Slider is handled by section loop or manually placed if always top? 
-                                    Request: "Hero Slider (Top)... Category Circles... Section 1...". 
-                                    We used `store_sections` to order them. 
-                                    However, Hero and Categories are distinct components. 
-                                    Let's map sections but standard components first if they match keys, or just render hardcoded order if no sections fetched yet?
-                                    No, dynamic is better.
-                                */}
+                                {loadingSections ? (
+                                    <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                                        <Loader2 className="w-10 h-10 text-[#FBBF24] animate-spin" />
+                                        <p className="text-slate-500 font-medium">Loading store experience...</p>
+                                    </div>
+                                ) : sections.length > 0 ? (
+                                    /* Render ordered dynamic sections based on 'display_order' */
+                                    <div className="space-y-12">
+                                        {sections.map((section) => {
+                                            if (!section.is_active) return null;
 
+                                            if (section.section_key === 'hero_slider') {
+                                                return <HeroSlider key={section.id} />;
+                                            }
 
-                                {/* Render ordered dynamic sections based on 'display_order' */}
-                                <div className="space-y-12">
-                                    {sections.map((section) => {
-                                        if (!section.is_active) return null;
+                                            if (section.section_key === 'category_circles') {
+                                                return (
+                                                    <CategoryCircles
+                                                        key={section.id}
+                                                        selectedCategoryId={selectedCategory}
+                                                        onSelectCategory={setSelectedCategory}
+                                                    />
+                                                );
+                                            }
 
-                                        if (section.section_key === 'hero_slider') {
-                                            return <HeroSlider key={section.id} />;
-                                        }
-
-                                        if (section.section_key === 'category_circles') {
-                                            return (
-                                                <CategoryCircles
+                                            // Mappings
+                                            if (section.section_key === 'deal_of_the_day') {
+                                                return <ProductSection
                                                     key={section.id}
-                                                    selectedCategoryId={selectedCategory}
-                                                    onSelectCategory={setSelectedCategory}
-                                                />
-                                            );
-                                        }
+                                                    title={section.title}
+                                                    type="deal"
+                                                    limit={1}
+                                                    sortBy="discount" // or custom logic
+                                                    highlight
+                                                    onAddToCart={handleAddToCart}
+                                                    onAddToWishlist={handleAddToWishlist}
+                                                />;
+                                            }
+                                            if (section.section_key === 'best_sellers') {
+                                                return <ProductSection
+                                                    key={section.id}
+                                                    title={section.title}
+                                                    type="scroll"
+                                                    limit={section.config?.limit || 8}
+                                                    sortBy="featured" // or sales_count
+                                                    onAddToCart={handleAddToCart}
+                                                    onAddToWishlist={handleAddToWishlist}
+                                                />;
+                                            }
+                                            if (section.section_key === 'just_for_you') {
+                                                return <ProductSection
+                                                    key={section.id}
+                                                    title={section.title}
+                                                    type="grid"
+                                                    limit={section.config?.limit || 12}
+                                                    sortBy="newest"
+                                                    onAddToCart={handleAddToCart}
+                                                    onAddToWishlist={handleAddToWishlist}
+                                                />;
+                                            }
 
-                                        // Mappings
-                                        if (section.section_key === 'deal_of_the_day') {
-                                            return <ProductSection
-                                                key={section.id}
-                                                title={section.title}
-                                                type="deal"
-                                                limit={1}
-                                                sortBy="discount" // or custom logic
-                                                highlight
-                                                onAddToCart={handleAddToCart}
-                                                onAddToWishlist={handleAddToWishlist}
-                                            />;
-                                        }
-                                        if (section.section_key === 'best_sellers') {
-                                            return <ProductSection
-                                                key={section.id}
-                                                title={section.title}
-                                                type="scroll"
-                                                limit={section.config?.limit || 8}
-                                                sortBy="featured" // or sales_count
-                                                onAddToCart={handleAddToCart}
-                                                onAddToWishlist={handleAddToWishlist}
-                                            />;
-                                        }
-                                        if (section.section_key === 'just_for_you') {
-                                            return <ProductSection
-                                                key={section.id}
-                                                title={section.title}
-                                                type="grid"
-                                                limit={section.config?.limit || 12}
-                                                sortBy="newest"
-                                                onAddToCart={handleAddToCart}
-                                                onAddToWishlist={handleAddToWishlist}
-                                            />;
-                                        }
-
-                                        return null;
-                                    })}
-                                </div>
+                                            return null;
+                                        })}
+                                    </div>
+                                ) : (
+                                    // Fallback if no sections defined
+                                    <div className="space-y-12">
+                                        <HeroSlider />
+                                        <CategoryCircles selectedCategoryId={selectedCategory} onSelectCategory={setSelectedCategory} />
+                                        <ProductSection
+                                            title="All Products"
+                                            type="grid"
+                                            limit={24}
+                                            sortBy="newest"
+                                            onAddToCart={handleAddToCart}
+                                            onAddToWishlist={handleAddToWishlist}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             // RESULTS VIEW
