@@ -1,0 +1,13 @@
+{
+    "css.customData": [],
+    "css.lint.unknownAtRules": "ignore",
+    "tailwindCSS.includeLanguages": {
+        "plaintext": "ts"
+    },
+    "deno.enable": true,
+    "deno.enablePaths": [
+        "supabase/functions"
+    ],
+    "deno.unstable": true,
+    "deno.lint": true
+}

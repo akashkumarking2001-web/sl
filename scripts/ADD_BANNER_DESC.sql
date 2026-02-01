@@ -1,0 +1,1 @@
+﻿ALTER TABLE public.store_banners ADD COLUMN IF NOT EXISTS description TEXT;

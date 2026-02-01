@@ -1,0 +1,373 @@
+-- ==============================================================================
+-- SAMPLE PRODUCT DATA - PART 2
+-- ==============================================================================
+-- Home & Kitchen, Beauty, Sports, Books categories
+-- ==============================================================================
+
+-- ==============================================================================
+-- HOME & KITCHEN (10 Products)
+-- ==============================================================================
+
+INSERT INTO public.products (category_id, name, slug, description, short_description, image_url, mrp, price, cashback_amount, stock_quantity, is_featured, tags) VALUES
+
+((SELECT id FROM public.product_categories WHERE slug = 'home-kitchen'),
+'Philips Air Fryer HD9252/90 (4.1L)',
+'philips-air-fryer-41l',
+'Healthy cooking with Rapid Air technology. Fry, bake, grill, and roast with little to no oil.',
+'Digital air fryer with 7 presets',
+'https://images.unsplash.com/photo-1585515320310-259814833e62?w=800',
+12995, 9995, 499, 40, true,
+ARRAY['air-fryer', 'philips', 'kitchen', 'appliance']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'home-kitchen'),
+'Prestige Omega Deluxe Granite Cookware Set',
+'prestige-omega-cookware-set',
+'Non-stick granite finish cookware set with induction base. Includes kadai, fry pan, and tawa.',
+'Premium non-stick cookware set',
+'https://images.unsplash.com/photo-1584990347449-39b4aa02d4c6?w=800',
+5999, 3999, 199, 60, false,
+ARRAY['cookware', 'prestige', 'kitchen', 'non-stick']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'home-kitchen'),
+'Instant Pot Duo 7-in-1 (6 Quart)',
+'instant-pot-duo-6qt',
+'Multi-functional pressure cooker: pressure cook, slow cook, rice cooker, steamer, sauté, yogurt maker, and warmer.',
+'7-in-1 electric pressure cooker',
+'https://images.unsplash.com/photo-1585515320310-259814833e62?w=800',
+14999, 11999, 599, 35, false,
+ARRAY['pressure-cooker', 'instant-pot', 'kitchen', 'multi-cooker']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'home-kitchen'),
+'Borosil Glass Mixing Bowl Set (5 Pieces)',
+'borosil-glass-bowl-set',
+'Microwave-safe borosilicate glass bowls with lids. Perfect for mixing, serving, and storage.',
+'Premium glass bowl set',
+'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800',
+1999, 1299, 64, 100, false,
+ARRAY['bowls', 'borosil', 'glassware', 'kitchen']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'home-kitchen'),
+'Eureka Forbes Vacuum Cleaner',
+'eureka-forbes-vacuum-cleaner',
+'Powerful 1400W vacuum cleaner with HEPA filter and multiple attachments.',
+'High-power vacuum cleaner',
+'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=800',
+8999, 6999, 349, 45, false,
+ARRAY['vacuum', 'eureka-forbes', 'cleaning', 'appliance']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'home-kitchen'),
+'Amazon Basics Microfiber Bed Sheet Set',
+'amazon-basics-bedsheet-set',
+'Soft microfiber bed sheet set - Queen size. Includes fitted sheet, flat sheet, and 2 pillowcases.',
+'Premium microfiber bedding',
+'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800',
+2999, 1999, 99, 80, false,
+ARRAY['bedding', 'amazon-basics', 'home', 'bedroom']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'home-kitchen'),
+'Cello Opalware Dinner Set (27 Pieces)',
+'cello-opalware-dinner-set',
+'Elegant opalware dinner set for 6 people. Microwave and dishwasher safe.',
+'Complete dinner set for 6',
+'https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=800',
+4999, 3499, 174, 50, false,
+ARRAY['dinnerware', 'cello', 'kitchen', 'opalware']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'home-kitchen'),
+'Havells Room Heater 2000W',
+'havells-room-heater-2000w',
+'Fan-forced room heater with adjustable thermostat and overheat protection.',
+'Electric room heater',
+'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800',
+3999, 2999, 149, 55, false,
+ARRAY['heater', 'havells', 'home', 'winter']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'home-kitchen'),
+'Milton Thermosteel Flask 1000ml',
+'milton-thermosteel-flask-1l',
+'Vacuum insulated stainless steel flask. Keeps beverages hot for 24 hours, cold for 24 hours.',
+'Insulated steel water bottle',
+'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800',
+899, 599, 29, 150, false,
+ARRAY['flask', 'milton', 'bottle', 'insulated']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'home-kitchen'),
+'Wipro 9W LED Bulb (Pack of 4)',
+'wipro-led-bulb-9w-4pack',
+'Energy-efficient LED bulbs with 900 lumens brightness. Cool daylight white.',
+'Energy-saving LED bulbs',
+'https://images.unsplash.com/photo-1550985616-10810253b84d?w=800',
+799, 499, 24, 200, false,
+ARRAY['led', 'wipro', 'lighting', 'home']);
+
+-- ==============================================================================
+-- BEAUTY & PERSONAL CARE (10 Products)
+-- ==============================================================================
+
+INSERT INTO public.products (category_id, name, slug, description, short_description, image_url, mrp, price, cashback_amount, stock_quantity, is_featured, tags) VALUES
+
+((SELECT id FROM public.product_categories WHERE slug = 'beauty-personal-care'),
+'Lakme Absolute Skin Natural Mousse Foundation',
+'lakme-mousse-foundation',
+'Lightweight mousse foundation with SPF 8. Provides natural coverage with a matte finish.',
+'Mousse foundation with SPF',
+'https://images.unsplash.com/photo-1631214524020-7e18db7f7e8c?w=800',
+850, 595, 29, 100, true,
+ARRAY['foundation', 'lakme', 'makeup', 'beauty']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'beauty-personal-care'),
+'Maybelline New York Colossal Kajal',
+'maybelline-colossal-kajal',
+'Smudge-proof kajal with intense black color. Lasts up to 12 hours.',
+'Long-lasting black kajal',
+'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=800',
+225, 175, 8, 200, false,
+ARRAY['kajal', 'maybelline', 'eye-makeup', 'beauty']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'beauty-personal-care'),
+'The Body Shop Tea Tree Face Wash',
+'bodyshop-tea-tree-facewash',
+'Purifying face wash with tea tree oil. Perfect for oily and blemish-prone skin.',
+'Tea tree oil face cleanser',
+'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800',
+895, 695, 34, 80, false,
+ARRAY['facewash', 'bodyshop', 'skincare', 'tea-tree']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'beauty-personal-care'),
+'Neutrogena Deep Clean Blackhead Eliminating Scrub',
+'neutrogena-blackhead-scrub',
+'Daily scrub that helps eliminate and prevent blackheads. Oil-free formula.',
+'Blackhead eliminating scrub',
+'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800',
+499, 349, 17, 90, false,
+ARRAY['scrub', 'neutrogena', 'skincare', 'exfoliator']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'beauty-personal-care'),
+'Philips Trimmer QT4011/15',
+'philips-trimmer-qt4011',
+'Cordless beard trimmer with 20 length settings. 60 minutes runtime.',
+'Rechargeable beard trimmer',
+'https://images.unsplash.com/photo-1621607512214-68297480165e?w=800',
+1995, 1395, 69, 60, false,
+ARRAY['trimmer', 'philips', 'grooming', 'mens-care']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'beauty-personal-care'),
+'Gillette Mach3 Razor + 6 Cartridges',
+'gillette-mach3-razor-set',
+'3-blade razor with lubrastrip for a smooth, comfortable shave.',
+'Premium shaving razor set',
+'https://images.unsplash.com/photo-1621607512214-68297480165e?w=800',
+699, 499, 24, 120, false,
+ARRAY['razor', 'gillette', 'shaving', 'grooming']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'beauty-personal-care'),
+'Dove Intense Repair Shampoo 650ml',
+'dove-intense-repair-shampoo',
+'Nourishing shampoo with Keratin Repair Actives. Repairs damaged hair.',
+'Damage repair shampoo',
+'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=800',
+399, 299, 14, 150, false,
+ARRAY['shampoo', 'dove', 'haircare', 'repair']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'beauty-personal-care'),
+'Nivea Soft Light Moisturizer 200ml',
+'nivea-soft-moisturizer',
+'Light moisturizing cream enriched with Jojoba Oil and Vitamin E.',
+'All-purpose moisturizing cream',
+'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800',
+299, 219, 10, 140, false,
+ARRAY['moisturizer', 'nivea', 'skincare', 'cream']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'beauty-personal-care'),
+'Biotique Bio Kelp Protein Shampoo',
+'biotique-kelp-shampoo',
+'Natural protein shampoo for falling hair. Enriched with pure kelp.',
+'Natural anti-hair fall shampoo',
+'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=800',
+399, 299, 14, 100, false,
+ARRAY['shampoo', 'biotique', 'natural', 'haircare']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'beauty-personal-care'),
+'Plum Green Tea Pore Cleansing Face Wash',
+'plum-green-tea-facewash',
+'Gentle face wash with green tea extracts. Removes excess oil and unclogs pores.',
+'Green tea face cleanser',
+'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800',
+375, 275, 13, 110, false,
+ARRAY['facewash', 'plum', 'green-tea', 'skincare']);
+
+-- ==============================================================================
+-- SPORTS & FITNESS (8 Products)
+-- ==============================================================================
+
+INSERT INTO public.products (category_id, name, slug, description, short_description, image_url, mrp, price, cashback_amount, stock_quantity, is_featured, tags) VALUES
+
+((SELECT id FROM public.product_categories WHERE slug = 'sports-fitness'),
+'Boldfit Gym Shaker Bottle 700ml',
+'boldfit-shaker-bottle',
+'Leak-proof protein shaker with mixing ball. BPA-free plastic.',
+'Premium protein shaker',
+'https://images.unsplash.com/photo-1591258370814-01609b341790?w=800',
+499, 299, 14, 150, false,
+ARRAY['shaker', 'boldfit', 'fitness', 'accessories']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'sports-fitness'),
+'Nivia Storm Football Size 5',
+'nivia-storm-football',
+'Professional quality football with synthetic leather cover. FIFA approved size.',
+'Professional football',
+'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800',
+1299, 899, 44, 70, false,
+ARRAY['football', 'nivia', 'sports', 'outdoor']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'sports-fitness'),
+'Cosco Badminton Racket CB-150E',
+'cosco-badminton-racket',
+'Lightweight aluminum badminton racket with full cover. Perfect for beginners.',
+'Beginner badminton racket',
+'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800',
+899, 599, 29, 80, false,
+ARRAY['badminton', 'cosco', 'racket', 'sports']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'sports-fitness'),
+'Strauss Yoga Mat 6mm with Bag',
+'strauss-yoga-mat-6mm',
+'Anti-skid yoga mat with extra cushioning. Includes carrying bag.',
+'Premium yoga mat',
+'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800',
+1299, 799, 39, 90, true,
+ARRAY['yoga', 'strauss', 'fitness', 'mat']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'sports-fitness'),
+'Burnlab Adjustable Dumbbells (2.5kg-25kg)',
+'burnlab-adjustable-dumbbells',
+'Space-saving adjustable dumbbells with quick-change weight system.',
+'Adjustable dumbbell set',
+'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800',
+8999, 6999, 349, 30, false,
+ARRAY['dumbbells', 'burnlab', 'strength', 'fitness']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'sports-fitness'),
+'Fitkit FT100 Series Treadmill',
+'fitkit-treadmill-ft100',
+'Motorized treadmill with 12 preset programs. Max speed 14 km/h.',
+'Home treadmill',
+'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800',
+29999, 24999, 1249, 15, false,
+ARRAY['treadmill', 'fitkit', 'cardio', 'fitness']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'sports-fitness'),
+'Adidas Training Resistance Bands Set',
+'adidas-resistance-bands',
+'Set of 3 resistance bands with different resistance levels. Includes carry bag.',
+'Resistance bands set',
+'https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=800',
+1499, 999, 49, 100, false,
+ARRAY['resistance-bands', 'adidas', 'fitness', 'training']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'sports-fitness'),
+'Yonex Mavis 350 Nylon Shuttlecock (6 Pack)',
+'yonex-mavis-shuttlecock',
+'Durable nylon shuttlecocks for practice and recreational play.',
+'Nylon shuttlecock pack',
+'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800',
+899, 699, 34, 120, false,
+ARRAY['shuttlecock', 'yonex', 'badminton', 'sports']);
+
+-- ==============================================================================
+-- BOOKS & STATIONERY (10 Products)
+-- ==============================================================================
+
+INSERT INTO public.products (category_id, name, slug, description, short_description, image_url, mrp, price, cashback_amount, stock_quantity, is_featured, tags) VALUES
+
+((SELECT id FROM public.product_categories WHERE slug = 'books-stationery'),
+'Atomic Habits by James Clear',
+'atomic-habits-book',
+'Bestselling book on building good habits and breaking bad ones. Practical strategies for lasting change.',
+'Life-changing habits book',
+'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800',
+599, 399, 19, 100, true,
+ARRAY['book', 'self-help', 'habits', 'bestseller']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'books-stationery'),
+'The Psychology of Money by Morgan Housel',
+'psychology-of-money-book',
+'Timeless lessons on wealth, greed, and happiness from one of the great financial minds.',
+'Personal finance classic',
+'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800',
+450, 299, 14, 90, false,
+ARRAY['book', 'finance', 'money', 'investing']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'books-stationery'),
+'Classmate Notebook 6 Subject (300 Pages)',
+'classmate-6subject-notebook',
+'Premium quality ruled notebook with 6 subjects. Perfect for students.',
+'Multi-subject notebook',
+'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=800',
+199, 149, 7, 200, false,
+ARRAY['notebook', 'classmate', 'stationery', 'student']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'books-stationery'),
+'Parker Jotter Ballpoint Pen (Blue)',
+'parker-jotter-pen',
+'Iconic Parker Jotter with stainless steel body. Smooth writing experience.',
+'Premium ballpoint pen',
+'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=800',
+450, 325, 16, 150, false,
+ARRAY['pen', 'parker', 'writing', 'stationery']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'books-stationery'),
+'Faber-Castell Art Set (48 Pieces)',
+'faber-castell-art-set',
+'Complete art set with color pencils, sketch pencils, and accessories.',
+'Professional art supplies',
+'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800',
+1999, 1499, 74, 60, false,
+ARRAY['art-supplies', 'faber-castell', 'drawing', 'creative']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'books-stationery'),
+'HP DeskJet 2331 All-in-One Printer',
+'hp-deskjet-2331-printer',
+'Compact all-in-one printer for print, scan, and copy. USB connectivity.',
+'Home inkjet printer',
+'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=800',
+3999, 3299, 164, 40, false,
+ARRAY['printer', 'hp', 'office', 'electronics']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'books-stationery'),
+'Staedtler Mars Plastic Eraser (Pack of 4)',
+'staedtler-eraser-4pack',
+'Premium quality erasers that don''t leave residue. Perfect for graphite pencils.',
+'Premium erasers pack',
+'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800',
+199, 149, 7, 180, false,
+ARRAY['eraser', 'staedtler', 'stationery', 'school']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'books-stationery'),
+'Sapiens: A Brief History of Humankind',
+'sapiens-book',
+'International bestseller exploring the history of human species from evolution to present.',
+'History of humanity',
+'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800',
+699, 499, 24, 75, false,
+ARRAY['book', 'history', 'non-fiction', 'bestseller']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'books-stationery'),
+'Cello Butterflow Pen Set (10 Pens)',
+'cello-butterflow-pen-set',
+'Smooth-writing ballpoint pens with comfortable grip. Blue ink.',
+'Smooth ballpoint pens',
+'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=800',
+150, 99, 4, 250, false,
+ARRAY['pen', 'cello', 'writing', 'stationery']),
+
+((SELECT id FROM public.product_categories WHERE slug = 'books-stationery'),
+'Think and Grow Rich by Napoleon Hill',
+'think-grow-rich-book',
+'Classic personal development and self-improvement book. Timeless wisdom on success.',
+'Success principles book',
+'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800',
+299, 199, 9, 110, false,
+ARRAY['book', 'self-help', 'success', 'classic']);
+
+-- End of Sample Products
