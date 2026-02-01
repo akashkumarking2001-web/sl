@@ -207,14 +207,14 @@ const CourseDetailPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       {/* Hero Section - Fixed text contrast */}
-      <section className="pt-24 pb-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50" />
-        
-        <div className="container relative mx-auto px-4 text-white">
-          <button 
+      <section className="pt-24 pb-12 relative overflow-hidden bg-slate-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 z-0" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50 z-0" />
+
+        <div className="container relative mx-auto px-4 text-white z-10">
+          <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-white/70 hover:text-white mb-6 transition-colors"
           >
@@ -233,7 +233,7 @@ const CourseDetailPage = () => {
               <p className="text-lg text-white/70 mb-6">
                 {course.fullDescription}
               </p>
-              
+
               <div className="flex flex-wrap items-center gap-6 text-white/70 mb-8">
                 <div className="flex items-center gap-1">
                   <Star className="w-5 h-5 text-primary fill-primary" />
@@ -256,8 +256,8 @@ const CourseDetailPage = () => {
 
               {/* Instructor */}
               <div className="flex items-center gap-3">
-                <img 
-                  src={course.instructor.image} 
+                <img
+                  src={course.instructor.image}
                   alt={course.instructor.name}
                   className="w-12 h-12 rounded-full object-cover ring-2 ring-primary"
                 />

@@ -151,14 +151,14 @@ const HeroSection = () => {
                   className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
                 />
 
-                {/* Floating Badge 1 - Course Completed */}
-                <div className="absolute top-8 -left-4 md:-left-12 glass-card p-3 rounded-2xl flex items-center gap-3 animate-float shadow-xl border-white/10 bg-black/40 backdrop-blur-md">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-lg">
+                {/* Floating Badge 1 - Course Completed - Adjusted positioning */}
+                <div className="absolute top-8 left-2 md:-left-8 glass-card p-3 rounded-2xl flex items-center gap-3 animate-float shadow-xl border-white/10 bg-black/40 backdrop-blur-md max-w-[200px] md:max-w-none">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-lg shrink-0">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
-                  <div>
-                    <p className="text-[10px] text-gray-300 font-medium uppercase tracking-wider">Course Completed</p>
-                    <p className="text-sm font-bold text-white">Digital Marketing</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-gray-300 font-medium uppercase tracking-wider truncate">Course Completed</p>
+                    <p className="text-sm font-bold text-white truncate">Digital Marketing</p>
                   </div>
                 </div>
 

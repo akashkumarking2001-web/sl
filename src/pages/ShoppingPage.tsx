@@ -142,40 +142,42 @@ const ShoppingPage = () => {
             <Navbar />
 
             {/* Hero Section - Brand Themed (Yellow/Black) */}
-            <div className="container mx-auto px-4 mb-8">
-                <div className="relative bg-[#1A1A1A] rounded-[2rem] overflow-hidden shadow-xl min-h-[380px] flex items-center p-8 md:p-12 text-left isolate">
-                    {/* Futuristic Accents */}
-                    <div className="absolute top-0 right-0 w-[40%] h-full bg-[#FBBF24]/10 skew-x-[-20deg] translate-x-[20%] -z-10" />
-                    <div className="absolute bottom-0 left-0 w-[60%] h-[30%] bg-gradient-to-t from-[#FBBF24]/5 to-transparent -z-10" />
+            <div className="w-full bg-[#1A1A1A] mb-8">
+                <div className="container mx-auto px-4">
+                    <div className="relative rounded-[2rem] overflow-hidden shadow-xl min-h-[380px] flex items-center p-8 md:p-12 text-left isolate">
+                        {/* Futuristic Accents */}
+                        <div className="absolute top-0 right-0 w-[40%] h-full bg-[#FBBF24]/10 skew-x-[-20deg] translate-x-[20%] -z-10" />
+                        <div className="absolute bottom-0 left-0 w-[60%] h-[30%] bg-gradient-to-t from-[#FBBF24]/5 to-transparent -z-10" />
 
-                    <div className="max-w-3xl space-y-6 animate-in fade-in slide-in-from-left-6 duration-700">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FBBF24]/10 border border-[#FBBF24]/20 text-[#FBBF24] text-xs font-bold uppercase tracking-wider">
-                            <Sparkles className="w-3.5 h-3.5" />
-                            <span>Official Skill Learners Store</span>
+                        <div className="max-w-3xl space-y-6 animate-in fade-in slide-in-from-left-6 duration-700">
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FBBF24]/10 border border-[#FBBF24]/20 text-[#FBBF24] text-xs font-bold uppercase tracking-wider">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>Official Skill Learners Store</span>
+                            </div>
+
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1]">
+                                Big Sale on <br />
+                                <span className="text-[#FBBF24]">Premium Tech & Assets</span>
+                            </h1>
+
+                            <p className="text-base md:text-lg text-gray-400 max-w-xl leading-relaxed">
+                                Discover the latest electronics, professional templates, and high-quality digital assets curated for peak performance.
+                            </p>
+
+                            <div className="flex flex-wrap gap-4 pt-2">
+                                <Button size="lg" className="h-14 px-8 rounded-xl bg-[#FBBF24] text-black hover:bg-[#FBBF24]/90 text-md font-bold shadow-lg shadow-[#FBBF24]/10 w-full sm:w-auto">
+                                    Shop New Arrivals
+                                </Button>
+                                <Button size="lg" variant="outline" className="h-14 px-8 rounded-xl border-white/10 hover:bg-white/5 text-white text-md font-medium w-full sm:w-auto">
+                                    View Categories
+                                </Button>
+                            </div>
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1]">
-                            Big Sale on <br />
-                            <span className="text-[#FBBF24]">Premium Tech & Assets</span>
-                        </h1>
-
-                        <p className="text-base md:text-lg text-gray-400 max-w-xl leading-relaxed">
-                            Discover the latest electronics, professional templates, and high-quality digital assets curated for peak performance.
-                        </p>
-
-                        <div className="flex flex-wrap gap-4 pt-2">
-                            <Button size="lg" className="h-14 px-8 rounded-xl bg-[#FBBF24] text-black hover:bg-[#FBBF24]/90 text-md font-bold shadow-lg shadow-[#FBBF24]/10 w-full sm:w-auto">
-                                Shop New Arrivals
-                            </Button>
-                            <Button size="lg" variant="outline" className="h-14 px-8 rounded-xl border-white/10 hover:bg-white/5 text-white text-md font-medium w-full sm:w-auto">
-                                View Categories
-                            </Button>
+                        {/* Decorative Element */}
+                        <div className="hidden lg:block absolute right-12 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-40 transition-opacity">
+                            <ShoppingBag className="w-64 h-64 text-[#FBBF24]" strokeWidth={1} />
                         </div>
-                    </div>
-
-                    {/* Decorative Element */}
-                    <div className="hidden lg:block absolute right-12 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-40 transition-opacity">
-                        <ShoppingBag className="w-64 h-64 text-[#FBBF24]" strokeWidth={1} />
                     </div>
                 </div>
             </div>

@@ -92,7 +92,7 @@ const Navbar = () => {
         className={cn(
           "fixed top-0 left-0 right-0 z-[100] transition-all duration-500",
           scrolled
-            ? "bg-card/80 backdrop-blur-2xl shadow-xl border-b border-border/50 py-3"
+            ? "bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl shadow-xl border-b border-gray-200/50 dark:border-gray-800/50 py-3"
             : "bg-transparent py-5"
         )}
       >
@@ -107,20 +107,26 @@ const Navbar = () => {
               />
             </Link>
 
-            {/* Desktop Mid Navigation */}
-            <div className="hidden lg:flex items-center gap-1 bg-muted/50 p-1 rounded-2xl border border-border/50">
+            {/* Desktop Mid Navigation - Standard Menu Links */}
+            <div className="hidden lg:flex items-center gap-8">
               {navLinks.map((link) => (
                 <button
                   key={link.name}
                   onClick={() => handleNavClick(link.href)}
                   className={cn(
-                    "px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300",
+                    "relative text-sm font-bold tracking-wide transition-all duration-300 group py-2",
                     location.pathname === link.href || (link.href.startsWith("/#") && isIndexPage)
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                      : "text-foreground/70 hover:text-foreground hover:bg-background"
+                      ? "text-[#FBBF24]"
+                      : "text-slate-600 dark:text-slate-300 hover:text-[#FBBF24] dark:hover:text-[#FBBF24]"
                   )}
                 >
                   {link.name}
+                  <span className={cn(
+                    "absolute bottom-0 left-0 w-full h-0.5 bg-[#FBBF24] transform origin-left transition-transform duration-300",
+                    location.pathname === link.href || (link.href.startsWith("/#") && isIndexPage)
+                      ? "scale-x-100"
+                      : "scale-x-0 group-hover:scale-x-100"
+                  )} />
                 </button>
               ))}
             </div>
@@ -129,31 +135,33 @@ const Navbar = () => {
             <div className="hidden lg:flex items-center gap-3">
               <ThemeToggle variant="icon" />
 
-              <Link to="/shopping" className="relative group">
-                <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl group-hover:bg-primary group-hover:text-primary-foreground border-primary/20 transition-all duration-300">
-                  <ShoppingCart className="w-5 h-5" />
-                  {totalItems > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-primary text-[10px] font-black border-2 border-background">
-                      {totalItems}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
+              {!isIndexPage && (
+                <Link to="/shopping" className="relative group">
+                  <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full hover:bg-[#FBBF24]/10 hover:text-[#FBBF24] transition-all duration-300">
+                    <ShoppingCart className="w-5 h-5" />
+                    {totalItems > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-[#FBBF24] text-black text-[10px] font-black border-2 border-white">
+                        {totalItems}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
+              )}
 
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button className="rounded-xl h-11 px-4 gap-2 font-bold shadow-lg shadow-primary/20">
-                      <div className="w-6 h-6 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                        <UserIcon className="w-3.5 h-3.5" />
+                    <Button className="rounded-full h-11 px-4 gap-2 font-bold shadow-lg shadow-[#FBBF24]/20 bg-[#FBBF24] text-black hover:bg-[#FBBF24]/90">
+                      <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+                        <UserIcon className="w-4 h-4" />
                       </div>
-                      Account
+                      <span className="hidden xl:inline">Account</span>
                       <ChevronDown className="w-4 h-4 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 bg-card/95 backdrop-blur-xl border-border/50">
-                    <DropdownMenuItem onClick={() => navigate("/user-home")} className="rounded-xl p-3 cursor-pointer">
-                      <LayoutDashboard className="w-4 h-4 mr-3 text-primary" />
+                  <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-gray-200/50 dark:border-gray-800/50 shadow-2xl">
+                    <DropdownMenuItem onClick={() => navigate("/user-home")} className="rounded-xl p-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800">
+                      <LayoutDashboard className="w-4 h-4 mr-3 text-[#FBBF24]" />
                       Dashboard
                     </DropdownMenuItem>
                     {isAdmin && (
@@ -162,20 +170,20 @@ const Navbar = () => {
                         Admin Panel
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuSeparator className="bg-border/50 my-2" />
-                    <DropdownMenuItem onClick={() => signOut()} className="rounded-xl p-3 cursor-pointer text-destructive">
+                    <DropdownMenuSeparator className="bg-gray-200/50 dark:bg-gray-800/50 my-2" />
+                    <DropdownMenuItem onClick={() => signOut()} className="rounded-xl p-3 cursor-pointer text-destructive hover:bg-destructive/10">
                       <LogOut className="w-4 h-4 mr-3" />
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Link to="/login">
-                    <Button variant="ghost" className="rounded-xl font-bold">Login</Button>
+                <div className="flex items-center gap-4 ml-2">
+                  <Link to="/login" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-[#FBBF24] transition-colors">
+                    Login
                   </Link>
                   <Link to="/register">
-                    <Button className="rounded-xl font-bold shadow-lg shadow-primary/20">Join Now</Button>
+                    <Button className="rounded-full font-bold shadow-lg shadow-[#FBBF24]/20 bg-[#FBBF24] text-black hover:bg-[#FBBF24]/90 hover:scale-105 transition-all px-6">Join Now</Button>
                   </Link>
                 </div>
               )}
@@ -184,23 +192,25 @@ const Navbar = () => {
             {/* Mobile Controls */}
             <div className="flex lg:hidden items-center gap-2">
               <ThemeToggle variant="icon" />
-              <Link to="/shopping" className="relative">
-                <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-primary/20">
-                  <ShoppingCart className="w-4 h-4" />
-                  {totalItems > 0 && (
-                    <Badge className="absolute -top-1.5 -right-1.5 h-4 w-4 p-0 flex items-center justify-center bg-primary text-[8px] font-black border-2 border-background">
-                      {totalItems}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
+              {!isIndexPage && (
+                <Link to="/shopping" className="relative">
+                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-black/5 dark:hover:bg-white/5">
+                    <ShoppingCart className="w-5 h-5" />
+                    {totalItems > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-[#FBBF24] text-black text-[8px] font-black border-2 border-white">
+                        {totalItems}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
+              )}
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
-                className="h-10 w-10 rounded-xl border-primary/20 relative z-[60]"
+                className="h-10 w-10 rounded-full hover:bg-black/5 dark:hover:bg-white/5 relative z-[60]"
                 onClick={() => setIsOpen(!isOpen)}
               >
-                {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </Button>
             </div>
           </div>
