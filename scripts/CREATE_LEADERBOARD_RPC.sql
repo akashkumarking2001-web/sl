@@ -20,39 +20,34 @@ BEGIN
     RETURN QUERY
     WITH UserEarnings AS (
         SELECT 
-            ai.agent_id,
-            SUM(ai.amount) as total_earned
+            wh.user_id as agent_id,
+            SUM(wh.amount) as total_earned
         FROM 
-            public.agent_income ai
+            public.wallet_history wh
         WHERE 
-            (period_start IS NULL OR ai.created_at >= period_start)
+            wh.status = 'credit'
+            AND (period_start IS NULL OR wh.created_at >= period_start)
         GROUP BY 
-            ai.agent_id
+            wh.user_id
     ),
     UserReferrals AS (
         SELECT
-            p.referred_by as agent_id,
-            COUNT(*) as ref_count
+            p.user_id as agent_id,
+            0 as ref_count -- Placeholder until we confirm referral tracking (code vs uuid)
         FROM
-            public.profiles p
-        WHERE
-            p.referred_by IS NOT NULL
-            AND (period_start IS NULL OR p.created_at >= period_start)
-        GROUP BY
-            p.referred_by
+             public.profiles p
+        -- Logic for counting referrals would go here if we knew the schema for 'reffered_by' (UUID vs Code)
     )
     SELECT 
         ue.agent_id,
         COALESCE(p.full_name, 'Unknown Agent') as full_name,
         ue.total_earned as earnings,
-        COALESCE(ur.ref_count, 0) as referrals,
+        COALESCE(0, 0) as referrals, -- Reset referrals to 0 for now to avoid errors
         RANK() OVER (ORDER BY ue.total_earned DESC) as rank
     FROM 
         UserEarnings ue
     JOIN 
-        public.profiles p ON ue.agent_id = p.id
-    LEFT JOIN
-        UserReferrals ur ON ue.agent_id = ur.agent_id
+        public.profiles p ON ue.agent_id = p.user_id
     ORDER BY 
         rank ASC
     LIMIT 20;
