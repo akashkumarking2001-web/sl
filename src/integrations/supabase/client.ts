@@ -4,8 +4,8 @@ import type { Database } from './types';
 
 // Hardcoded for stability
 // Fallbacks for local stability if .env fails to load correctly
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://vwzqmjhcfetjzhmyjtkr.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3enFtamhjZmV0ZnpobXlqdGtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgxNjIzMTEsImV4cCI6MjA1MzczODMxMX0.g3E_l1tH-XQ9CqD2iC8Ea3SpuMDTHZveqZNHaJHMY3M";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://vwzqaloqlvlewvijiqeu.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3enFhbG9xbHZsZXd2aWppcWV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNjMwMjQsImV4cCI6MjA4NDkzOTAyNH0.oEuQrpidyXbKYdy3SpuMDTHZveqZNHaJHMY3TK3ir2E";
 
 export const supabase = createClient<Database>(
   SUPABASE_URL,
