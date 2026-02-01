@@ -290,6 +290,13 @@ const UserHome = () => {
         </div>
       )}
 
+      {/* Dark mode ambient animations */}
+      <div className="dark-ambient-bg">
+        <div className="ambient-orb ambient-orb-1" />
+        <div className="ambient-orb ambient-orb-2" />
+        <div className="ambient-orb ambient-orb-3" />
+      </div>
+
       <header className={`bg-card/80 backdrop-blur-xl border-b border-border sticky z-50 ${!hasPurchased && purchasedPlan && showReminderBar ? 'top-10' : 'top-0'}`}>
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -330,7 +337,7 @@ const UserHome = () => {
       {/* Header section spacing */}
       <div className="h-4" />
 
-      <main className="flex-1 pb-12 pt-6">
+      <main className="flex-1 pb-12 pt-6 relative z-10">
         <div className="container mx-auto px-4 max-w-7xl">
           {/* Welcome Section - Responsive Premium */}
           <div className="mb-6">
@@ -397,7 +404,7 @@ const UserHome = () => {
                       <action.icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                     </div>
                     <h3 className="font-bold text-xs md:text-sm tracking-tight text-foreground">{action.label}</h3>
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5">{action.desc}</p>
+                    <p className="text-9px text-muted-foreground uppercase font-bold tracking-wider mt-0.5">{action.desc}</p>
                   </Link>
                 ))}
               </div>
@@ -411,6 +418,29 @@ const UserHome = () => {
 
             {/* Right Column - 4/12 */}
             <div className="lg:col-span-4 space-y-8">
+              {/* Recent Updates Section */}
+              <div className="rounded-2xl border border-border/40 bg-card/40 backdrop-blur-md p-6 shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-black tracking-tight flex items-center gap-2">
+                    <Megaphone className="w-5 h-5 text-primary" />
+                    Recent Updates
+                  </h2>
+                </div>
+                <div className="space-y-4">
+                  {announcements.map((item, i) => (
+                    <div key={i} className="flex gap-3 p-3 rounded-xl bg-background/50 border border-border/50 hover:border-primary/30 transition-colors">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0 animate-pulse" />
+                      <p className="text-sm font-medium text-foreground leading-snug">{item}</p>
+                    </div>
+                  ))}
+                  <Link to="/dashboard/affiliate" className="block text-center mt-2">
+                    <Button variant="ghost" size="sm" className="text-xs text-primary hover:text-primary/80">
+                      View All Updates <ChevronRight className="w-3 h-3 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
               {/* Course Ad Cards - Unified Column */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between px-2">
