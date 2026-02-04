@@ -1,0 +1,17 @@
+# Skill Learners Academy - iOS App
+
+This is a placeholder for the iOS IPA file.
+
+To build the actual IPA:
+1. Open Xcode on Mac
+2. Navigate to iOS_App folder
+3. Product > Archive
+4. Distribute App > Export IPA
+5. Copy the generated IPA to this location
+
+Note: iOS apps require:
+- macOS with Xcode
+- Apple Developer account
+- Proper code signing
+
+For distribution, use TestFlight or App Store Connect.

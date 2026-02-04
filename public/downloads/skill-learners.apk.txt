@@ -1,0 +1,15 @@
+# Skill Learners Academy - Android App
+
+This is a placeholder for the Android APK file.
+
+To build the actual APK:
+1. Open Android Studio
+2. Navigate to Android_App folder
+3. Build > Build Bundle(s) / APK(s) > Build APK(s)
+4. Copy the generated APK to this location
+
+The APK will be generated at:
+`Android_App/app/build/outputs/apk/debug/app-debug.apk`
+
+For production release:
+`Android_App/app/build/outputs/apk/release/app-release.apk`
