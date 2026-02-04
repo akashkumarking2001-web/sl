@@ -53,9 +53,11 @@ import PaymentReminderBar from "@/components/PaymentReminderBar";
 import PostLoginActionPopup from "@/components/PostLoginActionPopup";
 import AIRecommendations from "@/components/AIRecommendations";
 import ProgressDashboard from "@/components/dashboard/ProgressDashboard";
-import { usePackages } from "@/hooks/usePackages"; // Import hook
+import { usePackages } from "@/hooks/usePackages";
 import { ScrollAnimate } from "@/components/ui/ScrollAnimate";
 import { supabase } from "@/integrations/supabase/client";
+import { Capacitor } from "@capacitor/core";
+import NativeHeader from "@/components/layout/NativeHeader";
 
 // Ads data
 const adsData = [
@@ -95,6 +97,7 @@ const UserHome = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
+  const isNative = Capacitor.isNativePlatform();
 
   // Fetch dynamic packages
   const { data: packages } = usePackages();
@@ -213,7 +216,9 @@ const UserHome = () => {
   const nextPlan = purchasedPlan === "LEGACY" ? "ELITE" : "UPGRADE";
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden flex flex-col">
+    <div className={`min-h-screen bg-background overflow-x-hidden flex flex-col ${isNative ? 'pb-20' : ''}`}>
+      {isNative && <NativeHeader title="Ascend Academy" />}
+
       {/* Payment Reminder Bar */}
       {!hasPurchased && purchasedPlan && showReminderBar && (
         <PaymentReminderBar
@@ -234,8 +239,8 @@ const UserHome = () => {
         <DailyWelcomePopup userName={userName.split(" ")[0]} onClose={() => setShowWelcome(false)} />
       )}
 
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
+      {/* Mobile Drawer Menu - Only show if not native since native has bottom nav */}
+      {!isNative && mobileMenuOpen && (
         <div className="fixed inset-0 z-[55] lg:hidden">
           <div
             className="absolute inset-0 bg-background/80 backdrop-blur-sm"
@@ -297,42 +302,44 @@ const UserHome = () => {
         <div className="ambient-orb ambient-orb-3" />
       </div>
 
-      <header className={`bg-card/80 backdrop-blur-xl border-b border-border sticky z-50 ${!hasPurchased && purchasedPlan && showReminderBar ? 'top-10' : 'top-0'}`}>
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <Link to="/"><img src={logo} alt="Skill Learners" className="h-10 lg:h-12 w-auto drop-shadow-[0_0_10px_rgba(251,191,36,0.3)] transition-transform hover:scale-105" /></Link>
+      {!isNative && (
+        <header data-testid="main-nav" className={`bg-card/80 backdrop-blur-xl border-b border-border sticky z-50 ${!hasPurchased && purchasedPlan && showReminderBar ? 'top-10' : 'top-0'}`}>
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <Link to="/"><img src={logo} alt="Skill Learners" className="h-10 lg:h-12 w-auto drop-shadow-[0_0_10px_rgba(251,191,36,0.3)] transition-transform hover:scale-105" /></Link>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <ThemeToggle variant="icon" />
+
+              <button className="relative p-2 rounded-full hover:bg-muted transition-colors">
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
+              </button>
+
+              <button onClick={handleSignOut} className="p-2 rounded-full hover:bg-muted transition-colors hidden sm:flex" title="Sign Out">
+                <LogOut className="w-5 h-5" />
+              </button>
+
+              <Link to="/dashboard/profile" className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-border hover:opacity-80 transition-opacity">
+                <div className="w-10 h-10 rounded-full bg-gradient-gold flex items-center justify-center shadow-lg shadow-primary/20">
+                  <span className="text-lg font-bold text-primary-foreground">{userName.charAt(0).toUpperCase()}</span>
+                </div>
+                <div className="hidden sm:block text-left">
+                  <p className="font-bold text-sm tracking-tight">{userName}</p>
+                  <Badge variant="outline" className="text-[10px] h-4 font-mono border-primary/20 text-primary uppercase">{purchasedPlan || "Trial Student"}</Badge>
+                </div>
+              </Link>
+            </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <ThemeToggle variant="icon" />
-
-            <button className="relative p-2 rounded-full hover:bg-muted transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
-            </button>
-
-            <button onClick={handleSignOut} className="p-2 rounded-full hover:bg-muted transition-colors hidden sm:flex" title="Sign Out">
-              <LogOut className="w-5 h-5" />
-            </button>
-
-            <Link to="/dashboard/profile" className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-border hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 rounded-full bg-gradient-gold flex items-center justify-center shadow-lg shadow-primary/20">
-                <span className="text-lg font-bold text-primary-foreground">{userName.charAt(0).toUpperCase()}</span>
-              </div>
-              <div className="hidden sm:block text-left">
-                <p className="font-bold text-sm tracking-tight">{userName}</p>
-                <Badge variant="outline" className="text-[10px] h-4 font-mono border-primary/20 text-primary uppercase">{purchasedPlan || "Trial Student"}</Badge>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Header section spacing */}
       <div className="h-4" />
@@ -341,7 +348,7 @@ const UserHome = () => {
         <div className="container mx-auto px-4 max-w-7xl">
           {/* Welcome Section - Responsive Premium */}
           <div className="mb-6">
-            <div className="glass-card p-6 md:p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between relative overflow-hidden bg-gradient-to-r from-card/60 to-muted/20 border border-border/30 shadow-xl">
+            <div className="glass-card p-6 md:p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between relative overflow-hidden bg-gradient-to-r from-card/60 to-muted/20 border border-border/30 shadow-xl shadow-primary/5">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-32 -mt-32" />
 
               <div className="relative z-10 text-center md:text-left mb-6 md:mb-0">
@@ -398,13 +405,21 @@ const UserHome = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {quickActions.map((action) => (
                   <Link key={action.label} to={action.locked ? "#" : action.href} onClick={(e) => {
-                    if (action.locked) { e.preventDefault(); toast({ title: "Locked", description: "Unlock with a plan.", variant: "destructive" }); }
-                  }} className={`p-4 md:p-5 rounded-2xl group transition-all duration-300 relative border border-border/30 bg-card/30 backdrop-blur-sm shadow-md ${action.locked ? 'opacity-60 grayscale' : 'hover:-translate-y-1 hover:border-primary/40 hover:bg-card/50'}`}>
-                    <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-md`}>
+                    if (action.locked) { e.preventDefault(); toast({ title: "Locked Feature", description: "Purchase a plan to unlock this earnings wallet.", variant: "destructive" }); }
+                  }} className={`p-4 md:p-5 rounded-2xl group transition-all duration-300 relative border border-border/30 bg-card/30 backdrop-blur-sm shadow-md overflow-hidden ${action.locked ? 'opacity-90 bg-muted/40' : 'hover:-translate-y-1 hover:border-primary/40 hover:bg-card/50'}`}>
+
+                    {/* Lock Icon Badge */}
+                    {action.locked && (
+                      <div className="absolute top-3 right-3 bg-destructive/10 p-1.5 rounded-full">
+                        <Lock className="w-3 h-3 text-destructive" />
+                      </div>
+                    )}
+
+                    <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-md ${action.locked ? 'grayscale-[0.8] opacity-80' : ''}`}>
                       <action.icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                     </div>
-                    <h3 className="font-bold text-xs md:text-sm tracking-tight text-foreground">{action.label}</h3>
-                    <p className="text-9px text-muted-foreground uppercase font-bold tracking-wider mt-0.5">{action.desc}</p>
+                    <h3 className={`font-bold text-xs md:text-sm tracking-tight ${action.locked ? 'text-muted-foreground' : 'text-foreground'}`}>{action.label}</h3>
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5">{action.desc}</p>
                   </Link>
                 ))}
               </div>
@@ -504,9 +519,11 @@ const UserHome = () => {
       </main>
 
       {/* Footer Space padding */}
-      <footer className="py-12 text-center text-muted-foreground/30 text-[10px] uppercase font-black tracking-[0.2em]">
-        Skill Learners Academy &copy; 2024 • Excellence in Education
-      </footer>
+      {!isNative && (
+        <footer className="py-12 text-center text-muted-foreground/30 text-[10px] uppercase font-black tracking-[0.2em]">
+          Skill Learners Academy &copy; 2024 • Excellence in Education
+        </footer>
+      )}
     </div>
   );
 };

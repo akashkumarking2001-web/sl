@@ -127,7 +127,14 @@ const UserActions = ({ mode, onRefresh }: UserActionsProps) => {
                     </div>
                   </div>
                 </td>
-                <td className="p-4 text-muted-foreground">{user.email}</td>
+                <td className="p-4 text-muted-foreground">
+                  <div>
+                    {user.email}
+                    {user.is_email_verified && (
+                      <Badge className="ml-2 h-4 px-1 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[8px]">VERIFIED</Badge>
+                    )}
+                  </div>
+                </td>
                 <td className="p-4">
                   {user.status === "blocked" ? (
                     <Badge className="bg-destructive/10 text-destructive">Blocked</Badge>

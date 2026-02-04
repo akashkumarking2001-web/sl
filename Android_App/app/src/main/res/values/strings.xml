@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Skill Learners</string>
+    <string name="title_activity_main">Skill Learners</string>
+    <string name="package_name">com.skilllearners.academy</string>
+    <string name="custom_url_scheme">com.skilllearners.academy</string>
+</resources>

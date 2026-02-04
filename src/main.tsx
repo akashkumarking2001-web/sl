@@ -2,9 +2,12 @@ import { createRoot } from "react-dom/client";
 import React from 'react';
 import App from "./App.tsx";
 import "./index.css";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { supabase } from "@/integrations/supabase/client";
 
 // Global Error Handler for Startup Crashes
 window.onerror = function (message, source, lineno, colno, error) {
+    console.error("Global Error Caught:", error);
     const errorDiv = document.createElement('div');
     errorDiv.style.position = 'fixed';
     errorDiv.style.top = '0';
@@ -16,37 +19,30 @@ window.onerror = function (message, source, lineno, colno, error) {
     errorDiv.style.zIndex = '999999';
     errorDiv.style.fontFamily = 'monospace';
     errorDiv.innerHTML = `
-    <h3 style="margin-top: 0">Application Crash</h3>
-    <p><strong>Error:</strong> ${message}</p>
-    <p><strong>Source:</strong> ${source}:${lineno}:${colno}</p>
-    <pre style="background: rgba(255,255,255,0.5); padding: 10px; overflow: auto;">${error?.stack || 'No stack trace'}</pre>
-  `;
+        <h3 style="margin-top: 0">Application Crash</h3>
+        <p><strong>Error:</strong> ${message}</p>
+        <p><strong>Source:</strong> ${source}:${lineno}:${colno}</p>
+        <pre style="background: rgba(255,255,255,0.5); padding: 10px; overflow: auto;">${error?.stack || 'No stack trace'}</pre>
+      `;
     document.body.appendChild(errorDiv);
-    console.error("Global Error Caught:", error);
 };
 
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null }> {
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false, error: null };
-    }
-
-    static getDerivedStateFromError(error) {
-        return { hasError: true, error };
-    }
-
-    render() {
-        if (this.state.hasError) {
-            return (
-                <div style={{ padding: 20, color: 'red' }}>
-                    <h1>Something went wrong.</h1>
-                    <pre>{this.state.error?.toString()}</pre>
-                </div>
-            );
+// Supabase Health Check
+(async () => {
+    console.log("🚀 Supabase Health Check starting...");
+    const start = performance.now();
+    try {
+        const { error } = await supabase.from('site_settings').select('id').eq('id', 'global').maybeSingle();
+        const end = performance.now();
+        if (error) {
+            console.error("❌ Supabase Health Check FAILED:", error.message, error);
+        } else {
+            console.log(`✅ Supabase Health Check PASSED: ${Math.round(end - start)}ms`);
         }
-        return this.props.children;
+    } catch (e: any) {
+        console.error("🔥 Supabase Health Check CRASHED:", e.message);
     }
-}
+})();
 
 createRoot(document.getElementById("root")!).render(
     <ErrorBoundary>

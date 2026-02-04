@@ -17,6 +17,8 @@ export interface Package {
 export const usePackages = () => {
     return useQuery({
         queryKey: ["packages"],
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        gcTime: 1000 * 60 * 30,  // 30 minutes
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("packages")

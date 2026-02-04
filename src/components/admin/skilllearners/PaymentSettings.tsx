@@ -19,6 +19,9 @@ const PaymentSettings = () => {
     whatsapp_number: "",
     payment_instructions: "",
     is_shopping_enabled: true,
+    shop_upi_id: "",
+    shop_usdt_address: "",
+    shop_qr_code_url: ""
   });
   const { toast } = useToast();
 
@@ -41,7 +44,10 @@ const PaymentSettings = () => {
           qr_code_url: data.qr_code_url || "",
           whatsapp_number: data.whatsapp_number || "",
           payment_instructions: data.payment_instructions || "",
-          is_shopping_enabled: data.is_shopping_enabled !== false, // Default to true if null/undefined
+          is_shopping_enabled: data.is_shopping_enabled !== false,
+          shop_upi_id: data.shop_upi_id || "",
+          shop_usdt_address: data.shop_usdt_address || "",
+          shop_qr_code_url: data.shop_qr_code_url || ""
         });
       }
     } catch (error) {
@@ -63,10 +69,11 @@ const PaymentSettings = () => {
           whatsapp_number: settings.whatsapp_number,
           payment_instructions: settings.payment_instructions,
           is_shopping_enabled: settings.is_shopping_enabled,
+          shop_upi_id: settings.shop_upi_id,
+          shop_usdt_address: settings.shop_usdt_address,
+          shop_qr_code_url: settings.shop_qr_code_url,
           updated_at: new Date().toISOString(),
         });
-
-      if (error) throw error;
 
       if (error) throw error;
 
@@ -91,7 +98,7 @@ const PaymentSettings = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-8 max-w-4xl">
       <div className="glass-card p-6 rounded-2xl border-2 border-primary/20">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
@@ -110,33 +117,90 @@ const PaymentSettings = () => {
         </div>
       </div>
 
-      <div className="glass-card p-6 rounded-2xl">
-        <h2 className="text-xl font-bold font-display mb-6 flex items-center gap-2">
-          <CreditCard className="w-5 h-5 text-primary" />
-          UPI Payment Details
-        </h2>
-        <div className="grid gap-4">
-          <div>
-            <Label>UPI ID</Label>
-            <Input
-              value={settings.upi_id}
-              onChange={(e) => setSettings({ ...settings, upi_id: e.target.value })}
-              placeholder="yourname@upi"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              This UPI ID will be shown to users for making payments
-            </p>
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* SECTION A: E-LEARNING */}
+        <div className="space-y-6">
+          <h3 className="text-lg font-black uppercase tracking-widest text-primary border-b pb-2">Section A: Course Payments</h3>
+
+          <div className="glass-card p-6 rounded-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-2 bg-primary/10 rounded-bl-xl">
+              <span className="text-xs font-bold text-primary">Courses / Digital</span>
+            </div>
+            <h2 className="text-xl font-bold font-display mb-6 flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-primary" />
+              Course UPI & Crypto
+            </h2>
+            <div className="grid gap-4">
+              <div>
+                <Label>UPI ID</Label>
+                <Input
+                  value={settings.upi_id}
+                  onChange={(e) => setSettings({ ...settings, upi_id: e.target.value })}
+                  placeholder="courses@upi"
+                />
+              </div>
+              <div>
+                <Label>QR Code URL</Label>
+                <Input
+                  value={settings.qr_code_url}
+                  onChange={(e) => setSettings({ ...settings, qr_code_url: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+              <div>
+                <Label>USDT Address (TRC20)</Label>
+                <Input
+                  value={settings.usdt_address}
+                  onChange={(e) => setSettings({ ...settings, usdt_address: e.target.value })}
+                  placeholder="TRC20..."
+                  className="font-mono text-xs"
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <Label>QR Code URL (Optional)</Label>
-            <Input
-              value={settings.qr_code_url}
-              onChange={(e) => setSettings({ ...settings, qr_code_url: e.target.value })}
-              placeholder="https://your-qr-code-image-url.png"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Upload your QR code image and paste the URL here
-            </p>
+        </div>
+
+        {/* SECTION B: E-COMMERCE */}
+        <div className="space-y-6">
+          <h3 className="text-lg font-black uppercase tracking-widest text-blue-500 border-b pb-2">Section B: Shopping Payments</h3>
+
+          <div className="glass-card p-6 rounded-2xl relative overflow-hidden bg-blue-50/50 border-blue-100">
+            <div className="absolute top-0 right-0 p-2 bg-blue-100 rounded-bl-xl">
+              <span className="text-xs font-bold text-blue-600">Products / Physical</span>
+            </div>
+            <h2 className="text-xl font-bold font-display mb-6 flex items-center gap-2 text-slate-800">
+              <ShoppingBag className="w-5 h-5 text-blue-500" />
+              Shopping UPI & Crypto
+            </h2>
+            <div className="grid gap-4">
+              <div>
+                <Label>Shop UPI ID</Label>
+                <Input
+                  value={settings.shop_upi_id}
+                  onChange={(e) => setSettings({ ...settings, shop_upi_id: e.target.value })}
+                  placeholder="shop@upi"
+                  className="bg-white"
+                />
+              </div>
+              <div>
+                <Label>Shop QR Code URL</Label>
+                <Input
+                  value={settings.shop_qr_code_url}
+                  onChange={(e) => setSettings({ ...settings, shop_qr_code_url: e.target.value })}
+                  placeholder="https://..."
+                  className="bg-white"
+                />
+              </div>
+              <div>
+                <Label>Shop USDT Address</Label>
+                <Input
+                  value={settings.shop_usdt_address}
+                  onChange={(e) => setSettings({ ...settings, shop_usdt_address: e.target.value })}
+                  placeholder="TRC20..."
+                  className="font-mono text-xs bg-white"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -154,50 +218,21 @@ const PaymentSettings = () => {
             placeholder="+910000000000"
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Include country code (e.g. +91 for India)
+            Display for users to contact support if payment is pending.
           </p>
         </div>
       </div>
 
-      <div className="glass-card p-6 rounded-2xl">
-        <h2 className="text-xl font-bold font-display mb-6 flex items-center gap-2">
-          <Bitcoin className="w-5 h-5 text-primary" />
-          Crypto Payment Details
-        </h2>
-        <div>
-          <Label>USDT Address (TRC20)</Label>
-          <Input
-            value={settings.usdt_address}
-            onChange={(e) => setSettings({ ...settings, usdt_address: e.target.value })}
-            placeholder="TRC20 wallet address"
-            className="font-mono"
-          />
-        </div>
-      </div>
-
-      <div className="glass-card p-6 rounded-2xl">
-        <h2 className="text-xl font-bold font-display mb-6">Payment Instructions</h2>
-        <Textarea
-          value={settings.payment_instructions}
-          onChange={(e) => setSettings({ ...settings, payment_instructions: e.target.value })}
-          placeholder="Enter instructions for users..."
-          rows={4}
-        />
-        <p className="text-xs text-muted-foreground mt-1">
-          This message will be shown to users on the payment page
-        </p>
-      </div>
-
-      <Button onClick={handleSave} disabled={saving} className="w-full md:w-auto">
+      <Button onClick={handleSave} disabled={saving} className="w-full h-12 text-lg font-bold">
         {saving ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Saving...
+            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            Saving Settings...
           </>
         ) : (
           <>
-            <Save className="w-4 h-4 mr-2" />
-            Save Payment Settings
+            <Save className="w-5 h-5 mr-2" />
+            Save All Payment Settings
           </>
         )}
       </Button>

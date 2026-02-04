@@ -1,97 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Check, ChevronLeft, ChevronRight, Shield, TrendingUp, Crown, Sparkles, Star, Gem, Bookmark, Zap, Loader2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Shield, TrendingUp, Crown, Star, Gem, Bookmark, Zap, Rocket, Sparkles, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { incomeTypes } from "@/data/packages";
-import PackageComparisonTable from "./PackageComparisonTable";
+import { packages as staticPackages } from "@/data/packages";
 import { usePackages, Package } from "@/hooks/usePackages";
-
-// New tier naming with brand-aligned icons and gradients
-const tierConfig: Record<string, {
-  name: string;
-  tagline: string;
-  icon: any;
-  gradient: string;
-  bgGradient: string;
-  badge: any;
-  color: string;
-  cardBg: string;
-  borderColor: string;
-  buttonColor: string;
-  glowClass: string;
-}> = {
-  bronze: {
-    name: "Basic",
-    tagline: "Beginner",
-    icon: Zap,
-    badge: Bookmark,
-    gradient: "from-blue-500 to-blue-600",
-    bgGradient: "from-blue-500/10 to-transparent",
-    color: "bg-blue-100 text-blue-600",
-    cardBg: "bg-blue-50/90",
-    borderColor: "border-blue-200",
-    buttonColor: "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200",
-    glowClass: "hover:shadow-blue-500/40",
-  },
-  silver: {
-    name: "Starter",
-    tagline: "Intermediate",
-    icon: Sparkles,
-    badge: Bookmark,
-    gradient: "from-emerald-500 to-teal-600",
-    bgGradient: "from-emerald-500/10 to-transparent",
-    color: "bg-emerald-100 text-emerald-600",
-    cardBg: "bg-emerald-50/90",
-    borderColor: "border-emerald-200",
-    buttonColor: "bg-teal-600 hover:bg-teal-700 text-white shadow-teal-200",
-    glowClass: "hover:shadow-teal-500/40",
-  },
-  gold: {
-    name: "Professional",
-    tagline: "Advanced",
-    icon: Star,
-    badge: Bookmark,
-    gradient: "from-amber-500 to-orange-600",
-    bgGradient: "from-amber-500/10 to-transparent",
-    color: "bg-amber-100 text-amber-600",
-    cardBg: "bg-amber-50/90",
-    borderColor: "border-amber-200",
-    buttonColor: "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-200",
-    glowClass: "hover:shadow-amber-500/40",
-  },
-  platinum: {
-    name: "Premium",
-    tagline: "Expert",
-    icon: Gem,
-    badge: Bookmark,
-    gradient: "from-violet-500 to-purple-600",
-    bgGradient: "from-violet-500/10 to-transparent",
-    color: "bg-violet-100 text-violet-600",
-    cardBg: "bg-violet-50/90",
-    borderColor: "border-violet-200",
-    buttonColor: "bg-violet-600 hover:bg-violet-700 text-white shadow-violet-200",
-    glowClass: "hover:shadow-violet-500/40",
-  },
-  diamond: {
-    name: "Enterprise",
-    tagline: "Master",
-    icon: Crown,
-    badge: Bookmark,
-    gradient: "from-emerald-600 to-green-700",
-    bgGradient: "from-green-500/10 to-transparent",
-    color: "bg-green-100 text-green-600",
-    cardBg: "bg-green-50/90",
-    borderColor: "border-green-200",
-    buttonColor: "bg-green-600 hover:bg-green-700 text-white shadow-green-200",
-    glowClass: "hover:shadow-green-500/40",
-  },
-};
+import { cn } from "@/lib/utils";
 
 const PlansSection = () => {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+  // Use usePackages but don't rely on it for immediate render
   const { data: packages, isLoading } = usePackages();
 
   const updateScrollState = () => {
@@ -106,208 +26,338 @@ const PlansSection = () => {
     if (!container) return;
     container.addEventListener("scroll", updateScrollState);
     updateScrollState();
-
     window.addEventListener("resize", updateScrollState);
     return () => {
       container.removeEventListener("scroll", updateScrollState);
       window.removeEventListener("resize", updateScrollState);
     };
-  }, [packages]); // Re-run when packages load
+  }, [packages]);
 
   const scrollTo = (direction: "left" | "right") => {
     if (!carouselRef.current) return;
-    const cardWidth = window.innerWidth < 768 ? window.innerWidth - 48 : 280;
-    const gap = 20;
+    const cardWidth = window.innerWidth < 768 ? window.innerWidth - 48 : 340;
+    const gap = 24;
     carouselRef.current.scrollBy({
       left: direction === "left" ? -(cardWidth + gap) : (cardWidth + gap),
       behavior: "smooth",
     });
   };
 
-  if (isLoading) {
-    return (
-      <section className="py-20 flex justify-center items-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </section>
-    );
-  }
-
-  // Fallback for visual continuity if needed, but we expect packages to load
-  const displayPackages = packages || [];
+  // Prepare display packages (prioritize static for instant load, verify against DB)
+  // We map static packages to the schema used by the component
+  const displayPackages: Package[] = (packages && packages.length > 0)
+    ? packages
+    : staticPackages.map(p => ({
+      id: String(p.id),
+      code: p.name,
+      name: p.name,
+      price: p.price,
+      headline: p.tagline,
+      description: p.description,
+      features: p.features,
+      bonus: p.bonus,
+      level: typeof p.level === 'string' ? 0 : 0,
+      color_theme: p.theme
+    }));
 
   return (
-    <section id="plans" className="py-20 lg:py-28 relative overflow-hidden bg-slate-50/50">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-white" />
+    <section id="plans" className="py-20 lg:py-24 relative overflow-hidden bg-slate-950">
+      <div className="container relative mx-auto px-4 z-10">
 
-      <div className="container relative mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20 mb-5 backdrop-blur-sm">
-            <Crown className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-primary tracking-wide">Choose Your Path</span>
-          </div>
-
-          <h2 className="text-3xl lg:text-5xl font-bold font-display mb-4">
-            Premium <span className="text-gradient-gold">Learning Packages</span>
+        <div className="text-center mb-16 lg:mb-20">
+          <h2 className="text-4xl lg:text-6xl font-bold tracking-tight mb-4">
+            <span className="text-slate-900 dark:text-white">Premium </span>
+            <span className="text-amber-400">Learning Packages</span>
           </h2>
-          <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Invest in yourself with our expertly crafted packages. Each tier unlocks more value and income opportunities.
+
+          <p className="text-lg text-slate-500 max-w-3xl mx-auto font-medium leading-relaxed mb-8">
+            Invest in yourself with our expertly crafted packages. Each tier unlocks more <br className="hidden md:block" /> value and income opportunities.
           </p>
 
-          {/* Trust badges */}
-          <div className="flex items-center justify-center gap-6 text-sm font-medium text-slate-500 mb-8">
-            <span className="flex items-center gap-2"><Shield className="w-4 h-4 text-amber-500" /> Money-back guarantee</span>
-            <span className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-amber-500" /> Proven results</span>
-            <span className="flex items-center gap-2"><Crown className="w-4 h-4 text-amber-500" /> Premium quality</span>
+          <div className="flex flex-wrap justify-center gap-6 md:gap-12 opacity-80">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-amber-500" />
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Money-back guarantee</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-amber-500" />
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Proven results</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-amber-500" />
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Premium quality</span>
+            </div>
           </div>
         </div>
 
-        {/* Carousel Container */}
-        <div className="relative">
-          {/* Navigation Arrows */}
+        {/* Carousel */}
+        <div className="relative group/carousel">
+          {/* Mobile Nav */}
+          <div className="absolute -top-12 right-4 flex gap-3 lg:hidden">
+            <button
+              onClick={() => scrollTo("left")}
+              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${canScrollLeft ? 'bg-background border-border shadow-md' : 'opacity-50'}`}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => scrollTo("right")}
+              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${canScrollRight ? 'bg-background border-border shadow-md' : 'opacity-50'}`}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Desktop Nav */}
           {canScrollLeft && (
             <button
               onClick={() => scrollTo("left")}
-              className="absolute -left-2 lg:-left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center hover:bg-slate-50 text-slate-600 transition-all z-20"
+              className="absolute -left-6 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white dark:bg-slate-900 shadow-xl border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all z-30"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-6 h-6" />
             </button>
           )}
           {canScrollRight && (
             <button
               onClick={() => scrollTo("right")}
-              className="absolute -right-2 lg:-right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center hover:bg-slate-50 text-slate-600 transition-all z-20"
+              className="absolute -right-6 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white dark:bg-slate-900 shadow-xl border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all z-30"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-6 h-6" />
             </button>
           )}
 
-          {/* Cards Carousel */}
+          {/* Cards */}
           <div
             ref={carouselRef}
-            className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-8 scrollbar-hide px-4 -mx-4 items-stretch"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            className="flex gap-6 lg:gap-8 overflow-x-auto snap-x snap-mandatory pb-12 scrollbar-hide px-2 -mx-2 items-stretch"
           >
             {displayPackages.map((plan, index) => (
-              <PlanCard key={plan.id} plan={plan} index={index} />
+              <PlanCard key={plan.id} plan={plan} index={index} allPackages={displayPackages} />
             ))}
           </div>
         </div>
-
-        {/* Income Opportunities Section */}
-        <IncomeSection />
-
-        {/* Package Comparison Table */}
-        <PackageComparisonTable />
       </div>
     </section>
   );
 };
 
-const PlanCard = ({ plan, index }: { plan: Package; index: number }) => {
-  const isPopular = plan.level === 3 || plan.code === 'SUMMIT'; // Hardcode popular for middle tier or add to DB
+const tierConfig: Record<string, {
+  levelName: string;
+  courseCount: string;
+  name: string;
+  icon: React.ElementType;
+  cardBg: string; // Tailored gradient for each tier
+  borderColor: string;
+  textColor: string;
+  badgeColor: string;
+  buttonColor: string;
+  buttonShadow: string;
+  checkColor: string;
+  iconBg: string;
+  accentColor: string;
+  accent: string;
+  glowColor: string;
+  iconGlow: string;
+}> = {
+  bronze: {
+    levelName: "BEGINNER",
+    courseCount: "5 Courses",
+    name: "Basic",
+    icon: Zap,
+    cardBg: "bg-gradient-to-b from-slate-900 to-slate-950",
+    borderColor: "border-blue-500/20 hover:border-blue-500/50",
+    textColor: "text-blue-400",
+    badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    buttonColor: "bg-blue-600 hover:bg-blue-500 text-white",
+    buttonShadow: "shadow-lg shadow-blue-900/20",
+    checkColor: "text-blue-500 bg-blue-500/10 border-blue-500/20",
+    iconBg: "bg-blue-500/10",
+    accentColor: "text-blue-400",
+    accent: "bg-blue-600",
+    glowColor: "hover:shadow-blue-500/10",
+    iconGlow: "drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+  },
+  silver: {
+    levelName: "INTERMEDIATE",
+    courseCount: "15 Courses",
+    name: "Starter",
+    icon: Sparkles,
+    cardBg: "bg-gradient-to-b from-slate-900 to-slate-950",
+    borderColor: "border-emerald-500/20 hover:border-emerald-500/50",
+    textColor: "text-emerald-400",
+    badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    buttonColor: "bg-emerald-600 hover:bg-emerald-500 text-white",
+    buttonShadow: "shadow-lg shadow-emerald-900/20",
+    checkColor: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+    iconBg: "bg-emerald-500/10",
+    accentColor: "text-emerald-400",
+    accent: "bg-emerald-600",
+    glowColor: "hover:shadow-emerald-500/10",
+    iconGlow: "drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]"
+  },
+  gold: {
+    levelName: "ADVANCED",
+    courseCount: "35 Courses",
+    name: "Professional",
+    icon: Star,
+    cardBg: "bg-gradient-to-b from-slate-900 to-slate-950",
+    borderColor: "border-amber-500/20 hover:border-amber-500/50",
+    textColor: "text-amber-400",
+    badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    buttonColor: "bg-amber-500 hover:bg-amber-400 text-black font-bold",
+    buttonShadow: "shadow-lg shadow-amber-900/20",
+    checkColor: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+    iconBg: "bg-amber-500/10",
+    accentColor: "text-amber-400",
+    accent: "bg-amber-500",
+    glowColor: "hover:shadow-amber-500/10",
+    iconGlow: "drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]"
+  },
+  platinum: {
+    levelName: "EXPERT",
+    courseCount: "60 Courses",
+    name: "Premium",
+    icon: Gem,
+    cardBg: "bg-gradient-to-b from-slate-900 to-slate-950",
+    borderColor: "border-violet-500/20 hover:border-violet-500/50",
+    textColor: "text-violet-400",
+    badgeColor: "bg-violet-500/10 text-violet-400 border-violet-500/20",
+    buttonColor: "bg-violet-600 hover:bg-violet-500 text-white",
+    buttonShadow: "shadow-lg shadow-violet-900/20",
+    checkColor: "text-violet-500 bg-violet-500/10 border-violet-500/20",
+    iconBg: "bg-violet-500/10",
+    accentColor: "text-violet-400",
+    accent: "bg-violet-600",
+    glowColor: "hover:shadow-violet-500/10",
+    iconGlow: "drop-shadow-[0_0_8px_rgba(167,139,250,0.5)]"
+  },
+  diamond: {
+    levelName: "MASTER",
+    courseCount: "100 Courses",
+    name: "Enterprise",
+    icon: Crown,
+    cardBg: "bg-gradient-to-b from-slate-900 to-slate-950",
+    borderColor: "border-emerald-500/20 hover:border-emerald-500/50",
+    textColor: "text-emerald-400",
+    badgeColor: "bg-emerald-600/10 text-emerald-400 border-emerald-600/20",
+    buttonColor: "bg-emerald-600 hover:bg-emerald-500 text-white",
+    buttonShadow: "shadow-lg shadow-emerald-900/20",
+    checkColor: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+    iconBg: "bg-emerald-500/10",
+    accentColor: "text-emerald-400",
+    accent: "bg-emerald-800",
+    glowColor: "hover:shadow-emerald-500/10",
+    iconGlow: "drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]"
+  }
+};
+
+const PlanCard = ({ plan, index, allPackages }: { plan: Package; index: number; allPackages: Package[] }) => {
+  const isPopular = plan.code === 'GOLD' || plan.name === 'Professional';
   const tier = tierConfig[plan.color_theme || 'bronze'];
   const TierIcon = tier.icon;
-  const BadgeIcon = tier.badge;
   const features = plan.features || [];
 
-  // Fake MRP for visual effect since we don't store it in DB yet, or imply a 50% discount
+  // Pricing calcs
   const mrp = Math.round(plan.price * 2);
   const discount = 50;
 
+  // Bonus Logic
+  const previousPackages = allPackages.slice(0, index);
+  const bonusValue = previousPackages.reduce((acc, p) => acc + p.price, 0);
+
+  let bonusText = "";
+  if (index === 1) bonusText = "Basic Package FREE";
+  else if (index === 2) bonusText = "2 Previous Packs FREE";
+  else if (index === 3) bonusText = "3 Previous Packs FREE";
+  else if (index === 4) bonusText = "All Previous Packs FREE";
+
   return (
-    <>
-      <div
-        className="snap-center flex-shrink-0 w-[calc(100vw-32px)] md:w-[320px] pb-4"
-        style={{ animationDelay: `${index * 0.1}s` }}
-      >
-        <div
-          className={`relative rounded-3xl overflow-hidden transition-all duration-300 h-full flex flex-col group backdrop-blur-md border-2 hover:shadow-2xl hover:-translate-y-2 ${tier.cardBg} ${tier.borderColor} ${isPopular ? 'ring-2 ring-amber-400 shadow-xl' : 'shadow-lg'}`}
-        >
-          {/* Best Value Badge */}
-          {isPopular && (
-            <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-20">
-              <div className="bg-amber-500 text-white text-[10px] uppercase font-bold tracking-wider py-1 px-4 rounded-b-lg shadow-sm flex items-center gap-1">
-                <Star className="w-3 h-3 fill-current" />
-                Best Value
-              </div>
+    <div
+      className="snap-center flex-shrink-0 w-[85vw] md:w-[350px] flex flex-col pt-4"
+    >
+      <div className={cn(
+        "relative h-full flex flex-col rounded-3xl border-2 transition-all duration-300 overflow-hidden group hover:-translate-y-2",
+        tier.cardBg,
+        tier.borderColor,
+        tier.glowColor
+      )}>
+
+        {/* Popular Tag */}
+        {isPopular && (
+          <div className="absolute top-0 right-0 z-20">
+            <div className="bg-[#FBBF24] text-black text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-bl-2xl shadow-lg flex items-center gap-1">
+              <Star className="w-3 h-3 fill-black" /> BEST VALUE
             </div>
-          )}
-
-          {/* Card Content */}
-          <div className={`p-6 flex flex-col flex-1 ${isPopular ? 'pt-8' : 'pt-6'}`}>
-
-            {/* Header Section */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                  {tier.tagline}
-                </p>
-                <div className={`w-12 h-12 rounded-2xl ${tier.color} flex items-center justify-center mb-2`}>
-                  <TierIcon className="w-6 h-6" />
-                </div>
-              </div>
-              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                <BadgeIcon className="w-3 h-3" />
-                {features.length} Features
-              </div>
-            </div>
-
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">{tier.name}</h3>
-
-            {/* Pricing Section */}
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm text-slate-400 line-through decoration-slate-400/50">MRP ₹{mrp}</span>
-                <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">SAVE {discount}%</span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className={`text-4xl font-extrabold bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
-                  ₹{plan.price}
-                </span>
-                <span className="text-sm text-slate-500 font-medium">/one-time</span>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="h-px w-full bg-slate-900/5 mb-6" />
-
-            {/* Features List */}
-            <ul className="space-y-3 mb-8 flex-1">
-              {features.map((feature, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm group/item">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${tier.color.split(' ')[0]} bg-opacity-20`}>
-                    <Check className={`w-3 h-3 ${tier.color.split(' ')[1]}`} />
-                  </div>
-                  <span className="text-slate-700 group-hover/item:text-slate-900 transition-colors leading-tight">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            {/* CTA Button */}
-            <Link to={`/package/${plan.code}`} className="block mt-auto">
-              <Button
-                className={`w-full h-12 text-sm font-bold rounded-xl shadow-lg transition-all duration-300 ${tier.buttonColor}`}
-              >
-                View Details & Enroll
-              </Button>
-            </Link>
-
           </div>
-        </div>
-      </div>
-    </>
-  );
-};
+        )}
 
-const IncomeSection = () => {
-  return (
-    <div className="mt-20">
-      <div className="text-center mb-8 animate-fade-in">
-        <p className="text-sm font-medium text-amber-500 mb-2">Not sure which plan is right for you? <span className="font-bold cursor-pointer hover:underline">Talk to our team</span></p>
+        <div className="p-6 flex-grow flex flex-col">
+
+          {/* Header Compact */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="space-y-1">
+              <span className={cn("text-[10px] font-black uppercase tracking-[0.2em] block", tier.textColor)}>{tier.levelName}</span>
+              <h3 className="text-2xl font-black text-white leading-none">
+                {plan.name}
+              </h3>
+            </div>
+            <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center border border-white/5", tier.iconBg)}>
+              <TierIcon className={cn("w-6 h-6", tier.textColor)} />
+            </div>
+          </div>
+
+          {/* Pricing Compact */}
+          <div className="mb-6 bg-black/20 rounded-2xl p-4 border border-white/5">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs font-medium text-slate-400 line-through">MRP ₹{mrp.toLocaleString()}</span>
+              <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded border", tier.badgeColor)}>
+                SAVE {discount}%
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-4xl font-black text-white tracking-tight">
+                ₹{plan.price.toLocaleString()}
+              </span>
+              <span className="text-xs font-bold text-slate-500">/one-time</span>
+            </div>
+            {index > 0 && (
+              <div className="mt-2 pt-2 border-t border-white/10 flex items-center gap-2">
+                <Sparkles className={cn("w-3 h-3", tier.textColor)} />
+                <span className="text-xs text-slate-300 font-medium">Includes <span className="text-white font-bold">{bonusText}</span></span>
+              </div>
+            )}
+          </div>
+
+          {/* Features List */}
+          <ul className="space-y-3 mb-8 flex-grow">
+            {features.slice(0, 6).map((feature, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <div className={cn("mt-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center border", tier.checkColor)}>
+                  <Check className="w-2.5 h-2.5" />
+                </div>
+                <span className="text-sm font-medium text-slate-300 leading-snug">
+                  {feature}
+                </span>
+              </li>
+            ))}
+            {features.length > 6 && (
+              <li className="text-xs font-bold text-slate-500 pl-7">+ {features.length - 6} more benefits</li>
+            )}
+          </ul>
+
+          {/* Button */}
+          <Link to={`/package/${plan.code}`} className="mt-auto">
+            <Button className={cn(
+              "w-full h-12 rounded-xl font-bold text-base shadow-lg transition-transform active:scale-[0.98]",
+              tier.buttonColor,
+              tier.buttonShadow
+            )}>
+              Get Started <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+
+        </div>
       </div>
     </div>
   );

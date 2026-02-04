@@ -32,15 +32,27 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     // 1. Hardcoded Credential Validation (Frontend Gate)
-    if (email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase() || password !== ADMIN_PASSWORD) {
+    // Relaxed check: Trim password to avoid copy-paste errors
+    const inputPassword = password.trim();
+
+    console.log("Login Attempt:", {
+      email: email.toLowerCase().trim(),
+      expectedEmail: ADMIN_EMAIL,
+      passMatch: inputPassword === ADMIN_PASSWORD
+    });
+
+    if (email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase() || inputPassword !== ADMIN_PASSWORD) {
       toast({
         title: "Access Denied",
-        description: "Invalid admin credentials. This area is strictly restricted.",
+        description: "Invalid admin credentials. Please ensure no spaces are included.",
         variant: "destructive",
       });
       setIsLoading(false);
       return;
     }
+
+    // Set Emergency Flag immediately for smooth UX if verified by hardcode
+    localStorage.setItem('is_emergency_admin', 'true');
 
     try {
       // 2. Authenticate with Supabase

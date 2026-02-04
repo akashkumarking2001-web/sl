@@ -8,7 +8,14 @@ import {
   Trash2,
   Edit2,
   ShoppingBag,
-  XCircle
+  XCircle,
+  Share2,
+  DollarSign,
+  Tag,
+  Zap,
+  Layers,
+  Sparkles,
+  ArrowRight
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -38,7 +45,9 @@ const ProductsManagement = () => {
     image_1: "",
     image_2: "",
     image_3: "",
-    is_active: true
+    is_active: true,
+    commission_amount: "0",
+    commission_percentage: "0"
   });
   const { toast } = useToast();
 
@@ -84,6 +93,8 @@ const ProductsManagement = () => {
         price: validatePrice(form.price),
         mrp: validatePrice(form.mrp || form.price),
         cashback_amount: validatePrice(form.cashback || 0),
+        affiliate_commission_amount: validatePrice(form.commission_amount || 0),
+        affiliate_commission_percentage: validatePrice(form.commission_percentage || 0),
         image_url: form.image_1,
         gallery_images: [form.image_1, form.image_2, form.image_3].filter(img => img && isValidUrl(img)),
         stock_quantity: 100,
@@ -93,7 +104,7 @@ const ProductsManagement = () => {
       };
 
       if (editingId) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("products")
           .update(productData)
           .eq("id", editingId);
@@ -101,7 +112,7 @@ const ProductsManagement = () => {
         await logAudit('update', 'product', editingId, { name: sanitizedName });
         toast({ title: "Product updated successfully!" });
       } else {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from("products")
           .insert(productData)
           .select()
@@ -121,7 +132,9 @@ const ProductsManagement = () => {
         image_1: "",
         image_2: "",
         image_3: "",
-        is_active: true
+        is_active: true,
+        commission_amount: "0",
+        commission_percentage: "0"
       });
       setIsAdding(false);
       setEditingId(null);
@@ -137,7 +150,7 @@ const ProductsManagement = () => {
     // Optimistic update
     setProducts(prev => prev.map(p => p.id === id ? { ...p, is_active: !currentStatus } : p));
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("products")
       .update({ is_active: !currentStatus })
       .eq("id", id);
@@ -163,7 +176,9 @@ const ProductsManagement = () => {
       image_1: product.image_url || "",
       image_2: product.gallery_images?.[1] || "",
       image_3: product.gallery_images?.[2] || "",
-      is_active: product.is_active
+      is_active: product.is_active,
+      commission_amount: product.affiliate_commission_amount?.toString() || "0",
+      commission_percentage: product.affiliate_commission_percentage?.toString() || "0"
     });
     setEditingId(product.id);
     setIsAdding(true);
@@ -184,226 +199,327 @@ const ProductsManagement = () => {
   };
 
   const filteredProducts = products.filter(p =>
-    p.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    (p.name || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading && !isAdding) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
-    <div className="space-y-6">
-      {/* Header and Search */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h2 className="text-3xl font-black flex items-center gap-3">
+            <ShoppingBag className="w-8 h-8 text-primary" />
+            Product Factory
+          </h2>
+          <p className="text-muted-foreground font-medium">Design and deploy premium products to the global store.</p>
         </div>
-        <Button onClick={() => {
-          setIsAdding(!isAdding);
-          if (isAdding) setEditingId(null);
-        }} className="rounded-xl font-bold">
-          {isAdding ? <XCircle className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-          {isAdding ? "Cancel" : "Add New Product"}
-        </Button>
+
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Filter inventory..."
+              className="pl-12 h-12 rounded-2xl bg-card border-border/50 focus:ring-primary/20 transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Button onClick={() => {
+            setIsAdding(!isAdding);
+            if (isAdding) setEditingId(null);
+          }} className={cn(
+            "h-12 px-6 rounded-2xl font-black text-sm uppercase tracking-wider shadow-lg transition-all active:scale-95 w-full sm:w-auto",
+            isAdding ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" : "bg-primary hover:bg-primary/90 shadow-primary/20"
+          )}>
+            {isAdding ? <XCircle className="w-5 h-5 mr-2" /> : <Plus className="w-5 h-5 mr-2" />}
+            {isAdding ? "Abort Creation" : "New Creation"}
+          </Button>
+        </div>
       </div>
 
       {/* Form Section */}
       {isAdding && (
-        <div className="glass-card p-6 rounded-[2rem] border-2 border-primary/20 bg-gradient-to-br from-card to-primary/5 animate-in slide-in-from-top-4 duration-300">
-          <h3 className="font-black text-xl mb-6 flex items-center gap-2">
-            <ShoppingBag className="w-6 h-6 text-primary" />
-            {editingId ? "Edit Product" : "Product Creator"}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="space-y-4">
-              <div>
-                <Label className="text-xs font-bold uppercase mb-1.5 block">Product Name *</Label>
-                <Input
-                  placeholder="e.g., Premium Smart Watch"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="rounded-xl"
-                />
+        <div className="relative overflow-hidden glass-card p-1 rounded-[2.5rem] bg-gradient-to-br from-primary/10 via-background to-accent/5 border-2 border-primary/20 shadow-2xl animate-in slide-in-from-top-4 duration-500">
+          <div className="p-8 md:p-10">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                <Zap className="w-7 h-7" />
               </div>
               <div>
-                <Label className="text-xs font-bold uppercase mb-1.5 block">Description</Label>
-                <Textarea
-                  placeholder="Describe your product features..."
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="rounded-xl min-h-[120px]"
-                />
+                <h3 className="font-black text-2xl tracking-tight">{editingId ? "Modify Blueprint" : "Product Architect"}</h3>
+                <Badge className="bg-primary/10 text-primary border-primary/20 py-1 font-bold">V2 Engine</Badge>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs font-bold uppercase mb-1.5 block">MRP (₹)</Label>
-                  <Input
-                    type="number"
-                    placeholder="Original Price"
-                    value={form.mrp}
-                    onChange={(e) => setForm({ ...form, mrp: e.target.value })}
-                    className="rounded-xl font-bold"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-bold uppercase mb-1.5 block">Sale Price (₹) *</Label>
-                  <Input
-                    type="number"
-                    placeholder="Selling Price"
-                    value={form.price}
-                    onChange={(e) => setForm({ ...form, price: e.target.value })}
-                    className="rounded-xl font-bold text-primary"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs font-bold uppercase mb-1.5 block">Cashback (₹)</Label>
-                  <Input
-                    type="number"
-                    placeholder="Reward amount"
-                    value={form.cashback}
-                    onChange={(e) => setForm({ ...form, cashback: e.target.value })}
-                    className="rounded-xl font-bold text-emerald-500"
-                  />
-                </div>
-                <div className="flex flex-col justify-end pb-1.5">
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={form.is_active}
-                      onCheckedChange={(val) => setForm({ ...form, is_active: val })}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+              {/* Basic Meta */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b pb-2 flex items-center gap-2">
+                    <Tag className="w-3 h-3" /> Core Identity
+                  </h4>
+                  <div className="space-y-2">
+                    <Label htmlFor="product-name" className="text-[10px] font-black uppercase text-muted-foreground ml-1">Product Designation</Label>
+                    <Input
+                      id="product-name"
+                      placeholder="e.g., Quantum Edge Smartwatch"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className="h-14 rounded-2xl bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 font-bold"
                     />
-                    <Label className="text-xs font-bold uppercase">Live on Store</Label>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="product-desc" className="text-[10px] font-black uppercase text-muted-foreground ml-1">Detailed Description</Label>
+                    <Textarea
+                      id="product-desc"
+                      placeholder="Technical specs and selling points..."
+                      value={form.description}
+                      onChange={(e) => setForm({ ...form, description: e.target.value })}
+                      className="min-h-[160px] rounded-2xl bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 leading-relaxed"
+                    />
                   </div>
                 </div>
               </div>
-              <div>
-                <Label className="text-xs font-bold uppercase mb-1.5 block">Image URL (Primary)</Label>
-                <div className="relative">
-                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="https://images.unsplash.com/..."
-                    value={form.image_1}
-                    onChange={(e) => setForm({ ...form, image_1: e.target.value })}
-                    className="pl-10 rounded-xl"
-                  />
-                </div>
-              </div>
-            </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label className="text-xs font-bold uppercase mb-1.5 block border-b pb-1">Additional Images</Label>
-                <div className="space-y-3 mt-3">
-                  <Input
-                    placeholder="Extra Image URL 2"
-                    value={form.image_2}
-                    onChange={(e) => setForm({ ...form, image_2: e.target.value })}
-                    className="rounded-xl"
-                  />
-                  <Input
-                    placeholder="Extra Image URL 3"
-                    value={form.image_3}
-                    onChange={(e) => setForm({ ...form, image_3: e.target.value })}
-                    className="rounded-xl"
-                  />
+              {/* Economy Controls */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b pb-2 flex items-center gap-2">
+                    <DollarSign className="w-3 h-3" /> Economy Matrix
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="product-mrp" className="text-[10px] font-black uppercase text-muted-foreground ml-1">List Price (MRP)</Label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="product-mrp"
+                          type="number"
+                          placeholder="0.00"
+                          value={form.mrp}
+                          onChange={(e) => setForm({ ...form, mrp: e.target.value })}
+                          className="h-14 pl-10 rounded-2xl bg-background/50 border-border/50 font-bold"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="product-price" className="text-[10px] font-black uppercase text-muted-foreground ml-1">Live Sale Price</Label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                        <Input
+                          id="product-price"
+                          type="number"
+                          placeholder="0.00"
+                          value={form.price}
+                          onChange={(e) => setForm({ ...form, price: e.target.value })}
+                          className="h-14 pl-10 rounded-2xl bg-background border-primary/30 focus:border-primary font-black text-xl text-primary shadow-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Cashback Reward</Label>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        value={form.cashback}
+                        onChange={(e) => setForm({ ...form, cashback: e.target.value })}
+                        className="h-14 rounded-2xl bg-background/50 border-border/50 font-black text-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Affiliate Fixed</Label>
+                      <Input
+                        type="number"
+                        placeholder="Amt"
+                        value={form.commission_amount}
+                        onChange={(e) => setForm({ ...form, commission_amount: e.target.value })}
+                        className="h-14 rounded-2xl bg-background/50 border-border/50 font-black text-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="group p-6 rounded-3xl bg-primary/5 border border-primary/20 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><Sparkles className="w-5 h-5" /></div>
+                        <Label className="text-xs font-black uppercase text-primary">Live Visibility</Label>
+                      </div>
+                      <Switch
+                        checked={form.is_active}
+                        onCheckedChange={(val) => setForm({ ...form, is_active: val })}
+                        className="data-[state=checked]:bg-primary"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="pt-4">
-                <Button
-                  onClick={handleCreateOrUpdate}
-                  disabled={isSubmitting}
-                  className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
-                >
-                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Plus className="w-6 h-6 mr-2" />}
-                  {editingId ? "Update Product" : "Launch Product"}
-                </Button>
+
+              {/* Visual Assets */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b pb-2 flex items-center gap-2">
+                    <ImageIcon className="w-3 h-3" /> Visual Assets
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Primary Display (URL)</Label>
+                      <Input
+                        placeholder="https://..."
+                        value={form.image_1}
+                        onChange={(e) => setForm({ ...form, image_1: e.target.value })}
+                        className="h-14 rounded-2xl bg-background/50 border-border/50 text-xs"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Alt 1</Label>
+                        <Input
+                          placeholder="Link"
+                          value={form.image_2}
+                          onChange={(e) => setForm({ ...form, image_2: e.target.value })}
+                          className="h-12 rounded-xl bg-background/50 border-border/50 text-[10px]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Alt 2</Label>
+                        <Input
+                          placeholder="Link"
+                          value={form.image_3}
+                          onChange={(e) => setForm({ ...form, image_3: e.target.value })}
+                          className="h-12 rounded-xl bg-background/50 border-border/50 text-[10px]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleCreateOrUpdate}
+                    disabled={isSubmitting}
+                    className="w-full h-16 mt-8 rounded-3xl font-black text-lg uppercase tracking-wider bg-gradient-to-r from-primary to-primary/80 shadow-2xl shadow-primary/30 hover:scale-[1.02] transition-all active:scale-95"
+                  >
+                    {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                      <>
+                        {editingId ? "Apply Synchronization" : "Initiate Launch"}
+                        <ArrowRight className="w-6 h-6 ml-3" />
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
+          {/* Decorative side blob */}
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
         </div>
       )}
 
-      {/* List Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {/* Grid Display */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {filteredProducts.map(p => (
-          <div key={p.id} className="glass-card rounded-[2rem] overflow-hidden group hover:border-primary/40 transition-all duration-300 bg-card/50 flex flex-col">
-            {/* Preview */}
-            <div className="aspect-square relative overflow-hidden bg-muted">
+          <div key={p.id} className="group relative bg-card rounded-[2.5rem] border border-border/40 overflow-hidden hover:border-primary/40 transition-all duration-500 shadow-sm hover:shadow-2xl hover:shadow-primary/5 flex flex-col h-full">
+            {/* Visual Header */}
+            <div className="aspect-[4/5] relative overflow-hidden bg-muted">
               <img
                 src={p.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop"}
                 alt={p.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
               <div className="absolute top-4 right-4 flex flex-col gap-2">
                 <Badge className={cn(
-                  "text-white border-none font-bold px-2 py-0.5",
-                  p.is_active ? "bg-emerald-500" : "bg-slate-500"
+                  "font-black uppercase text-[10px] px-3 py-1 rounded-full border-none shadow-lg",
+                  p.is_active ? "bg-emerald-500 text-white" : "bg-slate-500 text-white"
                 )}>
-                  {p.is_active ? "Live" : "Draft"}
+                  {p.is_active ? "Live" : "Halted"}
                 </Badge>
+              </div>
+
+              {/* Floating Perks */}
+              <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
                 {p.cashback_amount > 0 && (
-                  <Badge className="bg-primary text-white border-none font-black px-2 py-0.5">
-                    ₹{p.cashback_amount} CB
+                  <Badge className="bg-emerald-500 text-white border-none font-black px-3 py-1 text-[10px] rounded-full shadow-lg">
+                    ₹{p.cashback_amount} CASHBACK
+                  </Badge>
+                )}
+                {(p.affiliate_commission_amount > 0 || p.affiliate_commission_percentage > 0) && (
+                  <Badge className="bg-blue-600 text-white border-none font-black px-3 py-1 text-[10px] rounded-full shadow-lg">
+                    {p.affiliate_commission_amount > 0 ? `₹${p.affiliate_commission_amount}` : `${p.affiliate_commission_percentage}%`} COMM
                   </Badge>
                 )}
               </div>
             </div>
 
-            {/* Details */}
-            <div className="p-5 flex-1 flex flex-col">
-              <h4 className="font-bold text-lg mb-1 line-clamp-1">{p.name}</h4>
-              <p className="text-xs text-muted-foreground line-clamp-2 mb-4 h-8">{p.description || "No description provided."}</p>
-
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground line-through">₹{p.mrp || p.price}</span>
-                  <span className="text-xl font-black text-primary">₹{p.price}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] block uppercase font-bold text-muted-foreground mb-1">Status</span>
-                  <Switch
-                    checked={p.is_active}
-                    onCheckedChange={() => handleToggleStatus(p.id, p.is_active)}
-                  />
-                </div>
+            {/* Intellectual Data */}
+            <div className="p-6 flex-1 flex flex-col space-y-4">
+              <div>
+                <h4 className="font-black text-lg line-clamp-1 group-hover:text-primary transition-colors">{p.name}</h4>
+                <p className="text-xs text-muted-foreground line-clamp-2 mt-1 font-medium leading-relaxed h-8">
+                  {p.description || "Synthesizing product identity..."}
+                </p>
               </div>
 
-              <div className="flex items-center gap-2 pt-4 border-t border-border/50 mt-auto">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 rounded-xl h-9"
-                  onClick={() => handleEdit(p)}
-                >
-                  <Edit2 className="w-3.5 h-3.5 mr-2" />
-                  Edit
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 rounded-xl text-destructive hover:bg-destructive/10"
-                  onClick={() => handleDelete(p.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+              <div className="flex items-center justify-between border-t border-border/20 pt-4 mt-auto">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Unit Capital</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-black text-primary">₹{p.price}</span>
+                    {p.mrp > p.price && (
+                      <span className="text-xs text-muted-foreground line-through font-bold opacity-60">₹{p.mrp}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-10 h-10 rounded-xl bg-muted/50 hover:bg-primary/10 hover:text-primary transition-all"
+                    onClick={() => handleEdit(p)}
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-10 h-10 rounded-xl bg-muted/50 hover:bg-blue-500/10 hover:text-blue-500 transition-all"
+                    onClick={() => {
+                      const link = `${window.location.origin}/product/${p.slug}?ref=ADMIN`;
+                      navigator.clipboard.writeText(link);
+                      toast({ title: "Signal Captured", description: "Network reference link encoded to clipboard." });
+                    }}
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-10 h-10 rounded-xl bg-muted/50 hover:bg-rose-500/10 hover:text-rose-500 transition-all"
+                    onClick={() => handleDelete(p.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         ))}
 
         {filteredProducts.length === 0 && !loading && (
-          <div className="col-span-full py-20 text-center glass-card rounded-[2rem]">
-            <ShoppingBag className="w-16 h-16 mx-auto text-muted-foreground/20 mb-4" />
-            <h3 className="text-xl font-bold text-muted-foreground">No products found</h3>
-            <p className="text-sm text-muted-foreground">Start by adding your first premium product!</p>
+          <div className="col-span-full py-32 text-center glass-card rounded-[3rem] border border-dashed border-border/60">
+            <div className="w-20 h-20 bg-muted/30 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+              <Layers className="w-10 h-10 text-muted-foreground/30" />
+            </div>
+            <h3 className="text-2xl font-black text-muted-foreground">Warehouse Vacuum</h3>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto mt-2">No items detected in current sector. Initiate creation sequence.</p>
+            <Button onClick={() => setIsAdding(true)} variant="link" className="mt-4 font-black text-primary">
+              <Plus className="w-4 h-4 mr-2" /> Start First Blueprint
+            </Button>
           </div>
         )}
       </div>

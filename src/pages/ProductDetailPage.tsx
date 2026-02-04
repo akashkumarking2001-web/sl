@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
     ShoppingCart,
     Heart,
@@ -12,6 +13,9 @@ import {
     Check,
     Copy,
     ChevronLeft,
+    PenLine,
+    Loader2,
+    TrendingUp
 } from "lucide-react";
 import ProductSection from "@/components/shopping/ProductSection";
 import { Button } from "@/components/ui/button";
@@ -27,9 +31,14 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
+    DialogTrigger,
+    DialogFooter
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Slider } from "@/components/ui/slider";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Product {
     id: string;
@@ -43,213 +52,496 @@ interface Product {
     price: number;
     cashback_amount: number;
     cashback_percentage: number;
+    affiliate_commission_amount?: number;
+    affiliate_commission_percentage?: number;
     stock_quantity: number;
     is_featured: boolean;
     tags: string[];
     specifications: any;
     category_id: string;
+    average_rating?: number;
+    review_count?: number;
 }
 
-interface Category {
-    name: string;
+interface Review {
+    id: string;
+    user_id: string;
+    rating: number;
+    comment: string;
+    created_at: string;
+    profiles?: {
+        full_name: string;
+        avatar_url: string;
+    }
 }
 
 const ProductDetailPage = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { user } = useAuth();
     const { addToCart } = useCart();
     const { toast } = useToast();
+    const ref = searchParams.get("ref");
 
     const [product, setProduct] = useState<Product | null>(null);
-    const [category, setCategory] = useState<Category | null>(null);
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
     const [isAffiliate, setIsAffiliate] = useState(false);
+    const [affiliateCode, setAffiliateCode] = useState("");
     const [affiliateLink, setAffiliateLink] = useState("");
     const [showShareDialog, setShowShareDialog] = useState(false);
     const [copied, setCopied] = useState(false);
 
+    // Review State
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [loadingReviews, setLoadingReviews] = useState(false);
+    const [showReviewDialog, setShowReviewDialog] = useState(false);
+    const [newRating, setNewRating] = useState(5);
+    const [newComment, setNewComment] = useState("");
+    const [submittingReview, setSubmittingReview] = useState(false);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+
+    const abortControllerRef = useRef<AbortController | null>(null);
+
     useEffect(() => {
         if (slug) {
-            fetchProduct();
-            checkAffiliateStatus();
+            // Cancel any pending requests
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+            abortControllerRef.current = new AbortController();
+
+            loadInitialData();
         }
+
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
     }, [slug]);
 
-    const fetchProduct = async () => {
-        try {
-            setLoading(true);
-            const { data, error } = await supabase
-                .from("products")
-                .select("*, product_categories(name)")
-                .eq("slug", slug)
-                .eq("is_active", true)
-                .single();
+    const loadInitialData = async () => {
+        console.log("Loading initial data for slug:", slug);
+        console.time("ProductLoad");
+        setLoading(true);
 
-            if (error) throw error;
+        const currentSignal = abortControllerRef.current?.signal;
 
-            setProduct(data);
-            setCategory(data.product_categories);
-        } catch (error) {
-            console.error("Error fetching product:", error);
-            toast({
-                title: "Error",
-                description: "Product not found.",
-                variant: "destructive",
-            });
-            navigate("/shopping");
-        } finally {
+        // Safety timeout for INSTANT LOAD
+        const timeout = setTimeout(() => {
+            console.warn("Product load timeout triggered");
             setLoading(false);
+        }, 500);
+
+        try {
+            const fetchedProduct = await fetchProduct(currentSignal);
+            if (fetchedProduct && !currentSignal?.aborted) {
+                console.log("Product fetched, now checking affiliate and reviews");
+
+                // Fetch reviews safely
+                try {
+                    await fetchReviews(fetchedProduct.id, currentSignal);
+                } catch (revErr: any) {
+                    if (revErr.name !== 'AbortError') {
+                        console.warn("Could not fetch reviews:", revErr.message);
+                    }
+                }
+
+                // Check affiliate status safely
+                try {
+                    await checkAffiliateStatus(fetchedProduct.id, currentSignal);
+                } catch (affErr: any) {
+                    if (affErr.name !== 'AbortError') {
+                        console.warn("Could not check affiliate status:", affErr.message);
+                    }
+                }
+            }
+        } catch (err: any) {
+            if (err.name !== 'AbortError') {
+                console.error("Initialization error:", err);
+            }
+        } finally {
+            if (!currentSignal?.aborted) {
+                console.log("Initialization complete, clearing timeout and setting loading to false");
+                console.timeEnd("ProductLoad");
+                clearTimeout(timeout);
+                setLoading(false);
+            }
         }
     };
 
-    const checkAffiliateStatus = async () => {
+    // Fetches the product data from Supabase
+    const fetchProduct = async (signal?: AbortSignal) => {
+        console.time("fetchProduct");
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+            setFetchError(null);
+            const cleanSlug = slug?.replace(/\/$/, "");
+            console.log("🔍 fetchProduct sequence started for:", cleanSlug);
 
-            const { data, error } = await supabase
-                .from("affiliate_applications")
-                .select("status")
-                .eq("user_id", user.id)
-                .single();
-
-            if (data?.status === "approved") {
-                setIsAffiliate(true);
+            if (!cleanSlug) {
+                console.error("No slug provided in URL params");
+                return null;
             }
-        } catch (error) {
-            // User is not an affiliate
-        }
-    };
 
-    const generateAffiliateLink = async () => {
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user || !product) return;
+            // STRATEGY 1: Exact Case-Insensitive Match (Best Case)
+            console.log("Strategy 1: Trying exact case-insensitive match...");
+            let query1 = supabase
+                .from("products")
+                .select("*, category:category_id(name)")
+                .ilike("slug", cleanSlug)
+                .maybeSingle();
 
-            const { data, error } = await supabase
-                .rpc("create_affiliate_link", {
-                    p_user_id: user.id,
-                    p_product_id: product.id
-                });
 
-            if (error) throw error;
+            let { data, error } = await query1;
 
-            // Get the referral code
-            const { data: linkData } = await supabase
-                .from("affiliate_links")
-                .select("referral_code")
-                .eq("user_id", user.id)
-                .eq("product_id", product.id)
-                .single();
+            if (error) {
+                // Ignore abort errors
+                if (error.code === '20' || error.message.includes('AbortError')) throw error;
 
-            if (linkData) {
-                const link = `${window.location.origin}/product/${product.slug}?ref=${linkData.referral_code}`;
-                setAffiliateLink(link);
-                setShowShareDialog(true);
+                console.error("Supabase Strategy 1 error:", error.message);
+                setFetchError(error.message);
+                // Continue to other strategies
             }
+
+            // STRATEGY 2: Match by ID if numeric
+            if (!data && cleanSlug && /^\d+$/.test(cleanSlug) && !signal?.aborted) {
+                console.log("Strategy 2: Numeric slug detected, trying to fetch by ID...");
+                let query2 = supabase
+                    .from("products")
+                    .select("*, category:category_id(name)")
+                    .eq("id", cleanSlug)
+                    .maybeSingle();
+
+
+                const { data: idData } = await query2;
+
+                if (idData) {
+                    console.log("Strategy 2 Success: Found by ID");
+                    data = idData;
+                }
+            }
+
+            // STRATEGY 3: Fetch all and filter (Brute Force / Resilience)
+            if (!data && !signal?.aborted) {
+                console.log("Strategy 3: Still no product, fetching all products to find match...");
+                let query3 = supabase
+                    .from("products")
+                    .select("*, category:category_id(name)");
+
+
+                const { data: allProducts, error: allError } = await query3;
+
+                if (!allError && allProducts) {
+                    data = allProducts.find(p =>
+                        p.slug?.toLowerCase() === cleanSlug.toLowerCase() ||
+                        p.name?.toLowerCase().replace(/\s+/g, '-') === cleanSlug.toLowerCase()
+                    );
+                    if (data) console.log("Strategy 3 Success: Found in full list");
+                }
+            }
+
+            // STRATEGY 4: Partial Match as last resort
+            if (!data && !signal?.aborted) {
+                console.log("Strategy 4: Trying partial ilike match...");
+                let query4 = supabase
+                    .from("products")
+                    .select("*, category:category_id(name)")
+                    .ilike("slug", `%${cleanSlug}%`)
+                    .limit(1)
+                    .maybeSingle();
+
+
+                const { data: partialData } = await query4;
+
+                if (partialData) {
+                    console.log("Strategy 4 Success: Found partial match");
+                    data = partialData;
+                }
+            }
+
+            if (!data) {
+                if (signal?.aborted) return null;
+                console.warn("❌ All retrieval strategies failed for:", cleanSlug);
+                setProduct(null);
+                return null;
+            }
+
+            console.log("✅ Final Strategy Success:", data.name);
+            setProduct(data);
+            return data;
         } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error.message || "Failed to generate affiliate link.",
-                variant: "destructive",
-            });
+            // IGNORE ABORT ERRORS
+            if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+                console.log("Fetch aborted gracefully");
+                return null;
+            }
+            console.error("Critical error in fetchProduct:", error);
+            setFetchError(error.message || "An unexpected error occurred");
+            setProduct(null);
+            return null;
+        } finally {
+            console.timeEnd("fetchProduct");
         }
     };
 
-    const copyAffiliateLink = () => {
-        navigator.clipboard.writeText(affiliateLink);
-        setCopied(true);
-        toast({
-            title: "Copied!",
-            description: "Affiliate link copied to clipboard.",
-        });
-        setTimeout(() => setCopied(false), 2000);
+    const fetchReviews = async (productId: string, signal?: AbortSignal) => {
+        setLoadingReviews(true);
+        try {
+            let query = supabase
+                .from("reviews")
+                .select("*, profiles(full_name, avatar_url)")
+                .eq("product_id", productId)
+                .order("created_at", { ascending: false });
+
+
+            const { data, error } = await query;
+
+            if (error) {
+                if (error.code === '42P01') {
+                    console.warn("Reviews table does not exist yet.");
+                } else {
+                    console.error("Error fetching reviews:", error.message);
+                }
+                return;
+            }
+
+            if (data) {
+                setReviews(data);
+            }
+        } catch (err: any) {
+            if (err.name === 'AbortError' || err.message?.includes('aborted')) return;
+            console.error("Critical error in fetchReviews:", err.message);
+        } finally {
+            if (!signal?.aborted) {
+                setLoadingReviews(false);
+            }
+        }
     };
 
-    const handleAddToCart = (item: Product | null = null) => {
-        const productToAdd = item || product;
-        const qty = item ? 1 : quantity;
-
-        if (!productToAdd) return;
-
-        addToCart({
-            id: productToAdd.id,
-            name: productToAdd.name,
-            price: productToAdd.price,
-            cashback: productToAdd.cashback_amount,
-            image: productToAdd.image_url,
-            quantity: qty
-        });
-
-        toast({
-            title: "Added to Cart",
-            description: `${qty} x ${productToAdd.name} added to your cart.`,
-        });
-    };
-
-    const handleAddToWishlist = async (itemId: string | null = null) => {
-        const idToAdd = itemId || product?.id;
-        if (!idToAdd) return;
-
+    const handleSubmitReview = async () => {
+        if (!product) return;
+        setSubmittingReview(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                toast({
-                    title: "Login Required",
-                    description: "Please login to add items to wishlist.",
-                    variant: "destructive",
-                });
+                toast({ title: "Login Required", description: "Please login to write a review", variant: "destructive" });
                 return;
             }
 
             const { error } = await supabase
-                .from("wishlist")
-                .insert({ user_id: user.id, product_id: idToAdd });
+                .from("reviews")
+                .insert({
+                    product_id: product.id,
+                    user_id: user.id,
+                    rating: newRating,
+                    comment: newComment
+                });
 
             if (error) throw error;
 
-            toast({
-                title: "Added to Wishlist",
-                description: "Product saved to your wishlist.",
-            });
+            toast({ title: "Review Submitted", description: "Thank you for your feedback!" });
+            setShowReviewDialog(false);
+            setNewComment("");
+            fetchReviews(product.id);
         } catch (error: any) {
-            if (error.code === '23505') {
-                toast({
-                    title: "Already in Wishlist",
-                    description: "This product is already in your wishlist.",
-                });
-            } else {
-                toast({
-                    title: "Error",
-                    description: "Failed to add to wishlist.",
-                    variant: "destructive",
-                });
-            }
+            toast({ title: "Error", description: error.message, variant: "destructive" });
+        } finally {
+            setSubmittingReview(false);
         }
     };
 
-    const calculateDiscount = () => {
-        if (!product) return 0;
-        return Math.round(((product.mrp - product.price) / product.mrp) * 100);
+    useEffect(() => {
+        if (product?.id) {
+            fetchReviews(product.id);
+        }
+    }, [product?.id]);
+
+    const checkAffiliateStatus = async (productId?: string, signal?: AbortSignal) => {
+        try {
+            if (signal?.aborted) return;
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                // Check if user is an approved affiliate
+                const { data: appData } = await supabase
+                    .from("affiliate_applications")
+                    .select("status")
+                    .eq("user_id", user.id)
+                    .eq("status", "approved")
+                    .maybeSingle();
+
+                if (appData) {
+                    setIsAffiliate(true);
+                    // Fetch existing generic or specific referral code
+                    const { data: linkData } = await supabase
+                        .from("affiliate_links")
+                        .select("referral_code")
+                        .eq("user_id", user.id)
+                        .eq("product_id", productId || product?.id || null)
+                        .limit(1)
+                        .maybeSingle();
+
+                    if (linkData) {
+                        setAffiliateCode(linkData.referral_code);
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn("Affiliate check failed:", err);
+        }
     };
 
-    const allImages = product ? [product.image_url, ...(product.gallery_images || [])] : [];
+    const generateAffiliateLink = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !product) return toast({ title: "Login Required" });
+
+        if (!isAffiliate) {
+            return toast({
+                title: "Not an Affiliate",
+                description: "Please apply for the affiliate program first.",
+                variant: "destructive"
+            });
+        }
+
+        try {
+            let code = affiliateCode;
+
+            if (!code) {
+                // Generate a new custom referral code for this product
+                const timestamp = Date.now().toString(36).toUpperCase();
+                const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+                const newCode = `REF-${user.id.substring(0, 4).toUpperCase()}-${timestamp}${random}`;
+
+                const { data, error } = await supabase
+                    .from("affiliate_links")
+                    .insert({
+                        user_id: user.id,
+                        product_id: product.id,
+                        referral_code: newCode
+                    })
+                    .select("referral_code")
+                    .single();
+
+                if (error) throw error;
+                code = data.referral_code;
+                setAffiliateCode(code);
+            }
+
+            const link = `${window.location.origin}/product/${slug}?ref=${code}`;
+            setAffiliateLink(link);
+            setShowShareDialog(true);
+        } catch (error: any) {
+            toast({ title: "Error", description: error.message, variant: "destructive" });
+        }
+    };
+
+    const handleAddToCart = () => {
+        if (!product) return;
+        addToCart({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            cashback: product.cashback_amount,
+            image: product.image_url,
+            quantity: quantity,
+            referralCode: ref || undefined,
+            commission_amount: product.affiliate_commission_amount || 0,
+            commission_percentage: product.affiliate_commission_percentage || 0
+        });
+        toast({ title: "Added to Cart" });
+    };
+
+    const handleBuyNow = () => {
+        if (!product) return;
+        // Check if user is logged in
+        if (!user) {
+            toast({ title: "Login Required", description: "Please login to purchase products." });
+            navigate("/login");
+            return;
+        }
+
+        // Pass product and ref via state to PaymentGateway
+        navigate("/payment", {
+            state: {
+                product: {
+                    ...product,
+                    referralCode: ref || undefined,
+                    commission_amount: product.affiliate_commission_amount || 0,
+                    commission_percentage: product.affiliate_commission_percentage || 0
+                },
+                fromProduct: true
+            }
+        });
+    };
+
+    const addToWishlist = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !product) return toast({ title: "Login Required" });
+        try {
+            await supabase.from("wishlist").insert({ user_id: user.id, product_id: product.id });
+            toast({ title: "Added to Wishlist" });
+        } catch (err) {
+            toast({ title: "Already in Wishlist" });
+        }
+    };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-background">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
                 <Navbar />
-                <div className="container mx-auto px-4 py-12">
-                    <div className="animate-pulse">
-                        <div className="h-8 w-32 bg-muted rounded mb-8"></div>
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="aspect-square bg-muted rounded-2xl"></div>
-                            <div className="space-y-4">
-                                <div className="h-8 bg-muted rounded w-3/4"></div>
-                                <div className="h-4 bg-muted rounded w-1/2"></div>
-                                <div className="h-12 bg-muted rounded"></div>
+                <div className="container mx-auto px-4 py-8 pt-24">
+                    {/* Back Button Skeleton */}
+                    <Skeleton className="h-6 w-32 mb-8" />
+
+                    <div className="grid lg:grid-cols-2 gap-12">
+                        {/* Gallery Skeleton */}
+                        <div className="space-y-4">
+                            <Skeleton className="w-full aspect-square rounded-3xl" />
+                            <div className="grid grid-cols-5 gap-3">
+                                {[1, 2, 3, 4, 5].map((_, i) => (
+                                    <Skeleton key={i} className="w-full aspect-square rounded-xl" />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Info Skeleton */}
+                        <div className="space-y-8">
+                            <div>
+                                <Skeleton className="h-6 w-24 mb-4 rounded-full" />
+                                <Skeleton className="h-12 w-3/4 mb-4 rounded-lg" />
+                                <div className="flex items-center gap-4 mb-6">
+                                    <Skeleton className="h-5 w-32" />
+                                    <Skeleton className="h-5 w-20" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-5/6" />
+                                    <Skeleton className="h-4 w-full" />
+                                </div>
+                            </div>
+
+                            {/* Price Box Skeleton */}
+                            <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 space-y-6">
+                                <div className="flex items-baseline gap-3">
+                                    <Skeleton className="h-10 w-32" />
+                                    <Skeleton className="h-6 w-20" />
+                                    <Skeleton className="h-6 w-24 rounded-full" />
+                                </div>
+                                <Skeleton className="h-16 w-full rounded-2xl" />
+                                <div className="flex gap-4 pt-4">
+                                    <Skeleton className="h-12 w-32 rounded-xl" />
+                                    <Skeleton className="h-12 flex-1 rounded-xl" />
+                                    <Skeleton className="h-12 w-12 rounded-xl" />
+                                </div>
+                            </div>
+
+                            {/* Features Skeleton */}
+                            <div className="grid grid-cols-3 gap-4">
+                                {[1, 2, 3].map((_, i) => (
+                                    <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -258,356 +550,302 @@ const ProductDetailPage = () => {
         );
     }
 
-    if (!product) return null;
+    if (!product) {
+        return (
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans flex flex-col items-center justify-center">
+                <Navbar />
+                <div className="text-center space-y-6 animate-in fade-in zoom-in duration-500">
+                    <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <ShoppingCart className="w-10 h-10 text-slate-400" />
+                    </div>
+                    <h1 className="text-3xl font-black text-slate-900 dark:text-white">Product Not Found</h1>
+                    <p className="text-slate-500 max-w-md mx-auto">The product "{slug}" might have been removed or is temporarily unavailable.</p>
+                    {fetchError && (
+                        <p className="text-rose-500 text-sm mt-2 font-mono bg-rose-50 dark:bg-rose-900/10 p-2 rounded-lg border border-rose-100 dark:border-rose-900/20 max-w-md mx-auto">
+                            Details: {fetchError}
+                        </p>
+                    )}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <Button
+                            onClick={() => {
+                                console.log("Manual retry triggered");
+                                loadInitialData();
+                            }}
+                            className="rounded-xl font-bold px-8 h-12 bg-primary text-black hover:bg-primary/90 min-w-[160px]"
+                        >
+                            <Loader2 className={cn("w-4 h-4 mr-2", loading ? "animate-spin" : "hidden")} />
+                            Retry Connection
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate("/shopping")}
+                            className="rounded-xl font-bold px-8 h-12 min-w-[160px]"
+                        >
+                            Back to Store
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-    const discount = calculateDiscount();
+    const allImages = [product.image_url, ...(product.gallery_images || [])];
+    const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
             <Navbar />
+            <div className="container mx-auto px-4 py-8 pt-24">
+                <Button variant="ghost" onClick={() => navigate("/shopping")} className="mb-8 gap-2 pl-0 hover:bg-transparent hover:text-primary">
+                    <ChevronLeft className="w-4 h-4" /> Back to Shop
+                </Button>
 
-            <div className="container mx-auto px-4 py-8">
-                {/* Breadcrumb */}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate("/shopping")}
-                        className="gap-2"
-                    >
-                        <ChevronLeft className="w-4 h-4" />
-                        Back to Shop
-                    </Button>
-                    <span>/</span>
-                    <span>{category?.name}</span>
-                    <span>/</span>
-                    <span className="text-foreground">{product.name}</span>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-12">
-                    {/* Product Images */}
+                <div className="grid lg:grid-cols-2 gap-12">
+                    {/* Gallery */}
                     <div className="space-y-4">
-                        <div className="glass-card rounded-2xl overflow-hidden aspect-square">
+                        <div className="group relative rounded-3xl overflow-hidden aspect-square border border-slate-200 bg-white cursor-zoom-in">
                             <img
                                 src={allImages[selectedImage]}
                                 alt={product.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-150"
                             />
                         </div>
                         {allImages.length > 1 && (
-                            <div className="grid grid-cols-4 gap-4">
+                            <div className="grid grid-cols-5 gap-3">
                                 {allImages.map((img, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => setSelectedImage(idx)}
-                                        className={cn(
-                                            "aspect-square rounded-xl overflow-hidden border-2 transition-all",
-                                            selectedImage === idx
-                                                ? "border-primary ring-2 ring-primary/20"
-                                                : "border-transparent hover:border-border"
-                                        )}
+                                        className={cn("rounded-xl border-2 overflow-hidden aspect-square transition-all", selectedImage === idx ? "border-primary" : "border-transparent hover:border-slate-300")}
                                     >
-                                        <img
-                                            src={img}
-                                            alt={`${product.name} ${idx + 1}`}
-                                            className="w-full h-full object-cover"
-                                        />
+                                        <img src={img} className="w-full h-full object-cover" />
                                     </button>
                                 ))}
                             </div>
                         )}
                     </div>
 
-                    {/* Product Info */}
-                    <div className="space-y-6">
+                    {/* Info */}
+                    <div className="space-y-8">
                         <div>
                             {product.is_featured && (
-                                <Badge className="mb-3 bg-amber-500/10 text-amber-500 border-amber-500/20">
-                                    <Star className="w-3 h-3 mr-1 fill-current" />
-                                    Featured Product
-                                </Badge>
+                                <Badge className="mb-4 bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200 gap-1"><Star className="w-3 h-3 fill-current" /> Featured</Badge>
                             )}
-                            <h1 className="text-3xl md:text-5xl font-black mb-2 text-slate-900 dark:text-white leading-tight">
-                                {product.name}
-                            </h1>
+                            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 dark:text-white mb-4 leading-tight">{product.name}</h1>
 
-                            {/* Social Proof */}
-                            <div className="flex flex-wrap items-center gap-4 mb-6">
-                                <div className="flex items-center gap-1">
-                                    {[1, 2, 3, 4].map(i => <Star key={i} className="w-4 h-4 text-amber-500 fill-current" />)}
-                                    <Star className="w-4 h-4 text-amber-500/50 fill-current" />
-                                    <span className="text-sm font-semibold ml-2 text-slate-900 dark:text-white">4.8</span>
-                                    <span className="text-sm text-slate-500 underline decoration-slate-300 ml-1 cursor-pointer hover:text-blue-600">(128 reviews)</span>
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="flex text-amber-500">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star key={i} className={cn("w-5 h-5", i < (product.average_rating || 5) ? "fill-current" : "text-slate-200")} />
+                                    ))}
                                 </div>
-                                <div className="h-4 w-px bg-slate-200" />
-                                <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200 border-none px-3 py-1 animate-pulse">
-                                    <span className="mr-1">🔥</span> 500+ bought in past month
-                                </Badge>
+                                <span className="text-slate-500 font-medium">{reviews.length} reviews</span>
+                                {product.stock_quantity < 10 && (
+                                    <span className="text-rose-500 font-bold text-sm animate-pulse">Only {product.stock_quantity} Left!</span>
+                                )}
                             </div>
 
                             <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">{product.short_description}</p>
                         </div>
 
-                        {/* Price Section */}
-                        <div className="glass-card p-6 rounded-2xl space-y-4">
+                        <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 shadow-sm space-y-6">
                             <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-black text-primary">
-                                    ₹{product.price.toLocaleString()}
-                                </span>
-                                {product.mrp > product.price && (
-                                    <>
-                                        <span className="text-xl text-muted-foreground line-through">
-                                            ₹{product.mrp.toLocaleString()}
-                                        </span>
-                                        <Badge className="bg-destructive/10 text-destructive border-destructive/20">
-                                            {discount}% OFF
-                                        </Badge>
-                                    </>
-                                )}
+                                <span className="text-4xl font-black text-slate-900 dark:text-white">₹{product.price.toLocaleString()}</span>
+                                <span className="text-lg text-slate-400 line-through">₹{product.mrp.toLocaleString()}</span>
+                                <Badge variant="destructive">{discount}% OFF</Badge>
                             </div>
 
-                            {product.cashback_amount > 0 && (
-                                <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                                    <Tag className="w-5 h-5 text-emerald-500" />
+                            {(product.affiliate_commission_amount > 0 || product.affiliate_commission_percentage > 0) && (
+                                <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl">
+                                    <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                                        <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                    </div>
                                     <div>
-                                        <p className="font-semibold text-emerald-500">
-                                            Instant Cashback: ₹{product.cashback_amount}
+                                        <p className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                                            {isAffiliate ? "Your Earnings:" : "Share & Earn:"} ₹{product.affiliate_commission_amount || (product.price * (product.affiliate_commission_percentage || 0)) / 100}
                                         </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            Credited to your wallet on delivery
-                                        </p>
+                                        <p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-medium uppercase tracking-wider">Per Successful Referral</p>
+                                    </div>
+                                    {!isAffiliate && (
+                                        <Link to="/affiliate/apply" className="ml-auto text-xs font-bold text-blue-600 underline">Apply</Link>
+                                    )}
+                                </div>
+                            )}
+
+                            {product.cashback_amount > 0 && (
+                                <div className="flex gap-3 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                                    <div className="p-2 bg-emerald-100 rounded-lg h-fit"><Tag className="w-4 h-4 text-emerald-600" /></div>
+                                    <div>
+                                        <p className="font-bold text-emerald-700">Earn ₹{product.cashback_amount} Cashback</p>
+                                        <p className="text-xs text-emerald-600"> credited to your wallet upon delivery.</p>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Stock Status */}
-                            <div className="flex items-center gap-2">
-                                {product.stock_quantity > 0 ? (
-                                    <>
-                                        <Check className="w-5 h-5 text-emerald-500" />
-                                        <span className="text-emerald-500 font-semibold">In Stock</span>
-                                        {product.stock_quantity < 10 && (
-                                            <span className="text-amber-500 text-sm">
-                                                (Only {product.stock_quantity} left)
-                                            </span>
-                                        )}
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="text-destructive font-semibold">Out of Stock</span>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Quantity & Actions */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <label className="font-semibold">Quantity:</label>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        disabled={quantity <= 1}
-                                    >
-                                        -
-                                    </Button>
+                            <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
+                                <div className="flex items-center border border-slate-200 rounded-xl h-12">
+                                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-4 hover:bg-slate-50 h-full rounded-l-xl">-</button>
                                     <span className="w-12 text-center font-bold">{quantity}</span>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
-                                        disabled={quantity >= product.stock_quantity}
-                                    >
-                                        +
-                                    </Button>
+                                    <button onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))} className="px-4 hover:bg-slate-50 h-full rounded-r-xl">+</button>
                                 </div>
-                            </div>
-
-                            <div className="flex gap-3">
-                                <Button
-                                    className="flex-1 h-14 text-lg rounded-xl"
-                                    onClick={() => handleAddToCart()}
-                                    disabled={product.stock_quantity === 0}
-                                >
-                                    <ShoppingCart className="w-5 h-5 mr-2" />
-                                    Add to Cart
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-14 w-14"
-                                    onClick={() => handleAddToWishlist()}
-                                >
-                                    <Heart className="w-5 h-5" />
+                                <Button onClick={handleAddToCart} disabled={product.stock_quantity === 0} className="flex-1 h-12 rounded-xl font-bold text-base shadow-lg shadow-primary/20">
+                                    {product.stock_quantity > 0 ? "Add to Cart" : "Out of Stock"}
                                 </Button>
                                 {isAffiliate && (
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-14 w-14"
-                                        onClick={generateAffiliateLink}
-                                    >
+                                    <Button variant="outline" size="icon" onClick={generateAffiliateLink} className="h-12 w-12 rounded-xl border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-600">
                                         <Share2 className="w-5 h-5" />
                                     </Button>
                                 )}
+                                <Button variant="outline" size="icon" onClick={addToWishlist} className="h-12 w-12 rounded-xl border-slate-200">
+                                    <Heart className="w-5 h-5" />
+                                </Button>
                             </div>
                         </div>
 
-                        {/* Features */}
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="text-center p-4 glass-card rounded-xl">
-                                <Truck className="w-6 h-6 mx-auto mb-2 text-primary" />
-                                <p className="text-xs font-semibold">Free Delivery</p>
-                            </div>
-                            <div className="text-center p-4 glass-card rounded-xl">
-                                <ShieldCheck className="w-6 h-6 mx-auto mb-2 text-primary" />
-                                <p className="text-xs font-semibold">Secure Payment</p>
-                            </div>
-                            <div className="text-center p-4 glass-card rounded-xl">
-                                <RotateCcw className="w-6 h-6 mx-auto mb-2 text-primary" />
-                                <p className="text-xs font-semibold">Easy Returns</p>
-                            </div>
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                            {[
+                                { icon: Truck, label: "Fast Delivery", sub: "2-4 Days" },
+                                { icon: ShieldCheck, label: "Secure Pay", sub: "Encrypted" },
+                                { icon: RotateCcw, label: "Easy Return", sub: "7 Days" }
+                            ].map((item, i) => (
+                                <div key={i} className="p-4 rounded-2xl bg-white border border-slate-100">
+                                    <item.icon className="w-6 h-6 mx-auto mb-2 text-primary" />
+                                    <p className="font-bold text-xs text-slate-900">{item.label}</p>
+                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">{item.sub}</p>
+                                </div>
+                            ))}
                         </div>
-
-                        {/* Tags */}
-                        {product.tags && product.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {product.tags.map(tag => (
-                                    <Badge key={tag} variant="outline">
-                                        {tag}
-                                    </Badge>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </div>
 
-                {/* Description & Specifications Tabs */}
-                <div className="mt-16">
-                    <Tabs defaultValue="description" className="w-full">
-                        <TabsList className="w-full justify-start border-b border-slate-200 dark:border-slate-800 bg-transparent rounded-none h-auto p-0 space-x-8">
-                            <TabsTrigger
-                                value="description"
-                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-slate-500 px-0 py-4 text-lg"
-                            >
-                                Description
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="specifications"
-                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-slate-500 px-0 py-4 text-lg"
-                            >
-                                Specifications
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="reviews"
-                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-slate-500 px-0 py-4 text-lg"
-                            >
-                                Reviews (128)
-                            </TabsTrigger>
+                <div className="mt-20">
+                    <Tabs defaultValue="desc" className="w-full">
+                        <TabsList className="w-full justify-start border-b border-slate-200 bg-transparent p-0 mb-8 overflow-x-auto">
+                            <TabsTrigger value="desc" className="px-8 py-4 text-base font-bold bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary rounded-none">Description</TabsTrigger>
+                            <TabsTrigger value="specs" className="px-8 py-4 text-base font-bold bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary rounded-none">Specifications</TabsTrigger>
+                            <TabsTrigger value="reviews" className="px-8 py-4 text-base font-bold bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary rounded-none">Reviews ({reviews.length})</TabsTrigger>
                         </TabsList>
 
-                        <TabsContent value="description" className="pt-8 animate-in fade-in-50">
-                            <div className="prose prose-slate dark:prose-invert max-w-none">
-                                <div className="glass-card p-8 rounded-3xl bg-white/50 dark:bg-slate-900/50">
-                                    <p className="whitespace-pre-line text-lg leading-loose text-slate-600 dark:text-slate-300">
-                                        {product.description}
-                                    </p>
-                                </div>
+                        <TabsContent value="desc" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="prose prose-lg max-w-none text-slate-600 dark:text-slate-300">
+                                <p className="whitespace-pre-line">{product.description}</p>
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="specifications" className="pt-8 animate-in fade-in-50">
-                            <div className="glass-card p-8 rounded-3xl bg-white/50 dark:bg-slate-900/50">
-                                <h3 className="text-xl font-bold mb-6">Technical Specifications</h3>
-                                <div className="grid md:grid-cols-2 gap-y-4 gap-x-12">
-                                    {product.specifications ? Object.entries(product.specifications).map(([key, value]) => (
-                                        <div key={key} className="flex justify-between py-3 border-b border-slate-100 dark:border-slate-800">
-                                            <span className="font-medium text-slate-500 capitalize">{key.replace(/_/g, ' ')}</span>
-                                            <span className="font-semibold text-slate-900 dark:text-white">{value as string}</span>
-                                        </div>
-                                    )) : (
-                                        <p className="text-muted-foreground">No specifications available.</p>
-                                    )}
-                                </div>
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="reviews" className="pt-8 animate-in fade-in-50">
-                            <div className="grid gap-6">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="glass-card p-6 rounded-2xl bg-white/50 dark:bg-slate-900/50">
-                                        <div className="flex items-center gap-4 mb-4">
-                                            <Avatar>
-                                                <AvatarImage src={`https://i.pravatar.cc/150?u=${i}`} />
-                                                <AvatarFallback>U</AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="font-bold text-slate-900 dark:text-white">Alex Johnson {i}</p>
-                                                <div className="flex text-amber-500">
-                                                    <Star className="w-4 h-4 fill-current" />
-                                                    <Star className="w-4 h-4 fill-current" />
-                                                    <Star className="w-4 h-4 fill-current" />
-                                                    <Star className="w-4 h-4 fill-current" />
-                                                    <Star className="w-4 h-4 fill-current" />
-                                                </div>
-                                            </div>
-                                            <span className="ml-auto text-sm text-slate-400">2 days ago</span>
-                                        </div>
-                                        <p className="text-slate-600 dark:text-slate-300">
-                                            "Absolutely amazing product! It exceeded my expectations. The quality is top-notch and delivery was super fast. Highly recommended!"
-                                        </p>
+                        <TabsContent value="specs">
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {product.specifications ? Object.entries(product.specifications).map(([k, v]: any) => (
+                                    <div key={k} className="flex justify-between p-4 bg-white border border-slate-100 rounded-xl">
+                                        <span className="font-semibold text-slate-500 capitalize">{k.replace(/_/g, " ")}</span>
+                                        <span className="font-bold text-slate-900">{v}</span>
                                     </div>
-                                ))}
-                                <Button variant="outline" className="w-full">Load More Reviews</Button>
+                                )) : <p>No specifications available.</p>}
                             </div>
+                        </TabsContent>
+
+                        <TabsContent value="reviews">
+                            <div className="flex justify-between items-center mb-8">
+                                <h3 className="text-2xl font-bold">Customer Reviews</h3>
+                                <Button onClick={() => setShowReviewDialog(true)} className="gap-2 rounded-xl">
+                                    <PenLine className="w-4 h-4" /> Write Review
+                                </Button>
+                            </div>
+
+                            {reviews.length > 0 ? (
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    {reviews.map(review => (
+                                        <div key={review.id} className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar>
+                                                        <AvatarImage src={review.profiles?.avatar_url} />
+                                                        <AvatarFallback>U</AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <p className="font-bold text-sm text-slate-900">{review.profiles?.full_name || 'Anonymous'}</p>
+                                                        <div className="flex text-amber-500 text-xs">
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <Star key={i} className={cn("w-3 h-3", i < review.rating ? "fill-current" : "text-slate-200")} />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <span className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</span>
+                                            </div>
+                                            <p className="text-slate-600 text-sm leading-relaxed">{review.comment}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                                    <Star className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                                    <p>No reviews yet. Be the first to review!</p>
+                                </div>
+                            )}
                         </TabsContent>
                     </Tabs>
                 </div>
 
-                {/* Related Products */}
-                <div className="mt-16">
+                <div className="mt-24">
                     <ProductSection
-                        title="You Might Also Like"
+                        title="Related Products"
                         type="scroll"
-                        limit={8}
+                        limit={4}
                         categoryId={product.category_id}
                         excludeProductId={product.id}
-                        onAddToCart={handleAddToCart}
-                        onAddToWishlist={handleAddToWishlist}
+                        onAddToCart={() => { }}
+                        onAddToWishlist={() => { }}
                     />
                 </div>
             </div>
 
-            {/* Affiliate Link Dialog */}
+            {/* Review Dialog */}
+            <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Write a Review</DialogTitle>
+                        <DialogDescription>Share your experience with this product.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold">Rating</label>
+                            <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button key={star} onClick={() => setNewRating(star)} className="focus:outline-none transition-transform hover:scale-110">
+                                        <Star className={cn("w-8 h-8", star <= newRating ? "fill-amber-500 text-amber-500" : "text-slate-200")} />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold">Comment</label>
+                            <Textarea
+                                placeholder="What did you like or dislike?"
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                className="h-32 resize-none"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowReviewDialog(false)}>Cancel</Button>
+                        <Button onClick={handleSubmitReview} disabled={submittingReview || !newComment}>
+                            {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit Review"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Share Dialog */}
             <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Your Affiliate Link</DialogTitle>
-                        <DialogDescription>
-                            Share this link to earn 10% commission on every sale!
-                        </DialogDescription>
+                        <DialogTitle>Affiliate Link Generated</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="p-4 bg-muted rounded-lg break-all text-sm font-mono">
-                            {affiliateLink}
-                        </div>
-                        <Button
-                            className="w-full"
-                            onClick={copyAffiliateLink}
-                        >
-                            {copied ? (
-                                <>
-                                    <Check className="w-4 h-4 mr-2" />
-                                    Copied!
-                                </>
-                            ) : (
-                                <>
-                                    <Copy className="w-4 h-4 mr-2" />
-                                    Copy Link
-                                </>
-                            )}
+                    <div className="flex items-center gap-2 p-3 bg-slate-100 rounded-lg">
+                        <code className="text-xs flex-1 break-all">{affiliateLink}</code>
+                        <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(affiliateLink); setCopied(true); }}>
+                            {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                         </Button>
                     </div>
                 </DialogContent>

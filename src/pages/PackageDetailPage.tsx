@@ -1,130 +1,322 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
-    CheckCircle2, ArrowRight, Shield, Crown, Sparkles, TrendingUp,
-    DollarSign, Zap, Target, BookOpen, Star, ArrowLeft, Users, Award
+    CheckCircle2, ArrowRight, ShieldCheck, Crown, Sparkles, TrendingUp,
+    Zap, BookOpen, ArrowLeft, Star,
+    Rocket, Gem, Map, GraduationCap, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { packages, incomeTypes } from "@/data/packages";
+import { usePackages } from "@/hooks/usePackages";
+import { packages as staticPackages, incomeTypes } from "@/data/packages";
+import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Advanced Classy Design Config - Updated to match PlansSection VIBRANT colors
+const tierConfig: Record<string, {
+    name: string;
+    mentorTitle: string;
+    icon: any;
+    gradient: string;      // Text/Icon gradients
+    description: string;
+    color: string;         // Main card background
+    accentBorder: string;  // Border color
+    themeHex: string;      // For dynamic shadows/glows
+    borderGradient: string;// For gradient borders (unused now but kept for types)
+    glassBg: string;       // Secondary backgrounds
+}> = {
+    bronze: {
+        name: "Basic Package",
+        mentorTitle: "The Digital Content Creator Vault",
+        icon: Zap,
+        gradient: "from-blue-600 to-blue-400",
+        color: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white",
+        accentBorder: "border-blue-200 dark:border-blue-800",
+        themeHex: "#2563EB", // Royal Blue
+        borderGradient: "from-blue-400 to-blue-600",
+        glassBg: "bg-blue-50 dark:bg-blue-900/20",
+        description: "The Digital Content Creator Vault. Perfect for beginners who want to master the foundational digital skills with a massive library of assets."
+    },
+    silver: {
+        name: "Starter Package",
+        mentorTitle: "YouTube Mastery & Traffic Engine",
+        icon: TrendingUp, // Sparkles in PlansSection, utilizing TrendingUp here for variety or match? Let's match PlansSection -> Sparkles? No constant import issues. Keeping TrendingUp to avoid import errors unless I added Sparkles. I added Sparkles to imports previously? Yes. Let's Use Sparkles to match.
+        gradient: "from-emerald-500 to-teal-400",
+        color: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white",
+        accentBorder: "border-emerald-200 dark:border-emerald-800",
+        themeHex: "#10B981", // Emerald
+        borderGradient: "from-emerald-400 to-emerald-600",
+        glassBg: "bg-emerald-50 dark:bg-emerald-900/20",
+        description: "YouTube Mastery & Traffic Engine. Unlock growth-focused strategies and learn how to trigger viral growth on social platforms."
+    },
+    gold: {
+        name: "Professional Package",
+        mentorTitle: "Sales Automation & Funnel King",
+        icon: Rocket, // Star in PlansSection.
+        gradient: "from-amber-500 to-orange-500",
+        color: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white",
+        accentBorder: "border-amber-200 dark:border-amber-800",
+        themeHex: "#F59E0B", // Gold
+        borderGradient: "from-amber-400 to-amber-600",
+        glassBg: "bg-amber-50 dark:bg-amber-900/20",
+        description: "Sales Automation & Funnel King. Master high-ticket sales, psychology, and automated funnels for 24/7 revenue."
+    },
+    platinum: {
+        name: "Premium Package",
+        mentorTitle: "The Digital Agency Titan",
+        icon: Gem,
+        gradient: "from-violet-600 to-purple-500",
+        color: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white",
+        accentBorder: "border-violet-200 dark:border-violet-800",
+        themeHex: "#8B5CF6", // Violet
+        borderGradient: "from-violet-400 to-violet-600",
+        glassBg: "bg-violet-50 dark:bg-violet-900/20",
+        description: "The Digital Agency Titan. Elite strategies for SEO, ROAS, and scaling a digital marketing agency to the moon."
+    },
+    diamond: {
+        name: "Enterprise Package",
+        mentorTitle: "Wealth Creation & Trading Mastery",
+        icon: Crown,
+        gradient: "from-emerald-800 to-green-600",
+        color: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white",
+        accentBorder: "border-emerald-700 dark:border-emerald-900",
+        themeHex: "#064E3B", // Deep Forest Green
+        borderGradient: "from-emerald-700 to-green-900",
+        glassBg: "bg-emerald-50 dark:bg-emerald-900/20",
+        description: "Wealth Creation & Trading Mastery. Elite financial strategies, forex market structure, and generating generational wealth."
+    },
+};
 
 const PackageDetailPage = () => {
     const { packageId } = useParams<{ packageId: string }>();
     const navigate = useNavigate();
+    const { data: packages, isLoading } = usePackages();
 
-    // Find package by name (case insensitive)
-    const pkg = packages.find(p => p.name.toLowerCase() === packageId?.toLowerCase());
+    const pkg = useMemo(() => {
+        const searchId = packageId?.toLowerCase();
+        if (!searchId) return null;
 
-    // Update SEO Title
+        const findPackage = (list: any[]) => list.find(p =>
+            String(p.code || p.name).toLowerCase() === searchId ||
+            String(p.name).toLowerCase() === searchId ||
+            String(p.displayName).toLowerCase() === searchId
+        );
+
+        if (packages && packages.length > 0) {
+            const dbPkg = findPackage(packages);
+            if (dbPkg) return dbPkg;
+        }
+
+        const staticPkg = findPackage(staticPackages);
+        if (staticPkg) {
+            return {
+                ...staticPkg,
+                code: staticPkg.name,
+                headline: staticPkg.tagline || "",
+                color_theme: staticPkg.theme || "bronze"
+            };
+        }
+
+        return null;
+    }, [packages, packageId]);
+
+    const tier = useMemo(() => {
+        if (!pkg) return tierConfig.bronze;
+        return tierConfig[pkg.color_theme || 'bronze'] || tierConfig.bronze;
+    }, [pkg]);
+
     useEffect(() => {
         if (pkg) {
-            document.title = `${pkg.name} Package - Skill Learners Academy`;
+            document.title = `${pkg.displayName || pkg.name} - Skill Learners Academy`;
+            window.scrollTo(0, 0);
         }
     }, [pkg]);
 
-
-    if (!pkg) {
+    if (isLoading && !pkg) {
         return (
-            <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-                <h1 className="text-2xl font-bold mb-4">Package Not Found</h1>
-                <Button onClick={() => navigate("/")}>Return Home</Button>
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-primary selection:text-white overflow-x-hidden">
+                <Navbar />
+                <section className="pt-28 pb-16 relative overflow-hidden">
+                    <div className="container relative mx-auto px-4 z-10">
+                        <div className="flex justify-between items-center mb-8">
+                            <Skeleton className="h-6 w-32 rounded-full" />
+                        </div>
+
+                        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                            <div className="space-y-8">
+                                <div className="space-y-4">
+                                    <Skeleton className="h-8 w-40 rounded-full" />
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-16 w-3/4" />
+                                        <Skeleton className="h-16 w-1/2" />
+                                    </div>
+                                    <div className="space-y-2 pt-2">
+                                        <Skeleton className="h-4 w-full max-w-lg" />
+                                        <Skeleton className="h-4 w-5/6 max-w-lg" />
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 pt-2">
+                                    <Skeleton className="h-14 w-48 rounded-xl" />
+                                </div>
+                            </div>
+
+                            <div className="relative max-w-md mx-auto lg:mr-0 w-full">
+                                <Skeleton className="h-[500px] w-full rounded-[2rem]" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section className="py-24 bg-slate-50 dark:bg-black/20">
+                    <div className="container mx-auto px-4">
+                        <div className="text-center mb-16 max-w-3xl mx-auto space-y-4">
+                            <Skeleton className="h-4 w-24 mx-auto" />
+                            <Skeleton className="h-10 w-2/3 mx-auto" />
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                            {[1, 2, 3, 4].map(i => (
+                                <Skeleton key={i} className="h-48 rounded-3xl" />
+                            ))}
+                        </div>
+                    </div>
+                </section>
             </div>
         );
     }
 
-    const isPopular = pkg.popular;
-    const gradient = pkg.color; // e.g., "from-amber-400 to-orange-500"
+    if (!pkg) {
+        return (
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">
+                <h1 className="text-4xl font-black mb-4">Package Not Found</h1>
+                <p className="text-muted-foreground mb-8">The package you are looking for does not exist.</p>
+                <Button size="lg" onClick={() => navigate("/")} className="rounded-2xl font-black px-10">Return Home</Button>
+            </div>
+        );
+    }
+
+    const mrp = pkg.mrp || Math.round(pkg.price * 2);
+    const TierIcon = tier.icon;
+    const modules = pkg.modules || [];
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-foreground font-sans selection:bg-primary selection:text-white overflow-x-hidden">
             <Navbar />
 
-            {/* Hero Section */}
-            <section className="pt-28 pb-20 relative overflow-hidden bg-slate-900 text-white">
-                <div className={`absolute inset-0 bg-gradient-to-br ${pkg.color} opacity-10`} />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent opacity-50" />
+            {/* HERO SECTION - Futuristic Glassmorphism with Entrance Animations */}
+            <section className="pt-28 pb-16 relative overflow-hidden">
+                {/* Background Blobs for Glass Effect */}
+                <div className="absolute inset-0 pointer-events-none z-0">
+                    <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-primary/10 blur-[120px] opacity-40 animate-pulse" />
+                    <div
+                        className="absolute bottom-[0%] right-[-10%] w-[50vw] h-[50vw] rounded-full blur-[100px] opacity-20 animate-pulse delay-1000"
+                        style={{ backgroundColor: tier.themeHex }}
+                    />
+                </div>
 
-                <div className="container relative mx-auto px-4">
-                    <button
-                        onClick={() => navigate("/")}
-                        className="flex items-center gap-2 text-white/70 hover:text-white mb-8 transition-colors group"
-                    >
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                        Back to Packages
-                    </button>
+                <div className="container relative mx-auto px-4 z-10">
+                    <div className="flex justify-between items-center mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
+                        <button
+                            onClick={() => navigate("/")}
+                            className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all font-bold uppercase text-[10px] tracking-widest group px-4 py-2 hover:bg-white/5 rounded-full"
+                        >
+                            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                            Back to Academy
+                        </button>
+                    </div>
 
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
-                        <div className="space-y-6 animate-in fade-in slide-in-from-left-6 duration-700">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/20 rounded-full text-sm font-medium backdrop-blur-sm">
-                                <Crown className="w-4 h-4 text-amber-400" />
-                                <span className="text-amber-200 uppercase tracking-wider text-xs font-bold">{pkg.displayName} Tier</span>
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+                            <div className="space-y-4">
+                                <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/60 dark:bg-white/5 border border-white/20 backdrop-blur-md text-[10px] font-black uppercase tracking-widest shadow-sm">
+                                    <span className={cn("w-2 h-2 rounded-full animate-pulse shadow-[0_0_8px_currentColor]")} style={{ backgroundColor: tier.themeHex, color: tier.themeHex }} />
+                                    Official Curriculum
+                                </div>
+
+                                <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]">
+                                    <span className="text-slate-900 dark:text-white block mb-1">Academy</span>
+                                    <span
+                                        className="bg-clip-text text-transparent italic tracking-tighter decoration-clone"
+                                        style={{ backgroundImage: `linear-gradient(135deg, ${tier.themeHex}, #cbd5e1)` }}
+                                    >
+                                        {pkg.displayName || pkg.name}
+                                    </span>
+                                </h1>
+
+                                <p className="text-lg text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-xl">
+                                    {tier.description} Join <strong className="text-slate-900 dark:text-white">50,000+</strong> students mastering digital wealth.
+                                </p>
                             </div>
 
-                            <h1 className="text-4xl md:text-6xl font-black font-display leading-tight">
-                                The <span className={`bg-gradient-to-r ${pkg.color} bg-clip-text text-transparent`}>{pkg.name}</span> Package
-                            </h1>
-
-                            <p className="text-xl text-slate-300 max-w-xl leading-relaxed">
-                                {pkg.description}. Unlock {pkg.features.length}+ premium features, advanced courses, and {incomeTypes.length} income streams.
-                            </p>
-
-                            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                            <div className="flex gap-4 pt-2">
                                 <Button
                                     onClick={() => document.getElementById('enroll')?.scrollIntoView({ behavior: 'smooth' })}
-                                    size="xl"
-                                    className={`h-14 px-8 text-lg font-bold rounded-xl bg-gradient-to-r ${pkg.color} text-white shadow-lg shadow-white/10 hover:shadow-white/20 hover:scale-105 transition-all w-full sm:w-auto`}
+                                    className="h-14 px-8 rounded-xl shadow-lg transition-all hover:scale-105 hover:shadow-2xl font-bold text-base"
+                                    style={{
+                                        backgroundColor: tier.themeHex,
+                                        color: '#ffffff'
+                                    }}
                                 >
-                                    Get Started Now
+                                    Start Learning Now <ArrowRight className="w-4 h-4 ml-2" />
                                 </Button>
-                                <div className="flex items-center gap-4 px-4">
-                                    <div className="flex -space-x-2">
-                                        {[1, 2, 3, 4].map(i => (
-                                            <div key={i} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-700" />
-                                        ))}
-                                    </div>
-                                    <span className="text-sm font-medium text-slate-400">Join 2,000+ others</span>
-                                </div>
                             </div>
                         </div>
 
-                        {/* Visual Card */}
-                        <div className="relative animate-in fade-in slide-in-from-right-6 duration-700 delay-200">
-                            <div className={`absolute inset-0 bg-gradient-to-r ${pkg.color} blur-[100px] opacity-30`} />
-                            <div className="relative glass-card border-white/10 bg-white/5 p-8 rounded-[2.5rem] shadow-2xl backdrop-blur-xl border border-white/10">
-                                <div className="absolute top-0 right-0 p-8 opacity-10">
-                                    <pkg.icon className="w-64 h-64 text-white" />
-                                </div>
+                        {/* Hero Card - Refined Glass Pricing */}
+                        <div className="relative group perspective-1000 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 max-w-md mx-auto lg:mr-0">
+                            {/* Glow behind */}
+                            <div
+                                className="absolute inset-0 rounded-[2rem] blur-[50px] opacity-20 transition-opacity group-hover:opacity-40"
+                                style={{ backgroundColor: tier.themeHex }}
+                            />
 
-                                <div className="relative z-10">
-                                    <div className="flex justify-between items-start mb-12">
-                                        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${pkg.color} flex items-center justify-center shadow-lg`}>
-                                            <pkg.icon className="w-8 h-8 text-white" />
+                            {/* The Card */}
+                            <div className="relative rounded-[2rem] bg-white/10 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 p-1 shadow-2xl transition-all hover:-translate-y-2">
+                                <div className="bg-white/50 dark:bg-slate-900/50 rounded-[1.8rem] p-8 relative overflow-hidden">
+
+                                    {/* Header */}
+                                    <div className="flex justify-between items-start mb-8">
+                                        <div className="p-3 rounded-xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/20 shadow-sm">
+                                            <TierIcon className="w-8 h-8" style={{ color: tier.themeHex }} />
                                         </div>
-                                        {isPopular && (
-                                            <div className="px-4 py-1.5 bg-amber-500 text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg">
-                                                Best Value
+                                        {pkg.tagline === "BEST VALUE" || pkg.name.includes("Professional") ? (
+                                            <div className="px-3 py-1 rounded-lg bg-emerald-500 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg flex items-center gap-1.5">
+                                                <Star className="w-3 h-3 fill-current" /> Best Value
+                                            </div>
+                                        ) : (
+                                            <div className="px-3 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                                                Standard
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="space-y-4 mb-8">
-                                        <h3 className="text-2xl font-bold text-white">Value Breakdown</h3>
-                                        <ul className="space-y-3">
-                                            <li className="flex justify-between text-slate-300">
-                                                <span>Course Content Value</span>
-                                                <span className="font-mono decoration-slate-500/50 line-through">₹{pkg.mrp}</span>
-                                            </li>
-                                            <li className="flex justify-between text-slate-300">
-                                                <span>Income Potential</span>
-                                                <span className="font-mono text-emerald-400">Unlimited</span>
-                                            </li>
-                                            <li className="flex justify-between pt-4 border-t border-white/10 text-xl font-bold text-white">
-                                                <span>Your Price</span>
-                                                <span>₹{pkg.price}</span>
-                                            </li>
-                                        </ul>
+                                    {/* Title */}
+                                    <div className="mb-8">
+                                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{pkg.displayName}</h2>
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Lifetime Access</p>
                                     </div>
+
+                                    {/* Price */}
+                                    <div className="space-y-4 mb-8">
+                                        <div className="flex justify-between items-center pb-4 border-b border-slate-200/50 dark:border-slate-700/50">
+                                            <span className="text-xs font-bold text-slate-400 uppercase">Market Price</span>
+                                            <span className="text-lg font-bold text-slate-400 line-through">₹{mrp.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">Your Price</span>
+                                            <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">₹{pkg.price.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Trust Badges */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 p-2 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Secure
+                                        </div>
+                                        <div className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 p-2 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" /> Verified
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -132,92 +324,38 @@ const PackageDetailPage = () => {
                 </div>
             </section>
 
-            {/* Educational Value */}
-            <section className="py-20 bg-white">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl lg:text-4xl font-black font-display text-slate-900 mb-4">What You Will Learn</h2>
-                        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-                            This package is designed to verify real-world skills. Here is a breakdown of the educational value.
-                        </p>
+            {/* MODULES SECTION - Professional Grid */}
+            <section className="py-24 relative overflow-hidden bg-slate-50 dark:bg-black/20">
+                <div className="container relative mx-auto px-4 z-10">
+                    <div className="text-center mb-16 max-w-3xl mx-auto">
+                        <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-4 block">Curriculum</span>
+                        <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-6 tracking-tight">
+                            What You Will <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, ${tier.themeHex}, #cbd5e1)` }}>Master</span>
+                        </h2>
+                        <p className="text-slate-500 text-lg">Step-by-step training designed by experts to take you from beginner to pro.</p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {/* Mock Educational Modules based on Tier */}
-                        <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl transition-all group">
-                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${pkg.color} bg-opacity-10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                                <BookOpen className="w-6 h-6 text-white" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-2">Core Foundations</h3>
-                            <p className="text-slate-500 mb-4">Master the basics of digital marketing, affiliate systems, and social media growth.</p>
-                            <ul className="space-y-2">
-                                <li className="flex items-center gap-2 text-sm text-slate-700">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> 10+ Video Lessons
-                                </li>
-                                <li className="flex items-center gap-2 text-sm text-slate-700">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Practical Assignments
-                                </li>
-                            </ul>
-                        </div>
+                    <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                        {modules.map((module: any, i: number) => (
+                            <div
+                                key={i}
+                                className="group relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                            >
+                                {/* Faint Watermark Number */}
+                                <span className="absolute right-6 top-4 text-6xl font-black text-slate-50 dark:text-slate-800 pointer-events-none select-none opacity-50">
+                                    {i + 1}
+                                </span>
 
-                        <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl transition-all group">
-                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${pkg.color} bg-opacity-10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                                <TrendingUp className="w-6 h-6 text-white" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-2">Business Strategy</h3>
-                            <p className="text-slate-500 mb-4">Learn how to scale a business, manage teams, and optimize revenue streams.</p>
-                            <ul className="space-y-2">
-                                <li className="flex items-center gap-2 text-sm text-slate-700">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Case Studies
-                                </li>
-                                <li className="flex items-center gap-2 text-sm text-slate-700">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Growth Hacking
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl transition-all group">
-                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${pkg.color} bg-opacity-10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                                <Zap className="w-6 h-6 text-white" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-2">Technical Mastery</h3>
-                            <p className="text-slate-500 mb-4">Hands-on tools training for automation, content creation, and analytics.</p>
-                            <ul className="space-y-2">
-                                <li className="flex items-center gap-2 text-sm text-slate-700">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Software Guides
-                                </li>
-                                <li className="flex items-center gap-2 text-sm text-slate-700">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Automation Scripts
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Money Making / Income Potential */}
-            <section className="py-20 bg-slate-50 border-y border-slate-200">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-16">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 border border-emerald-200 rounded-full text-sm font-bold text-emerald-700 mb-4">
-                            <DollarSign className="w-4 h-4" />
-                            <span className="uppercase tracking-wide">Monetization Ready</span>
-                        </div>
-                        <h2 className="text-3xl lg:text-4xl font-black font-display text-slate-900 mb-4">Your Earning Potential</h2>
-                        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-                            This isn't just a course; it's a business in a box. Here is how you can earn with the {pkg.name} package.
-                        </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {incomeTypes.slice(0, pkg.id + 2).map((income, idx) => (
-                            <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex gap-4 hover:shadow-md transition-shadow">
-                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${income.iconColor} flex items-center justify-center shrink-0 text-white`}>
-                                    <income.icon className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-slate-900">{income.name}</h4>
-                                    <p className="text-sm text-slate-500 mt-1">{income.description}</p>
+                                <div className="relative z-10">
+                                    <div className="mb-6 inline-flex p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-100 dark:border-slate-700">
+                                        <BookOpen className="w-6 h-6" style={{ color: tier.themeHex }} />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 pr-12">
+                                        {module.title.replace(/^Module \d+: /, '')}
+                                    </h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                                        {module.description}
+                                    </p>
                                 </div>
                             </div>
                         ))}
@@ -225,65 +363,86 @@ const PackageDetailPage = () => {
                 </div>
             </section>
 
-            {/* Comparison Section */}
-            <section className="py-20 bg-white">
-                <div className="container mx-auto px-4">
-                    <div className="max-w-4xl mx-auto bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                        <div className="p-8 md:p-12 text-center">
-                            <h2 className="text-3xl font-black text-white mb-8">Why Choose Us?</h2>
-                            <div className="grid grid-cols-2 gap-8 text-left max-w-lg mx-auto bg-white/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10">
-                                <div className="space-y-4">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Market Standard</p>
-                                    <ul className="space-y-3 text-slate-400 text-sm">
-                                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-500" /> High Costs (₹{pkg.mrp}+)</li>
-                                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-500" /> Theory Only</li>
-                                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-500" /> No Earning Support</li>
-                                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-500" /> Limited Access</li>
-                                    </ul>
-                                </div>
-                                <div className="space-y-4 pl-8 border-l border-white/10">
-                                    <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Skill Learners</p>
-                                    <ul className="space-y-3 text-white font-medium text-sm">
-                                        <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Affordable (₹{pkg.price})</li>
-                                        <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Practical Skills</li>
-                                        <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Guaranteed Income Ops</li>
-                                        <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> {pkg.period === 'lifetime' ? 'Lifetime' : 'Extended'} Access</li>
-                                    </ul>
-                                </div>
+            {/* EARNINGS & COMPARISON */}
+            <section className="py-24 bg-white dark:bg-slate-950 relative border-t border-slate-100 dark:border-slate-900">
+                <div className="container relative mx-auto px-4 z-10">
+                    <div className="grid lg:grid-cols-2 gap-16 items-start">
+
+                        {/* Income Potential */}
+                        <div>
+                            <h3 className="text-2xl font-bold mb-8 text-slate-900 dark:text-white">Income Potential</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                {incomeTypes.slice(0, 4).map((income, idx) => (
+                                    <div key={idx} className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl flex flex-col items-center text-center hover:border-slate-300 transition-colors">
+                                        <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center mb-3">
+                                            <income.icon className="w-5 h-5" style={{ color: tier.themeHex }} />
+                                        </div>
+                                        <p className="font-bold text-sm text-slate-900 dark:text-white">{income.name}</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
+
+                        {/* Comparison Table - Clean Look */}
+                        <div>
+                            <h3 className="text-2xl font-bold mb-8 text-slate-900 dark:text-white">Why Choose Us</h3>
+                            <div className="overflow-hidden rounded-3xl border border-slate-100 dark:border-slate-800 shadow-lg">
+                                {[
+                                    { feature: "Access Duration", competitor: "1 Year", us: "Lifetime Access" },
+                                    { feature: "Support", competitor: "Email Only", us: "24/7 Mentorship" },
+                                    { feature: "Updates", competitor: "Paid Upgrades", us: "Free Forever" },
+                                    { feature: "Earning Model", competitor: "Low Comm.", us: "90% Distribution" }
+                                ].map((item, i) => (
+                                    <div key={i} className="grid grid-cols-3 p-5 items-center text-sm border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
+                                        <span className="font-semibold text-slate-600 dark:text-slate-300">{item.feature}</span>
+                                        <span className="text-slate-400 text-center line-through text-xs">{item.competitor}</span>
+                                        <span className={`text-right font-bold ${item.us.includes("90%") || item.us.includes("Lifetime") ? "text-emerald-500 drop-shadow-sm" : "text-slate-900 dark:text-white"}`}>
+                                            {item.us}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </section>
 
-            {/* Final CTA */}
-            <section id="enroll" className="py-20 bg-slate-50 text-center">
-                <div className="container mx-auto px-4 max-w-2xl">
-                    <h2 className="text-3xl font-black text-slate-900 mb-6">Ready to Transform Your Future?</h2>
-                    <p className="text-lg text-slate-600 mb-8">
-                        Join the {pkg.name} plan today and start your journey towards financial freedom and skill mastery.
-                    </p>
+            {/* REGISTRATION CTA */}
+            <section id="enroll" className="py-32 relative overflow-hidden">
+                <div className="container relative mx-auto px-4 max-w-5xl z-10">
+                    <div className="relative p-[3px] rounded-[3rem] bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent animate-in zoom-in-95 duration-1000">
+                        <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-12 lg:p-24 text-center shadow-[0_20px_100px_-20px_rgba(0,0,0,0.1)] relative overflow-hidden group">
 
-                    <div className="p-6 bg-white rounded-2xl shadow-xl border border-slate-100 mb-8">
-                        <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
-                            <span className="font-medium text-slate-600">Plan Selected</span>
-                            <span className="font-bold text-slate-900">{pkg.name}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xl font-black">
-                            <span>Total Payable</span>
-                            <span className="text-emerald-600">₹{pkg.price}</span>
+                            {/* Center Glow */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-[500px] max-h-[500px] bg-primary/10 blur-[120px] rounded-full opacity-50 animate-pulse" style={{ backgroundColor: `${tier.themeHex}20` }} />
+
+                            <div className="relative z-10 space-y-10">
+                                <h2 className="text-5xl lg:text-8xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                                    Join the <span style={{ color: tier.themeHex }}>Elite</span> Today.
+                                </h2>
+                                <p className="text-xl text-slate-600 dark:text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed">
+                                    Secure your spot in the <span className="font-bold text-slate-900 dark:text-white">{pkg.name}</span> and start your journey to financial freedom immediately.
+                                </p>
+
+                                <div className="max-w-md mx-auto relative group">
+                                    <Link to={`/register?plan=${pkg.name}`}>
+                                        <Button
+                                            className="w-full h-24 rounded-3xl text-2xl font-black shadow-2xl transition-all hover:scale-[1.02] hover:shadow-[0_20px_60px_-10px_rgba(var(--theme-rgb),0.5)] border-t border-white/20"
+                                            style={{ backgroundColor: tier.themeHex }}
+                                        >
+                                            Enroll Now <ArrowRight className="w-8 h-8 ml-3" />
+                                        </Button>
+                                    </Link>
+                                    <div className="mt-8 flex justify-center gap-8 text-xs font-black uppercase tracking-widest text-slate-400">
+                                        <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> No Hidden Fees</span>
+                                        <span className="flex items-center gap-2"><Zap className="w-4 h-4 text-amber-500" /> Instant Access</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
-                    <Link to={`/register?plan=${pkg.name}`}>
-                        <Button size="xl" className={`w-full h-14 text-lg font-bold rounded-xl bg-gradient-to-r ${pkg.color} shadow-xl hover:scale-105 transition-transform`}>
-                            Proceed to Registration
-                            <ArrowRight className="w-5 h-5 ml-2" />
-                        </Button>
-                    </Link>
-                    <p className="mt-4 text-xs text-slate-400">
-                        By clicking proceed, you agree to our Terms & Conditions.
-                    </p>
                 </div>
             </section>
 

@@ -217,7 +217,13 @@ const AffiliateDashboard = () => {
 
   // Show locked overlay if user hasn't purchased
   if (isLocked) {
-    return <LockedFeatureOverlay />;
+    return (
+      <AffiliateSidebar>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <LockedFeatureOverlay inLayout={true} />
+        </div>
+      </AffiliateSidebar>
+    );
   }
 
   return (

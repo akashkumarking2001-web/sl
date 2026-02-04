@@ -9,6 +9,7 @@ import { countries, getStatesByCountry } from "@/data/countries";
 import logo from "@/assets/logo.png";
 import { supabase } from "@/integrations/supabase/client";
 
+import { packages as staticPackages } from "@/data/packages";
 import { usePackages } from "@/hooks/usePackages";
 
 // Helper map for UI elements that might not be in DB yet (icons/colors) - or map them from 'color_theme' from DB
@@ -32,17 +33,24 @@ const Register = () => {
   const selectedPlanCode = searchParams.get("plan");
   const selectedCourse = searchParams.get("course");
 
-  const selectedPkg = packages?.find(p => p.code === selectedPlanCode || p.name === selectedPlanCode);
+  // Helper to find package in a list
+  const findPackage = (list: any[]) => list?.find(p =>
+    p.code === selectedPlanCode || p.name === selectedPlanCode ||
+    (p.displayName && p.displayName === selectedPlanCode)
+  );
+
+  // Fallback Logic: Try DB -> Then Static
+  const selectedPkg = (packages && packages.length > 0) ? findPackage(packages) : findPackage(staticPackages);
 
   // Transform DB package to UI format if needed, or use directly
   const selectedPlan = selectedPkg ? {
     name: selectedPkg.name,
     displayName: selectedPkg.name, // or split
-    nickname: selectedPkg.code,
-    tagline: selectedPkg.headline || "",
+    nickname: selectedPkg.code || selectedPkg.name,
+    tagline: selectedPkg.headline || selectedPkg.tagline || "",
     benefits: selectedPkg.features || [],
-    icon: themeConfig[selectedPkg.color_theme || 'bronze'].icon,
-    color: themeConfig[selectedPkg.color_theme || 'bronze'].color,
+    icon: themeConfig[selectedPkg.color_theme || selectedPkg.theme || 'bronze']?.icon || Star,
+    color: themeConfig[selectedPkg.color_theme || selectedPkg.theme || 'bronze']?.color || "from-blue-500 to-blue-600",
     price: selectedPkg.price
   } : null;
 
@@ -84,7 +92,8 @@ const Register = () => {
     }
   }, [user, navigate]);
 
-  if (isPackagesLoading) {
+  // Only block if loading AND we haven't found a fallback yet
+  if (isPackagesLoading && !selectedPkg && selectedPlanCode) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin w-8 h-8 text-primary" /></div>;
   }
 
@@ -121,11 +130,13 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("SUBMIT TRIGGERED. FormData:", JSON.stringify(formData));
 
     // Validate with Zod
     const result = registerSchema.safeParse(formData);
 
     if (!result.success) {
+      console.log("VALIDATION FAILED:", JSON.stringify(result.error));
       const firstError = result.error.errors[0];
       toast({
         title: "Validation Error",
@@ -137,17 +148,32 @@ const Register = () => {
 
     // Existing checks preserved for UX redundancy or extra safety
     if (formData.password !== formData.confirmPassword) {
+      console.log("PASSWORD MISMATCH");
       toast({ title: "Password Mismatch", description: "Passwords do not match.", variant: "destructive" });
       return;
     }
 
+    console.log("VALIDATION PASSED. Calling signUp...");
     setIsLoading(true);
+
+    // 1. Generate Unique Academy ID (Before SignUp)
+    const userId = `SL${Math.floor(10000000 + Math.random() * 90000000)}`;
 
     const { error } = await signUp(formData.email, formData.password, {
       full_name: formData.name,
       phone: formData.phone,
       referred_by: formData.sponsorId || undefined,
-    });
+      // Metadata for Profile Creation Trigger
+      student_id: userId,
+      referral_code: userId, // ID acts as referral code
+      country: formData.country,
+      state: formData.state,
+      address: formData.address,
+      pincode: formData.pincode,
+      dob: formData.dob,
+    } as any);
+
+    console.log("signUp returned. Error:", error);
 
     if (error) {
       let errorMessage = error.message;
@@ -158,54 +184,60 @@ const Register = () => {
     }
 
     try {
-      // 1. Generate Token
+      // 2. Generate Verification Token
       const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
 
-      // 2. Store in DB
-      // Note: You need to create this table: create table email_verifications (email text, token text, expires_at timestamptz);
+      // 3. Store in DB
       await supabase.from("email_verifications").insert({
         email: formData.email,
         token: token,
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
       });
 
-      // 3. Trigger Email Function
+      // 4. Trigger Email Function with full credentials
       await supabase.functions.invoke("send-verification-email", {
-        body: { email: formData.email, token, name: formData.name }
+        body: {
+          email: formData.email,
+          token,
+          name: formData.name,
+          password: formData.password,
+          userId: userId
+        }
       });
+
+      // Update Storage
+      if (selectedPlanCode) sessionStorage.setItem("selectedPlan", selectedPlanCode);
+      if (selectedCourse) sessionStorage.setItem("selectedCourse", selectedCourse);
 
       toast({
-        title: "Registration Successful! 📧",
-        description: "Please check your email to verify your account."
+        title: "Account Provisioned Successful!",
+        description: "Welcome to the Academy. Please check your inbox for the verification link."
+      });
+
+      // Navigate with the generated userId
+      navigate("/registration-success", {
+        state: {
+          userData: {
+            id: userId,
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            sponsorId: formData.sponsorId,
+            country: formData.country,
+            state: formData.state,
+            address: formData.address,
+            pincode: formData.pincode,
+            dob: formData.dob,
+            plan: selectedPlanCode,
+            password: formData.password,
+          }
+        }
       });
 
     } catch (err) {
       console.error("Verification email failed", err);
-      // Don't block registration, just warn
-      toast({ title: "Warning", description: "Account created but email failed to send.", variant: "destructive" });
+      toast({ title: "Warning", description: "Account created but system was unable to dispatch your welcome pack.", variant: "destructive" });
     }
-
-    // ... existing storage logic ...
-    if (selectedPlanCode) sessionStorage.setItem("selectedPlan", selectedPlanCode);
-    if (selectedCourse) sessionStorage.setItem("selectedCourse", selectedCourse);
-
-    navigate("/registration-success", {
-      state: {
-        userData: {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          sponsorId: formData.sponsorId,
-          country: formData.country,
-          state: formData.state,
-          address: formData.address,
-          pincode: formData.pincode,
-          dob: formData.dob,
-          plan: selectedPlanCode,
-          password: formData.password,
-        }
-      }
-    });
   };
 
   const benefits = [

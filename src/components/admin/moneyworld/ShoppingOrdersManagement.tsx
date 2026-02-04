@@ -139,6 +139,7 @@ const ShoppingOrdersManagement = ({ onRefresh }: { onRefresh?: () => void }) => 
                         user_id: userId,
                         amount: cashback,
                         status: "credit",
+                        income_type: "cashback",
                         description: `Cashback: ${activeOrder.products?.name}`,
                         reference_id: orderId,
                         reference_type: "shopping_cashback"

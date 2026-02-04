@@ -179,6 +179,7 @@ const AdminSidebar = ({
         <div key={item.id} className="space-y-1">
           <button
             onClick={() => !collapsed && toggleSection(sectionId)}
+            data-testid={`nav-section-${sectionId}`}
             className={cn(
               "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
               isActive
@@ -212,6 +213,7 @@ const AdminSidebar = ({
       <button
         key={item.id}
         onClick={() => onTabChange(item.id)}
+        data-testid={`nav-item-${item.id}`}
         className={cn(
           "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
           activeTab === item.id

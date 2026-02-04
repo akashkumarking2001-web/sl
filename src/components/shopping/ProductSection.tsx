@@ -35,38 +35,61 @@ const ProductSection = ({
         fetchProducts();
     }, [sortBy, limit, categoryId, excludeProductId]);
 
-    const fetchProducts = async () => {
+    // Fallback constants to bypass potentially unstable supabase client instance
+    const SUPABASE_URL = "https://vwzqaloqlvlewvijiqeu.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3enFhbG9xbHZsZXd2aWppcWV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNjMwMjQsImV4cCI6MjA4NDkzOTAyNH0.oEuQrpidyXbKYdy3SpuMDTHZveqZNHaJHMY3TK3ir2E";
+
+    const fetchProducts = async (retryCount = 0) => {
         try {
-            let query = supabase
-                .from("products")
-                .select("*")
-                .eq("is_active", true)
-                .limit(limit);
+            // Native Fetch Construction
+            const url = new URL(`${SUPABASE_URL}/rest/v1/products`);
+            url.searchParams.append("select", "*");
+            url.searchParams.append("is_active", "eq.true");
+            url.searchParams.append("limit", limit.toString());
 
             if (categoryId) {
-                query = query.eq("category_id", categoryId);
+                url.searchParams.append("category_id", `eq.${categoryId}`);
             }
 
             if (excludeProductId) {
-                query = query.neq("id", excludeProductId);
+                url.searchParams.append("id", `neq.${excludeProductId}`);
             }
 
             // Apply sorting
-            if (sortBy === "newest") query = query.order("created_at", { ascending: false });
-            else if (sortBy === "price_low") query = query.order("price", { ascending: true });
-            else if (sortBy === "price_high") query = query.order("price", { ascending: false });
-            // "featured" usually relies on `is_featured` or just random/default. 
-            // If sortBy is "featured", we might prioritize is_featured=true
-            else if (sortBy === "featured") query = query.eq("is_featured", true).order("created_at", { ascending: false });
-            else if (sortBy === "discount") query = query.order("price", { ascending: true }); // Fallback to price low for today
+            if (sortBy === "newest") url.searchParams.append("order", "created_at.desc");
+            else if (sortBy === "price_low") url.searchParams.append("order", "price.asc");
+            else if (sortBy === "price_high") url.searchParams.append("order", "price.desc");
+            else if (sortBy === "featured") {
+                url.searchParams.append("is_featured", "eq.true");
+                url.searchParams.append("order", "created_at.desc");
+            }
+            else if (sortBy === "discount") url.searchParams.append("order", "price.asc");
 
-            const { data, error } = await query;
+            const response = await fetch(url.toString(), {
+                method: "GET",
+                headers: {
+                    "apikey": SUPABASE_ANON_KEY,
+                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            });
 
-            if (error) throw error;
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status}`);
+            }
+
+            const data = await response.json();
             setProducts(data || []);
-        } catch (error) {
-            console.error("Error fetching section products:", error);
-        } finally {
+            setLoading(false);
+        } catch (error: any) {
+            console.warn(`Fetch attempt ${retryCount + 1} failed:`, error.message);
+
+            if (retryCount < 3) {
+                setTimeout(() => fetchProducts(retryCount + 1), 1000 * (retryCount + 1)); // Increased delay
+                return;
+            }
+
+            console.error("Error fetching section products final:", error);
             setLoading(false);
         }
     };

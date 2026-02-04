@@ -22,37 +22,19 @@ const AIRecommendations = ({ userName, purchasedPlan }: AIRecommendationsProps) 
     setError(null);
 
     try {
-      const availablePackages = packages.filter(p => p.name !== purchasedPlan);
-      const userContext = `User name: ${userName}. ${purchasedPlan ? `Currently owns: ${purchasedPlan} plan.` : 'New user, no purchases yet.'}`;
+      // Local Recommendations Logic - Zero Dependency
+      const availablePackages = packages.filter(p => !purchasedPlan || p.name !== purchasedPlan);
+      const topPick = availablePackages[0];
+      const secondPick = availablePackages[1];
 
-      const { data, error: funcError } = await supabase.functions.invoke('ai-chatbot', {
-        body: {
-          messages: [
-            {
-              role: 'user',
-              content: `Based on this user profile: ${userContext}
-              
-Available courses to recommend (pick 2-3 most relevant):
-${availablePackages.map(p => `- ${p.name} (₹${p.price}): ${p.description}. Best for: ${p.coreContent}`).join('\n')}
+      setTimeout(() => {
+        setRecommendations(`Based on your profile, I recommend starting with the ${topPick?.displayName || 'STARTER'} plan to master basic skills, or the ${secondPick?.displayName || 'ACCELERATOR'} plan for faster growth and monetization.`);
+        setIsLoading(false);
+      }, 1000);
 
-Give a brief personalized recommendation in 2-3 sentences. Be friendly and specific. Start with "Based on your profile..." and mention specific course names. Keep it under 100 words.`
-            }
-          ],
-          type: 'recommend'
-        }
-      });
-
-      if (funcError) throw funcError;
-      setRecommendations(data.message || 'Explore our courses to find the perfect fit for your learning goals!');
     } catch (err: any) {
-      // Suppress noisy error 
-      const isFuncError = err.message?.includes('Edge Function') || err.message?.includes('failed to fetch');
-      if (!isFuncError) {
-        console.error('Failed to fetch recommendations:', err);
-      }
       setError('Unable to load recommendations');
       setRecommendations('Explore our courses to find the perfect fit for your learning goals!');
-    } finally {
       setIsLoading(false);
     }
   };

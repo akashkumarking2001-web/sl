@@ -7,6 +7,9 @@ export interface CartItem {
     cashback: number;
     image: string;
     quantity: number;
+    referralCode?: string;
+    commission_amount?: number;
+    commission_percentage?: number;
 }
 
 interface CartContextType {
@@ -37,7 +40,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const existing = prev.find(item => item.id === product.id);
             if (existing) {
                 return prev.map(item =>
-                    item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                    item.id === product.id ? { ...item, quantity: item.quantity + (product.quantity || 1) } : item
                 );
             }
             return [...prev, {
@@ -46,7 +49,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 price: product.price,
                 cashback: product.cashback || 0,
                 image: product.image,
-                quantity: 1
+                quantity: product.quantity || 1,
+                referralCode: product.referralCode,
+                commission_amount: product.commission_amount || 0,
+                commission_percentage: product.commission_percentage || 0
             }];
         });
     };

@@ -26,15 +26,36 @@ const PackagePurchaseApproval = ({ onRefresh }: PackagePurchaseApprovalProps) =>
 
   useEffect(() => {
     fetchRequests();
+
+    // ⚡ Realtime: Listen for new requests instantly
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'payments'
+        },
+        (payload) => {
+          console.log("Realtime payment update:", payload);
+          fetchRequests();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchRequests = async () => {
     setLoading(true);
     try {
+      // FETCH ALL PAYMENTS (Removed 'pending' filter to debug visibility)
       const { data, error } = await supabase
         .from("payments")
         .select("*")
-        .eq("status", "pending")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -50,7 +71,7 @@ const PackagePurchaseApproval = ({ onRefresh }: PackagePurchaseApprovalProps) =>
 
       const requestsWithProfiles = data?.map(r => ({
         ...r,
-        package_name: r.plan_name, // Map for compatibility with existing UI
+        package_name: r.plan_name,
         profile: profileMap.get(r.user_id),
       })) || [];
 
@@ -64,7 +85,6 @@ const PackagePurchaseApproval = ({ onRefresh }: PackagePurchaseApprovalProps) =>
   const handleApprove = async (request: any) => {
     setProcessing(true);
     try {
-      // Update request status
       const { error: updateError } = await supabase
         .from("payments")
         .update({
@@ -76,7 +96,6 @@ const PackagePurchaseApproval = ({ onRefresh }: PackagePurchaseApprovalProps) =>
 
       if (updateError) throw updateError;
 
-      // Update user profile with purchased package
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -89,7 +108,7 @@ const PackagePurchaseApproval = ({ onRefresh }: PackagePurchaseApprovalProps) =>
 
       if (profileError) throw profileError;
 
-      // DISTRIBUTE ALL INCOMES
+      const distributeAllIncomesSecure = (await import("@/lib/incomeDistributionSecure")).distributeAllIncomesSecure;
       const incomeDistributed = await distributeAllIncomesSecure(request.user_id, request.plan_name);
 
       toast({
@@ -134,10 +153,12 @@ const PackagePurchaseApproval = ({ onRefresh }: PackagePurchaseApprovalProps) =>
     setProcessing(false);
   };
 
-  const pendingRequests = requests.filter(r => r.status === "pending");
-  const filteredRequests = pendingRequests.filter(r =>
-    r.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.package_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const pendingRequests = requests.filter(r => r.status === 'pending'); // FIXED: Filter for summary count
+  const filteredRequests = requests.filter(r =>
+  (r.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.package_name?.toLowerCase().includes(searchTerm.toLowerCase()))
+    // Optional: Toggle to show only pending if list is too long
+    // && r.status === 'pending'
   );
 
   const handleExport = () => {
@@ -232,9 +253,9 @@ const PackagePurchaseApproval = ({ onRefresh }: PackagePurchaseApprovalProps) =>
                       <span className="font-bold text-emerald-500">₹{Number(request.amount).toLocaleString()}</span>
                     </td>
                     <td className="p-4">
-                      <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">
-                        Pending
-                      </Badge>
+                      {request.status === 'approved' && <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Approved</Badge>}
+                      {request.status === 'rejected' && <Badge className="bg-destructive/10 text-destructive border-destructive/20">Rejected</Badge>}
+                      {request.status === 'pending' && <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">Pending</Badge>}
                     </td>
                     <td className="p-4 text-sm text-muted-foreground">
                       {new Date(request.created_at).toLocaleDateString()}
@@ -244,24 +265,28 @@ const PackagePurchaseApproval = ({ onRefresh }: PackagePurchaseApprovalProps) =>
                         <Button variant="ghost" size="icon" onClick={() => setSelectedRequest(request)}>
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive"
-                          onClick={() => handleReject(request)}
-                          disabled={processing}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-emerald-500"
-                          onClick={() => handleApprove(request)}
-                          disabled={processing}
-                        >
-                          <Check className="w-4 h-4" />
-                        </Button>
+                        {request.status === 'pending' && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive"
+                              onClick={() => handleReject(request)}
+                              disabled={processing}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-emerald-500"
+                              onClick={() => handleApprove(request)}
+                              disabled={processing}
+                            >
+                              <Check className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -357,6 +382,11 @@ const PackagePurchaseApproval = ({ onRefresh }: PackagePurchaseApprovalProps) =>
           )}
         </DialogContent>
       </Dialog>
+      {/* Debug Info Footer */}
+      <div className="text-xs text-muted-foreground mt-8 p-4 border-t border-border">
+        <p>Debug: Requests Loaded: {requests.length}</p>
+        <p>Realtime Active. System Time: {new Date().toLocaleTimeString()}</p>
+      </div>
     </div>
   );
 };

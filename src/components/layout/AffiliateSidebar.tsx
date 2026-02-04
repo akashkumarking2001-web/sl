@@ -25,35 +25,25 @@ import logo from "@/assets/logo.png";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-const sidebarLinks = [
+const menuSections = [
   {
-    icon: LayoutDashboard,
-    label: "Dashboard",
-    href: "/dashboard/affiliate",
-    description: "Overview & stats"
+    label: "Main",
+    items: [
+      { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/affiliate", description: "Overview & stats" },
+    ]
   },
   {
-    icon: Users,
-    label: "Learners/Students",
-    href: "/dashboard/learners",
-    description: "Your referred users"
+    label: "Affiliate Portal",
+    items: [
+      { icon: Users, label: "Learners/Students", href: "/dashboard/learners", description: "Your referred users" },
+      { icon: GitBranch, label: "My Network", href: "/dashboard/network", description: "Genealogy Tree" },
+      { icon: Layers, label: "Global Matrix", href: "/dashboard/matrix", description: "3xN Revenue Share" },
+    ]
   },
   {
-    icon: GitBranch,
-    label: "My Network",
-    href: "/dashboard/network",
-    description: "Genealogy Tree"
-  },
-  {
-    icon: Layers,
-    label: "Global Matrix",
-    href: "/dashboard/matrix",
-    description: "3xN Revenue Share"
-  },
-  {
-    label: "Income Reports",
-    isHeader: true,
-    children: [
+    label: "Income & Reports",
+    isExpandable: true,
+    items: [
       { icon: TrendingUp, label: "Direct Referral", href: "/dashboard/income/referral" },
       { icon: Layers, label: "Level Income", href: "/dashboard/income/level" },
       { icon: ArrowDownRight, label: "Spillover", href: "/dashboard/income/spillover" },
@@ -64,41 +54,21 @@ const sidebarLinks = [
     ]
   },
   {
-    icon: Wallet,
-    label: "Wallet Management",
-    href: "/dashboard/wallet",
-    description: "Withdraw & history"
+    label: "Earnings & Analytics",
+    items: [
+      { icon: Wallet, label: "Wallet Management", href: "/dashboard/wallet", description: "Withdraw & history" },
+      { icon: Trophy, label: "Leaderboard", href: "/dashboard/leaderboard", description: "Top earners" },
+      { icon: PieChart, label: "Analytics", href: "/dashboard/analytics", description: "Performance insights" },
+    ]
   },
   {
-    icon: Trophy,
-    label: "Leaderboard",
-    href: "/dashboard/leaderboard",
-    description: "Top earners"
-  },
-  {
-    icon: PieChart,
-    label: "Analytics",
-    href: "/dashboard/analytics",
-    description: "Performance insights"
-  },
-  {
-    icon: ClipboardList,
-    label: "Tasks",
-    href: "/dashboard/tasks",
-    description: "Earn by completing"
-  },
-  {
-    icon: BookOpen,
-    label: "Submit Your Course",
-    href: "/dashboard/submit-course",
-    description: "Become a creator"
-  },
-  {
-    icon: User,
-    label: "Profile",
-    href: "/dashboard/profile",
-    description: "Manage account"
-  },
+    label: "Resources & More",
+    items: [
+      { icon: ClipboardList, label: "Tasks", href: "/dashboard/tasks", description: "Earn by completing" },
+      { icon: BookOpen, label: "Submit Your Course", href: "/dashboard/submit-course", description: "Become a creator" },
+      { icon: User, label: "Profile", href: "/dashboard/profile", description: "Manage account" },
+    ]
+  }
 ];
 
 interface AffiliateSidebarProps {
@@ -164,64 +134,70 @@ const AffiliateSidebar = ({ children }: AffiliateSidebarProps) => {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
-          {sidebarLinks.map((item, index) => {
-            if ('isHeader' in item && item.isHeader) {
-              return (
-                <div key={index} className="pt-4">
-                  <button
-                    onClick={() => setExpandedSection(expandedSection === item.label ? null : item.label)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-colors ${isIncomeActive() ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
-                      }`}
-                  >
-                    <span>{item.label}</span>
-                    <ChevronRight className={`w-4 h-4 transition-transform ${expandedSection === item.label ? 'rotate-90' : ''}`} />
-                  </button>
+        <nav className="p-4 space-y-4">
+          {menuSections.map((section, sIndex) => (
+            <div key={sIndex} className="space-y-1">
+              {sIndex > 0 && <div className="h-px bg-slate-100 dark:bg-slate-800 my-4 mx-2" />}
 
-                  {expandedSection === item.label && item.children && (
-                    <div className="mt-1 ml-3 space-y-1 border-l border-border pl-3">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          to={child.href}
-                          onClick={() => setIsOpen(false)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all ${isActive(child.href)
-                            ? 'bg-[#FBBF24] text-black font-bold shadow-lg shadow-[#FBBF24]/20'
-                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                            }`}
-                        >
-                          <child.icon className="w-4 h-4" />
-                          <span>{child.label}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            }
+              <div className="space-y-1">
+                {section.isExpandable ? (
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => setExpandedSection(expandedSection === section.label ? null : section.label)}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-colors ${isIncomeActive() ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <TrendingUp className="w-4 h-4" />
+                        <span>View Details</span>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 transition-transform ${expandedSection === section.label ? 'rotate-90' : ''}`} />
+                    </button>
 
-            return (
-              <Link
-                key={item.href}
-                to={item.href!}
-                onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive(item.href!)
-                  ? 'bg-[#FBBF24] text-black font-bold shadow-lg shadow-[#FBBF24]/20'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`}
-              >
-                {'icon' in item && item.icon && <item.icon className="w-5 h-5" />}
-                <div className="flex-1">
-                  <span className="block">{item.label}</span>
-                  {'description' in item && item.description && (
-                    <span className={`text-xs ${isActive(item.href!) ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                      {item.description}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
+                    {expandedSection === section.label && (
+                      <div className="mt-1 ml-3 space-y-1 border-l border-border pl-3">
+                        {section.items.map((item) => (
+                          <Link
+                            key={item.href}
+                            to={item.href}
+                            onClick={() => setIsOpen(false)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all ${isActive(item.href)
+                              ? 'bg-[#FBBF24] text-black font-bold shadow-lg shadow-[#FBBF24]/20'
+                              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                              }`}
+                          >
+                            <item.icon className="w-4 h-4" />
+                            <span>{item.label}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  section.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive(item.href)
+                        ? 'bg-[#FBBF24] text-black font-bold shadow-lg shadow-[#FBBF24]/20'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        }`}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <div className="flex-1">
+                        <span className="block">{item.label}</span>
+                        {item.description && (
+                          <span className={`text-[10px] block leading-tight ${isActive(item.href) ? 'text-black/60' : 'text-muted-foreground'}`}>
+                            {item.description}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Quick Stats */}

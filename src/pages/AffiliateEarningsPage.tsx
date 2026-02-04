@@ -11,8 +11,12 @@ import {
     Link as LinkIcon,
     Search,
     BarChart3,
-    ExternalLink
+    ExternalLink,
+    History,
+    ArrowUpRight,
+    ArrowDownLeft
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -49,6 +53,17 @@ const AffiliateEarningsPage = () => {
     const [showLinkDialog, setShowLinkDialog] = useState(false);
     const [generatedLink, setGeneratedLink] = useState("");
     const [copied, setCopied] = useState(false);
+    const [walletHistory, setWalletHistory] = useState<any[]>([]);
+
+    const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
+    const [withdrawAmount, setWithdrawAmount] = useState("");
+    const [bankDetails, setBankDetails] = useState({
+        accountName: "",
+        accountNumber: "",
+        ifsc: "",
+        bankName: ""
+    });
+    const [submittingWithdrawal, setSubmittingWithdrawal] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -92,38 +107,35 @@ const AffiliateEarningsPage = () => {
     const loadDashboardData = async () => {
         if (!user) return;
 
-        // 1. Get Referral Code (from any existing link or generate generic)
-        // Ideally we have a user-level code, but the system generates per-product links.
-        // Let's check 'affiliate_links' for any link to get the code pattern if it's constant per user.
-        // Actually, the plan says "Stores referral code in session". 
-        // Let's look at recent clicks to get stats.
+        // 1. Get Wallet Balance (Available for withdrawal)
+        const { data: incomeData } = await supabase
+            .from("agent_income")
+            .select("wallet, referral_income, total_income")
+            .eq("user_id", user.id)
+            .maybeSingle();
 
-        // Get Stats: Clicks
-        const { count: clicksCount } = await supabase
+        // 2. Get Stats: Clicks
+        const { count: clicksCount } = await (supabase
             .from("affiliate_clicks")
-            .select("*", { count: 'exact', head: true })
+            .select("id", { count: 'exact', head: true }) as any)
             .eq("affiliate_id", user.id);
 
-        // Get Stats: Earnings (from wallet_history) 
-        // Assuming there's a reference_type for affiliate commissions
-        const { data: earningsData } = await supabase
+        // 3. Get Stats: Conversions (from wallet_history) 
+        const { data: earningsData } = await (supabase
             .from("wallet_history")
-            .select("amount")
+            .select("amount") as any)
             .eq("user_id", user.id)
             .eq("reference_type", "affiliate_commission");
 
-        const totalEarnings = earningsData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
-
-        // Get Stats: Conversions (approximate based on earnings count for now)
         const conversionsCount = earningsData?.length || 0;
 
         setStats({
             clicks: clicksCount || 0,
-            earnings: totalEarnings,
+            earnings: Number(incomeData?.wallet || 0),
             conversions: conversionsCount
         });
 
-        // Get Recent Clicks
+        // 4. Get Recent Clicks
         const { data: clicksData } = await supabase
             .from("affiliate_clicks")
             .select("created_at, product_id, products(name)")
@@ -133,14 +145,24 @@ const AffiliateEarningsPage = () => {
 
         setRecentClicks(clicksData || []);
 
-        // Load Products for Link Generator
+        // 5. Load Products for Link Generator
         const { data: productsData } = await supabase
             .from("products")
             .select("id, name, slug, image_url, price")
             .eq("is_active", true)
-            .order("created_at", { ascending: false }); // Get recent ones
+            .order("created_at", { ascending: false });
 
         setProducts(productsData || []);
+
+        // 6. Load Wallet History
+        const { data: historyData } = await (supabase
+            .from("wallet_history")
+            .select("*") as any)
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(50);
+
+        setWalletHistory(historyData || []);
     };
 
     const handleGenerateLink = async (product: any) => {
@@ -246,16 +268,6 @@ const AffiliateEarningsPage = () => {
             </div>
         );
     }
-
-    const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
-    const [withdrawAmount, setWithdrawAmount] = useState("");
-    const [bankDetails, setBankDetails] = useState({
-        accountName: "",
-        accountNumber: "",
-        ifsc: "",
-        bankName: ""
-    });
-    const [submittingWithdrawal, setSubmittingWithdrawal] = useState(false);
 
     const handleWithdrawRequest = async () => {
         if (!user) return;
@@ -475,6 +487,44 @@ const AffiliateEarningsPage = () => {
                                 ) : (
                                     <div className="text-center py-6 text-muted-foreground text-sm">
                                         No clicks recorded yet. Share your links to start tracking!
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Transaction History */}
+                        <div className="glass-card p-6 rounded-2xl">
+                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                <History className="w-5 h-5 text-primary" />
+                                Transaction History
+                            </h2>
+                            <div className="space-y-3">
+                                {walletHistory.length > 0 ? (
+                                    walletHistory.map((item, i) => (
+                                        <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-background/30">
+                                            <div className="flex items-center gap-3">
+                                                <div className={cn(
+                                                    "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                                                    item.status === 'credit' ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                                                )}>
+                                                    {item.status === 'credit' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownLeft className="w-4 h-4" />}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-bold truncate">{item.description}</p>
+                                                    <p className="text-[10px] text-muted-foreground uppercase">{new Date(item.created_at).toLocaleDateString()} • {item.income_type}</p>
+                                                </div>
+                                            </div>
+                                            <div className={cn(
+                                                "font-black text-sm whitespace-nowrap",
+                                                item.status === 'credit' ? "text-emerald-500" : "text-rose-500"
+                                            )}>
+                                                {item.status === 'credit' ? '+' : '-'}₹{item.amount.toLocaleString()}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8 text-muted-foreground text-sm italic">
+                                        No transactions recorded.
                                     </div>
                                 )}
                             </div>

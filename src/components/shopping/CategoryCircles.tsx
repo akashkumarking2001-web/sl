@@ -30,19 +30,41 @@ const CategoryCircles = ({ onSelectCategory, selectedCategoryId }: CategoryCircl
         fetchCategories();
     }, []);
 
-    const fetchCategories = async () => {
-        try {
-            const { data, error } = await supabase
-                .from("product_categories")
-                .select("*")
-                .eq("is_active", true)
-                .order("display_order");
+    // Fallback constants
+    const SUPABASE_URL = "https://vwzqaloqlvlewvijiqeu.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3enFhbG9xbHZsZXd2aWppcWV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNjMwMjQsImV4cCI6MjA4NDkzOTAyNH0.oEuQrpidyXbKYdy3SpuMDTHZveqZNHaJHMY3TK3ir2E";
 
-            if (error) throw error;
+    const fetchCategories = async (retryCount = 0) => {
+        try {
+            const url = new URL(`${SUPABASE_URL}/rest/v1/product_categories`);
+            url.searchParams.append("select", "*");
+            url.searchParams.append("is_active", "eq.true");
+            url.searchParams.append("order", "display_order.asc");
+
+            const response = await fetch(url.toString(), {
+                method: "GET",
+                headers: {
+                    "apikey": SUPABASE_ANON_KEY,
+                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status}`);
+            }
+
+            const data = await response.json();
             setCategories(data || []);
-        } catch (error) {
+            setLoading(false);
+        } catch (error: any) {
+            console.warn(`Fetch categories attempt ${retryCount + 1} failed:`, error.message);
+            if (retryCount < 3) {
+                setTimeout(() => fetchCategories(retryCount + 1), 1000 * (retryCount + 1));
+                return;
+            }
+
             console.error("Error fetching categories:", error);
-        } finally {
             setLoading(false);
         }
     };
@@ -114,7 +136,7 @@ const CategoryCircles = ({ onSelectCategory, selectedCategoryId }: CategoryCircl
                         <button
                             key={category.id}
                             onClick={() => onSelectCategory(category.id)}
-                            className="flex flex-col items-center gap-3 min-w-[90px] group snap-start"
+                            className="flex flex-col items-center gap-3 w-[100px] group snap-start"
                         >
                             <div className={cn(
                                 "w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-sm border overflow-hidden group-hover:scale-110 relative",
@@ -134,9 +156,9 @@ const CategoryCircles = ({ onSelectCategory, selectedCategoryId }: CategoryCircl
                                 )}
                             </div>
                             <span className={cn(
-                                "text-sm font-bold transition-colors whitespace-nowrap",
+                                "text-xs font-bold transition-colors w-full text-center truncate px-1",
                                 isSelected ? "text-[#FBBF24]" : "text-slate-500 group-hover:text-slate-900"
-                            )}>
+                            )} title={category.name}>
                                 {category.name}
                             </span>
                         </button>

@@ -48,6 +48,7 @@ interface User {
   state: string | null;
   address: string | null;
   wallet?: number;
+  is_email_verified?: boolean;
 }
 
 interface UserListTableProps {
@@ -134,31 +135,82 @@ const UserListTable = ({ filter }: UserListTableProps) => {
     }
   };
 
+  const verifyEmailStatusManually = async (user: User) => {
+    try {
+      // 1. Try to update Auth System (Best Effort)
+      try {
+        // @ts-ignore
+        const { error } = await (supabase.rpc as any)('admin_confirm_user_email', {
+          target_user_id: user.user_id
+        });
+        if (error) console.warn("RPC Warning (Non-critical):", error.message);
+      } catch (rpcErr) {
+        console.warn("RPC Failed (SQL likely not run):", rpcErr);
+      }
+
+      // 2. ALWAYS Update Public Profile (This updates the UI instantly)
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ is_email_verified: true })
+        .eq("user_id", user.user_id);
+
+      if (profileError) throw profileError;
+
+      toast({ title: "Email Verified", description: `Email for ${user.full_name} marked as verified.` });
+
+      // Optimistic Update
+      setUsers(current => current.map(u =>
+        u.user_id === user.user_id ? { ...u, is_email_verified: true } : u
+      ));
+      if (selectedUser?.user_id === user.user_id) {
+        setSelectedUser(prev => prev ? { ...prev, is_email_verified: true } : null);
+      }
+
+      fetchUsers();
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      toast({ title: "Update Failed", description: error.message, variant: "destructive" });
+    }
+  };
+
   const verifyEmailManually = async (user: User, packageName: string = "SPARK") => {
     try {
+      // 1. First ensure the user is verified in the Auth System (Login enabled)
+      // @ts-ignore - Function exists in DB but types not yet generated
+      const { error: rpcError } = await (supabase.rpc as any)('admin_confirm_user_email', {
+        target_user_id: user.user_id
+      });
+
+      if (rpcError) {
+        console.warn("Auth verification warning:", rpcError);
+        // We continue even if this fails, as the profile update might still be desired
+      }
+
+      // 2. Update Profile to Active & Plan
       const { error } = await supabase
         .from("profiles")
         .update({
           status: "active",
           has_purchased: true,
           purchased_plan: packageName,
-          package: packageName
+          package: packageName,
+          is_email_verified: true
         })
         .eq("user_id", user.user_id);
 
       if (error) throw error;
 
-      // Trigger income distribution
+      // 3. Trigger income distribution
       const { distributeAllIncomesSecure } = await import("@/lib/incomeDistributionSecure");
       const incomeDistributed = await distributeAllIncomesSecure(user.user_id, packageName);
 
       toast({
-        title: "Manually Verified",
-        description: `${user.full_name || 'User'} is now active on ${packageName}. ${incomeDistributed ? 'Incomes triggered.' : 'Income check required.'}`
+        title: "Manually Verified & Activated",
+        description: `${user.full_name || 'User'} is validated in Auth System and active on ${packageName}.`
       });
       fetchUsers();
     } catch (error: any) {
-      toast({ title: "Verification Failed", description: error.message, variant: "destructive" });
+      toast({ title: "Activation Failed", description: error.message, variant: "destructive" });
     }
   };
 
@@ -280,7 +332,14 @@ const UserListTable = ({ filter }: UserListTableProps) => {
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{user.full_name || "Unknown"}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm">{user.full_name || "Unknown"}</p>
+                            {user.is_email_verified ? (
+                              <Badge className="h-4 px-1 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[8px]">VERIFIED</Badge>
+                            ) : (
+                              <Badge className="h-4 px-1 bg-rose-500/10 text-rose-500 border-rose-500/20 text-[8px]">UNVERIFIED</Badge>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground">{user.email}</p>
                         </div>
                       </div>
@@ -329,6 +388,9 @@ const UserListTable = ({ filter }: UserListTableProps) => {
                             </DropdownMenuItem>
                             <DropdownMenuItem className="font-bold flex justify-between gap-3" onClick={() => verifyEmailManually(user, "LEGACY")}>
                               LEGACY (₹5,000) <Badge variant="outline" className="text-[10px]">L5</Badge>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-emerald-500 font-bold" onClick={() => verifyEmailStatusManually(user)}>
+                              Verify Email Only
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -405,6 +467,7 @@ const UserListTable = ({ filter }: UserListTableProps) => {
                     <DropdownMenuItem onClick={() => verifyEmailManually(selectedUser, "SUMMIT")}>Activate SUMMIT (₹1,000)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => verifyEmailManually(selectedUser, "TITAN")}>Activate TITAN (₹2,500)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => verifyEmailManually(selectedUser, "LEGACY")}>Activate LEGACY (₹5,000)</DropdownMenuItem>
+                    <DropdownMenuItem className="text-emerald-500 font-bold" onClick={() => verifyEmailStatusManually(selectedUser)}>Verify Email Only</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Button

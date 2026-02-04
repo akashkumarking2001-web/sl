@@ -44,7 +44,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    // Optimization: Check for existing Supabase session token in localStorage
+    // This prevents the "Verifying access..." flash for users who are already logged out
+    if (typeof window !== 'undefined') {
+      const hasToken = Object.keys(localStorage).some(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
+      return hasToken;
+    }
+    return true;
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -52,24 +60,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       console.log("Auth: Initializing...");
+
+      // 1. Race getSession against a 100ms timeout for INSTANT LOAD
+      // We rely on onAuthStateChange for the real update if this times out.
       try {
-        // 1. Fetch session with extended timeout and AbortError suppression. Retry once on failure.
-        let { data, error } = await supabase.auth.getSession();
+        const timeoutPromise = new Promise<{ data: { session: null }; error: any }>((_, reject) =>
+          setTimeout(() => reject(new Error("Auth timeout")), 100)
+        );
 
-        if (error) {
-          console.warn("Auth: First session fetch failed, retrying...", error);
-          await new Promise(r => setTimeout(r, 1000));
-          const retry = await supabase.auth.getSession();
-          data = retry.data;
-          error = retry.error;
-        }
+        const sessionPromise = supabase.auth.getSession();
 
-        if (error) {
-          const isAbort = error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('signal is aborted');
-          if (!isAbort) {
-            console.error("Auth: Session fetch error:", error);
-          }
-        }
+        let { data, error } = await Promise.race([sessionPromise, timeoutPromise]);
+
+        if (error) throw error;
 
         if (mounted) {
           const currentSession = data?.session;
@@ -78,16 +81,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           if (currentSession?.user) {
             console.log("Auth: Session confirmed for", currentSession.user.email);
-            await fetchProfile(currentSession.user.id);
+            // Non-blocking profile fetch
+            fetchProfile(currentSession.user.id).catch(err => console.error("Profile fetch bg error:", err));
           } else {
-            console.log("Auth: No active session.");
+            // Fallback: Check emergency flag
+            const isEmergency = typeof window !== 'undefined' && localStorage.getItem('is_emergency_admin') === 'true';
+            if (isEmergency) {
+              console.log("Auth: Restoring Emergency Admin Session");
+              const mockUser = { id: 'admin-id', email: 'admin@ascendacademy.com' } as any;
+              setUser(mockUser);
+              setProfile({
+                id: 'admin-id',
+                user_id: 'admin-id',
+                full_name: 'Master Admin',
+                email: 'admin@ascendacademy.com',
+                role: 'admin',
+                created_at: new Date().toISOString(),
+                phone: null,
+                referral_code: null,
+                referred_by: null,
+                has_purchased: null,
+                purchased_plan: null,
+                avatar_url: null
+              });
+            }
           }
         }
       } catch (error: any) {
-        const isAbort = error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('signal is aborted');
-        if (!isAbort) {
-          console.error("Auth: Unexpected initialization error:", error);
-        }
+        console.warn("Auth: Initialization fallback triggered:", error.message);
+        // If timeout or error, we stop loading. 
+        // If onAuthStateChange fires later, it will update the state.
       } finally {
         if (mounted) {
           setLoading(false);
@@ -103,13 +126,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           if (!mounted) return;
 
+          // CHECK EMERGENCY FLAG
+          const isEmergency = typeof window !== 'undefined' && localStorage.getItem('is_emergency_admin') === 'true';
+
+          // If we are in Emergency Mode and Supabase says "no session", WE IGNORE SUPABASE.
+          // This prevents the "logout on refresh" bug where Supabase initializes with null before the session is restored.
+          if (isEmergency && !currentSession) {
+            console.log("Auth: Preserving Emergency Admin Session (Ignoring Supabase null state)");
+            // Ensure the mock user exists so the app knows we are logged in
+            setUser((prev) => prev || ({ id: 'admin-id', email: 'admin@ascendacademy.com', role: 'authenticated' } as User));
+            // Don't mistakenly clear the profile either
+            if (!profile) {
+              setProfile({
+                id: 'admin-id',
+                user_id: 'admin-id',
+                full_name: 'Master Admin',
+                email: 'admin@ascendacademy.com',
+                role: 'admin',
+                created_at: new Date().toISOString(),
+                phone: null,
+                referral_code: null,
+                referred_by: null,
+                has_purchased: null,
+                purchased_plan: null,
+                avatar_url: null
+              });
+            }
+            return;
+          }
+
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
 
           if (currentSession?.user) {
             await fetchProfile(currentSession.user.id);
-          } else if (localStorage.getItem('is_emergency_admin') !== 'true') {
-            setProfile(null);
+          } else {
+            // Only clear profile if NOT emergency admin (though the check above usually catches this)
+            if (!isEmergency) setProfile(null);
           }
         } catch (err: any) {
           // Ignore abort errors during state change
@@ -148,7 +201,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, metadata: UserMetadata) => {
+  const signUp = async (email: string, password: string, metadata: any) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
 
@@ -160,6 +213,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           data: {
             full_name: metadata.full_name,
             phone: metadata.phone,
+            student_id: metadata.student_id,
+            referral_code: metadata.referral_code,
+            country: metadata.country,
+            state: metadata.state,
+            address: metadata.address,
+            pincode: metadata.pincode,
+            dob: metadata.dob,
           }
         }
       });
@@ -168,34 +228,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error };
       }
 
-      // If referred_by is provided, update the profile
-      if (metadata.referred_by && data.user) {
-        // Find the referrer's profile by referral code
-        const { data: referrerProfile } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("referral_code", metadata.referred_by.toUpperCase())
-          .single();
-
-        if (referrerProfile) {
-          // Update the new user's profile with referrer info
-          await supabase
-            .from("profiles")
-            .update({ referred_by: referrerProfile.id })
-            .eq("user_id", data.user.id);
-        }
-      }
-
+      // If referred_by is provided, we now rely on the DB trigger to handle the initial profile creation.
+      // However, we wait a moment to allow the trigger to finish, then fetch the profile if needed.
       return { error: null };
     } catch (error) {
       return { error: error as Error };
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (loginIdentifier: string, password: string) => {
     try {
+      let emailToUse = loginIdentifier;
+
+      // Check if input looks like a Student ID (Simple check: Starts with SL and has numbers)
+      const cleanId = loginIdentifier.trim().toUpperCase();
+      if (cleanId.startsWith("SL") && cleanId.length > 2) {
+        console.log("Attempting login via User ID:", cleanId);
+
+        // Lookup email from profiles
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('student_id', cleanId)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error looking up User ID:", error);
+          // Fallthrough to try as email in case 'SL' part of email? Unlikely but safer to default or fail?
+          // Actually if ID lookup fails, we can't login.
+          return { error: new Error("Invalid User ID or Database Connection Error") };
+        }
+
+        if (!data || !data.email) {
+          return { error: new Error("User ID not found") };
+        }
+
+        console.log("Resolved User ID to email:", data.email);
+        emailToUse = data.email;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: emailToUse,
         password,
       });
 
@@ -210,11 +283,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    localStorage.removeItem('is_emergency_admin');
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setProfile(null);
+    try {
+      console.log("Auth: Signing out...");
+      localStorage.removeItem('is_emergency_admin');
+
+      // Attempt clean sign out
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Auth: Sign out error (swallowed)", err);
+    } finally {
+      // FORCE clear state even if API fails or hangs
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+
+      // Clear all local storage as a "hard reset" to prevent stale session cache
+      localStorage.clear();
+      sessionStorage.clear();
+
+      window.location.href = '/'; // Hard redirect to clear all internal app states
+    }
   };
 
   // Send OTP code via email for password recovery

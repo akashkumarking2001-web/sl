@@ -6,7 +6,9 @@ import {
     ShoppingBag,
     ArrowRight,
     Zap,
-    X
+    X,
+    Loader2,
+    TicketPercent
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
@@ -16,12 +18,141 @@ import {
     SheetHeader,
     SheetTitle,
     SheetTrigger,
-    SheetFooter,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+const CartSummary = ({
+    totalPrice,
+    totalCashback,
+    onCheckout
+}: {
+    totalPrice: number;
+    totalCashback: number;
+    onCheckout: (price: number, coupon: string | null) => void;
+}) => {
+    const [couponCode, setCouponCode] = useState("");
+    const [discount, setDiscount] = useState(0);
+    const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const { toast } = useToast();
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode) return;
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('coupons')
+                .select('*')
+                .eq('code', couponCode.toUpperCase())
+                .eq('is_active', true)
+                .single();
+
+            if (error || !data) throw new Error("Invalid coupon code");
+
+            // Validate requirements
+            if (data.min_order_value && totalPrice < data.min_order_value) {
+                throw new Error(`Minimum order value of ₹${data.min_order_value} required`);
+            }
+
+            if (data.end_date && new Date(data.end_date) < new Date()) {
+                throw new Error("Coupon has expired");
+            }
+
+            if (data.usage_limit && data.used_count >= data.usage_limit) {
+                throw new Error("Coupon usage limit exceeded");
+            }
+
+            // Calculate Discount
+            let discountAmount = 0;
+            if (data.discount_type === 'percentage') {
+                discountAmount = (totalPrice * data.discount_value) / 100;
+                if (data.max_discount_amount) {
+                    discountAmount = Math.min(discountAmount, data.max_discount_amount);
+                }
+            } else {
+                discountAmount = data.discount_value;
+            }
+
+            setDiscount(Math.round(discountAmount));
+            setAppliedCoupon(data.code);
+            toast({ title: "Coupon Applied", description: `You saved ₹${Math.round(discountAmount)}!` });
+        } catch (error: any) {
+            toast({ title: "Error", description: error.message, variant: "destructive" });
+            setDiscount(0);
+            setAppliedCoupon(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const finalPrice = Math.max(0, totalPrice - discount);
+
+    return (
+        <div className="space-y-4">
+            {/* Coupon Input */}
+            <div className="flex gap-2">
+                <Input
+                    placeholder="Promo Code"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    className="bg-background/50 h-10 border-border/50 focus-visible:ring-primary/20"
+                    disabled={!!appliedCoupon}
+                />
+                {appliedCoupon ? (
+                    <Button variant="ghost" onClick={() => { setAppliedCoupon(null); setDiscount(0); setCouponCode(""); }} className="h-10 px-3 text-destructive hover:text-destructive">
+                        <X className="w-4 h-4" />
+                    </Button>
+                ) : (
+                    <Button onClick={handleApplyCoupon} disabled={loading || !couponCode} className="h-10 w-20">
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+                    </Button>
+                )}
+            </div>
+
+            <div className="space-y-2">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Subtotal</span>
+                    <span>₹{totalPrice.toLocaleString()}</span>
+                </div>
+
+                {discount > 0 && (
+                    <div className="flex justify-between text-sm text-emerald-500 font-bold">
+                        <span className="flex items-center gap-1"><TicketPercent className="w-3 h-3" /> Coupon ({appliedCoupon})</span>
+                        <span>-₹{discount.toLocaleString()}</span>
+                    </div>
+                )}
+
+                <div className="flex justify-between items-center pt-2 border-t border-border/50">
+                    <span className="font-bold text-lg text-foreground">Total Payable</span>
+                    <span className="font-black text-2xl text-primary font-display">₹{finalPrice.toLocaleString()}</span>
+                </div>
+
+                {totalCashback > 0 && (
+                    <div className="flex items-center gap-2 p-2 bg-emerald-500/10 border border-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400">
+                        <Zap className="w-4 h-4 fill-current" />
+                        <div className="text-[10px] font-black uppercase tracking-wider">
+                            You will earn ₹{totalCashback.toLocaleString()} Cashback
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <Button
+                className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20 group uppercase tracking-tight"
+                onClick={() => onCheckout(finalPrice, appliedCoupon)}
+            >
+                Checkout Now
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+        </div>
+    );
+};
 
 export function CartSheet() {
     const { cart, removeFromCart, updateQuantity, totalItems, totalPrice, totalCashback } = useCart();
@@ -118,33 +249,13 @@ export function CartSheet() {
                 </ScrollArea>
 
                 {cart.length > 0 && (
-                    <div className="p-6 bg-card/50 backdrop-blur-xl border-t border-border/50 space-y-4 font-display">
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm text-muted-foreground">
-                                <span>Subtotal</span>
-                                <span>₹{totalPrice.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="font-bold text-lg text-foreground">Total Payable</span>
-                                <span className="font-black text-2xl text-primary font-display">₹{totalPrice.toLocaleString()}</span>
-                            </div>
-                            {totalCashback > 0 && (
-                                <div className="flex items-center gap-2 p-2 bg-emerald/5 border border-emerald/10 rounded-xl text-emerald">
-                                    <Zap className="w-4 h-4 fill-emerald" />
-                                    <div className="text-[10px] font-black uppercase tracking-wider">
-                                        You will earn ₹{totalCashback.toLocaleString()} Cashback
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        <Button
-                            className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20 group uppercase tracking-tight"
-                            onClick={() => navigate('/payment?source=cart')}
-                        >
-                            Checkout Now
-                            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                        <p className="text-[10px] text-center text-muted-foreground uppercase font-medium tracking-widest">
+                    <div className="p-6 bg-card/50 backdrop-blur-xl border-t border-border/50 font-display">
+                        <CartSummary
+                            totalPrice={totalPrice}
+                            totalCashback={totalCashback}
+                            onCheckout={(finalPrice, coupon) => navigate(`/payment?source=cart&amount=${finalPrice}&coupon=${coupon || ''}`)}
+                        />
+                        <p className="mt-4 text-[10px] text-center text-muted-foreground uppercase font-medium tracking-widest">
                             Secure checkout by Skill Learners
                         </p>
                     </div>

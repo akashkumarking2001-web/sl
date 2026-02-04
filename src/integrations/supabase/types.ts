@@ -42,6 +42,195 @@ export interface Database {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          id: string
+          code: string
+          discount_type: string
+          discount_value: number
+          max_discount_amount: number | null
+          min_order_value: number | null
+          usage_limit: number | null
+          used_count: number
+          start_date: string | null
+          end_date: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          discount_type: string
+          discount_value: number
+          max_discount_amount?: number | null
+          min_order_value?: number | null
+          usage_limit?: number | null
+          used_count?: number
+          start_date?: string | null
+          end_date?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          code?: string
+          discount_type?: string
+          discount_value?: number
+          max_discount_amount?: number | null
+          min_order_value?: number | null
+          usage_limit?: number | null
+          used_count?: number
+          start_date?: string | null
+          end_date?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          id: string
+          product_id: string | null
+          user_id: string | null
+          rating: number
+          comment: string | null
+          images: string[] | null
+          is_verified: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          product_id?: string | null
+          user_id?: string | null
+          rating: number
+          comment?: string | null
+          images?: string[] | null
+          is_verified?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string | null
+          user_id?: string | null
+          rating?: number
+          comment?: string | null
+          images?: string[] | null
+          is_verified?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_addresses: {
+        Row: {
+          id: string
+          user_id: string | null
+          label: string | null
+          full_name: string | null
+          address_line1: string
+          address_line2: string | null
+          city: string
+          state: string
+          postal_code: string
+          country: string | null
+          phone: string | null
+          is_default: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          label?: string | null
+          full_name?: string | null
+          address_line1: string
+          address_line2?: string | null
+          city: string
+          state: string
+          postal_code: string
+          country?: string | null
+          phone?: string | null
+          is_default?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          label?: string | null
+          full_name?: string | null
+          address_line1?: string
+          address_line2?: string | null
+          city?: string
+          state?: string
+          postal_code?: string
+          country?: string | null
+          phone?: string | null
+          is_default?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_addresses_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      abandoned_checkouts: {
+        Row: {
+          id: string
+          user_id: string | null
+          cart_items: Json | null
+          total_amount: number | null
+          email: string | null
+          created_at: string
+          recovered_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          cart_items?: Json | null
+          total_amount?: number | null
+          email?: string | null
+          created_at?: string
+          recovered_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          cart_items?: Json | null
+          total_amount?: number | null
+          email?: string | null
+          created_at?: string
+          recovered_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abandoned_checkouts_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       store_sections: {
         Row: {
           id: string
@@ -798,6 +987,7 @@ export interface Database {
           created_at: string
           updated_at: string
           joined_at: string | null
+          is_email_verified: boolean | null
         }
         Insert: {
           id: string
@@ -828,6 +1018,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
           joined_at?: string | null
+          is_email_verified?: boolean | null
         }
         Update: {
           id?: string
@@ -858,6 +1049,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
           joined_at?: string | null
+          is_email_verified?: boolean | null
         }
         Relationships: []
       }
@@ -1345,6 +1537,9 @@ export interface Database {
           payment_instructions: string | null
           created_at: string
           updated_at: string
+          shop_upi_id: string | null
+          shop_usdt_address: string | null
+          shop_qr_code_url: string | null
         }
         Insert: {
           id?: string
@@ -1356,6 +1551,9 @@ export interface Database {
           payment_instructions?: string | null
           created_at?: string
           updated_at?: string
+          shop_upi_id?: string | null
+          shop_usdt_address?: string | null
+          shop_qr_code_url?: string | null
         }
         Update: {
           id?: string

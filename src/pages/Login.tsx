@@ -147,14 +147,14 @@ const Login = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Email Address</label>
+                  <label className="text-sm font-medium">Email or User ID</label>
                   <input
-                    type="email"
+                    type="text"
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-4 py-3.5 rounded-xl bg-card/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all backdrop-blur-sm placeholder:text-muted-foreground/50"
-                    placeholder="Enter your email address"
+                    placeholder="Enter email or User ID (e.g. SL12345678)"
                     disabled={isLoading}
                   />
                 </div>

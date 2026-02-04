@@ -5,16 +5,21 @@ import { useNavigate } from "react-router-dom";
 interface LockedFeatureOverlayProps {
   title?: string;
   description?: string;
+  inLayout?: boolean;
 }
 
-const LockedFeatureOverlay = ({ 
+const LockedFeatureOverlay = ({
   title = "Feature Locked",
-  description = "Purchase a membership plan to unlock affiliate features, referral links, and income dashboard."
+  description = "Purchase a membership plan to unlock affiliate features, referral links, and income dashboard.",
+  inLayout = false
 }: LockedFeatureOverlayProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-xl">
+    <div className={inLayout
+      ? "w-full flex items-center justify-center py-8"
+      : "fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-xl"
+    }>
       <div className="max-w-md mx-4 text-center">
         {/* Lock Icon */}
         <div className="relative mx-auto mb-6">

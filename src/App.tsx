@@ -12,6 +12,8 @@ import PageTransition from "@/components/PageTransition";
 import { Skeleton } from "@/components/ui/skeleton";
 import ReferralNotificationProvider from "@/components/ReferralNotificationProvider";
 import { CartProvider } from "@/context/CartContext";
+import MobileAppInitializer from "@/components/MobileAppInitializer";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
 // Lazy load route components for code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -39,6 +41,9 @@ const AffiliateEarningsPage = lazy(() => import("./pages/AffiliateEarningsPage")
 const MyOrdersPage = lazy(() => import("./pages/MyOrdersPage"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const UserOrders = lazy(() => import("./pages/UserOrders"));
+const ShoppingWalletPage = lazy(() => import("./pages/ShoppingWalletPage"));
+const AddressesPage = lazy(() => import("./pages/AddressesPage"));
+const ShoppingProfilePage = lazy(() => import("./pages/ShoppingProfilePage"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminForgotPassword = lazy(() => import("./pages/AdminForgotPassword"));
@@ -46,21 +51,33 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const SubmitCoursePage = lazy(() => import("./pages/affiliate/SubmitCoursePage"));
 const CourseDetailPage = lazy(() => import("./pages/CourseDetailPage"));
 const PackageDetailPage = lazy(() => import("./pages/PackageDetailPage"));
+const CartPage = lazy(() => import("./pages/CartPage"));
 
 const queryClient = new QueryClient();
 
-// Loading fallback component with skeleton
 const PageLoader = () => (
-  <div className="min-h-screen bg-background">
-    {/* Navbar skeleton */}
-    <div className="h-20 border-b border-border/50 px-4 flex items-center justify-between">
-      <Skeleton className="h-10 w-32" variant="shimmer" />
-      <div className="hidden lg:flex items-center gap-6">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Skeleton key={i} className="h-4 w-16" variant="shimmer" />
-        ))}
+  <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+    {/* Minimal premium skeleton loader */}
+    <div className="w-full max-w-md p-6 space-y-8 animate-pulse">
+      <div className="flex justify-between items-center mb-12">
+        <Skeleton className="h-10 w-32 rounded-xl" variant="shimmer" />
+        <div className="flex gap-4">
+          <Skeleton className="h-10 w-10 rounded-full" variant="shimmer" />
+          <Skeleton className="h-10 w-10 rounded-full" variant="shimmer" />
+        </div>
       </div>
-      <div className="flex items-center gap-3">
+
+      <div className="space-y-4">
+        <Skeleton className="h-48 w-full rounded-[2rem]" variant="shimmer" />
+        <div className="grid grid-cols-4 gap-4">
+          <Skeleton className="h-16 w-full rounded-2xl" variant="shimmer" />
+          <Skeleton className="h-16 w-full rounded-2xl" variant="shimmer" />
+          <Skeleton className="h-16 w-full rounded-2xl" variant="shimmer" />
+          <Skeleton className="h-16 w-full rounded-2xl" variant="shimmer" />
+        </div>
+      </div>
+
+      <div className="flex gap-4 mt-8">
         <Skeleton className="h-9 w-20" variant="shimmer" />
         <Skeleton className="h-9 w-24" variant="shimmer" />
       </div>
@@ -82,8 +99,14 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <AuthProvider>
+          <MobileAppInitializer />
           <CartProvider>
             <ReferralNotificationProvider>
               <Suspense fallback={<PageLoader />}>
@@ -169,6 +192,7 @@ const App = () => (
                     } />
                     {/* Shopping & E-Commerce Routes */}
                     <Route path="/shopping" element={<ShoppingWrapper />} />
+                    <Route path="/shopping/cart" element={<CartPage />} />
                     <Route path="/product/:slug" element={<ProductDetailPage />} />
                     <Route path="/affiliate-program" element={<AffiliateApplicationPage />} />
                     <Route path="/dashboard/affiliate-earnings" element={
@@ -197,6 +221,21 @@ const App = () => (
                         <UserOrders />
                       </ProtectedRoute>
                     } />
+                    <Route path="/dashboard/shopping-wallet" element={
+                      <ProtectedRoute>
+                        <ShoppingWalletPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/addresses" element={
+                      <ProtectedRoute>
+                        <AddressesPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard/shopping-profile" element={
+                      <ProtectedRoute>
+                        <ShoppingProfilePage />
+                      </ProtectedRoute>
+                    } />
 
                     {/* Admin Routes */}
                     <Route path="/admin" element={
@@ -211,6 +250,7 @@ const App = () => (
                 </PageTransition>
               </Suspense>
               <AIChatbot />
+              <MobileBottomNav />
             </ReferralNotificationProvider>
           </CartProvider>
         </AuthProvider>

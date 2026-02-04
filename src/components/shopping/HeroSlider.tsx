@@ -31,19 +31,38 @@ const HeroSlider = () => {
         return () => clearInterval(interval);
     }, [banners]);
 
-    const fetchBanners = async () => {
-        try {
-            const { data, error } = await supabase
-                .from("store_banners")
-                .select("*")
-                .eq("is_active", true)
-                .order("display_order", { ascending: true });
+    // Fallback constants
+    const SUPABASE_URL = "https://vwzqaloqlvlewvijiqeu.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3enFhbG9xbHZsZXd2aWppcWV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNjMwMjQsImV4cCI6MjA4NDkzOTAyNH0.oEuQrpidyXbKYdy3SpuMDTHZveqZNHaJHMY3TK3ir2E";
 
-            if (error) throw error;
+    const fetchBanners = async (retryCount = 0) => {
+        try {
+            const url = new URL(`${SUPABASE_URL}/rest/v1/store_banners`);
+            url.searchParams.append("select", "*");
+            url.searchParams.append("is_active", "eq.true");
+            url.searchParams.append("order", "display_order.asc");
+
+            const response = await fetch(url.toString(), {
+                method: "GET",
+                headers: {
+                    "apikey": SUPABASE_ANON_KEY,
+                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+            const data = await response.json();
             setBanners((data as any[]) || []);
-        } catch (error) {
+            setLoading(false);
+        } catch (error: any) {
+            console.warn(`Fetch banners attempt ${retryCount + 1} failed:`, error.message);
+            if (retryCount < 3) {
+                setTimeout(() => fetchBanners(retryCount + 1), 1000 * (retryCount + 1));
+                return;
+            }
             console.error("Error fetching banners:", error);
-        } finally {
             setLoading(false);
         }
     };
@@ -65,6 +84,7 @@ const HeroSlider = () => {
     return (
 
         <div
+            data-testid="hero-slider"
             className="relative group w-full h-[400px] md:h-[500px] overflow-hidden rounded-3xl bg-slate-900 shadow-2xl mb-12"
             onMouseEnter={() => setBanners(prev => [...prev])} // Hack to potentially pause if I add pause logic, but for now just simpler
         >

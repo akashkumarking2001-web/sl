@@ -14,6 +14,7 @@ import PlatformEvolutionSection from "@/components/sections/PlatformEvolutionSec
 
 import FAQSection from "@/components/sections/FAQSection";
 import ContactSection from "@/components/sections/ContactSection";
+import AppDownloadSection from "@/components/sections/AppDownloadSection";
 import { ScrollAnimate } from "@/components/ui/ScrollAnimate";
 
 const Index = () => {
@@ -36,58 +37,58 @@ const Index = () => {
         <div className="ambient-orb ambient-orb-2" />
         <div className="ambient-orb ambient-orb-3" />
       </div>
-      
+
       {/* Parallax Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         {/* Large gradient orbs */}
-        <div 
+        <div
           className="absolute w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl"
-          style={{ 
-            top: '10%', 
+          style={{
+            top: '10%',
             left: '-10%',
-            transform: `translateY(${scrollY * 0.1}px)` 
+            transform: `translateY(${scrollY * 0.1}px)`
           }}
         />
-        <div 
+        <div
           className="absolute w-[500px] h-[500px] rounded-full bg-accent/5 blur-3xl"
-          style={{ 
-            top: '40%', 
+          style={{
+            top: '40%',
             right: '-5%',
-            transform: `translateY(${scrollY * 0.15}px)` 
+            transform: `translateY(${scrollY * 0.15}px)`
           }}
         />
-        <div 
+        <div
           className="absolute w-[400px] h-[400px] rounded-full bg-electric/3 blur-3xl"
-          style={{ 
-            bottom: '20%', 
+          style={{
+            bottom: '20%',
             left: '20%',
-            transform: `translateY(${scrollY * -0.1}px)` 
+            transform: `translateY(${scrollY * -0.1}px)`
           }}
         />
 
         {/* Geometric shapes */}
-        <div 
+        <div
           className="absolute w-24 h-24 border border-primary/10 rotate-45"
-          style={{ 
-            top: '15%', 
+          style={{
+            top: '15%',
             right: '20%',
-            transform: `translateY(${scrollY * 0.2}px) rotate(45deg)` 
+            transform: `translateY(${scrollY * 0.2}px) rotate(45deg)`
           }}
         />
-        <div 
+        <div
           className="absolute w-16 h-16 border border-accent/10 rotate-12"
-          style={{ 
-            top: '50%', 
+          style={{
+            top: '50%',
             left: '8%',
-            transform: `translateY(${scrollY * 0.25}px) rotate(12deg)` 
+            transform: `translateY(${scrollY * 0.25}px) rotate(12deg)`
           }}
         />
-        <div 
+        <div
           className="absolute w-20 h-20 border border-emerald/10 rounded-full"
-          style={{ 
-            top: '70%', 
+          style={{
+            top: '70%',
             right: '15%',
-            transform: `translateY(${scrollY * -0.15}px)` 
+            transform: `translateY(${scrollY * -0.15}px)`
           }}
         />
 
@@ -116,20 +117,20 @@ const Index = () => {
         ))}
 
         {/* Gradient lines */}
-        <div 
+        <div
           className="absolute w-px h-40 bg-gradient-to-b from-transparent via-primary/20 to-transparent"
-          style={{ 
-            top: '25%', 
+          style={{
+            top: '25%',
             left: '25%',
-            transform: `translateY(${scrollY * 0.12}px)` 
+            transform: `translateY(${scrollY * 0.12}px)`
           }}
         />
-        <div 
+        <div
           className="absolute w-px h-32 bg-gradient-to-b from-transparent via-accent/20 to-transparent"
-          style={{ 
-            top: '60%', 
+          style={{
+            top: '60%',
             right: '30%',
-            transform: `translateY(${scrollY * -0.08}px)` 
+            transform: `translateY(${scrollY * -0.08}px)`
           }}
         />
       </div>
@@ -137,48 +138,52 @@ const Index = () => {
       <Navbar />
       <main className="relative z-10">
         <HeroSection />
-        
+
         <ScrollAnimate>
           <StatsSection />
         </ScrollAnimate>
-        
+
         <ScrollAnimate>
           <AboutSection />
         </ScrollAnimate>
-        
+
         <ScrollAnimate>
           <PlansSection />
         </ScrollAnimate>
-        
+
         <ScrollAnimate>
           <WhySkillLearnersSection />
         </ScrollAnimate>
-        
+
         <ScrollAnimate>
           <EarningEcosystemSection />
         </ScrollAnimate>
-        
+
         <ScrollAnimate>
           <CoursesSection />
         </ScrollAnimate>
-        
+
         <ScrollAnimate>
           <ReviewsSection />
         </ScrollAnimate>
-        
+
         <ScrollAnimate>
           <UserJourneySection />
         </ScrollAnimate>
-        
+
         <ScrollAnimate>
           <PlatformEvolutionSection />
         </ScrollAnimate>
-        
-        
+
+
         <ScrollAnimate>
           <FAQSection />
         </ScrollAnimate>
-        
+
+        <ScrollAnimate>
+          <AppDownloadSection />
+        </ScrollAnimate>
+
         <ScrollAnimate>
           <ContactSection />
         </ScrollAnimate>

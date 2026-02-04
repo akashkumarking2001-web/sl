@@ -72,17 +72,15 @@ const HeroSection = () => {
               Transform Your Future Today
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight font-display">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.1] tracking-tight text-slate-900 dark:text-white mb-6 animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both" style={{ fontFamily: "'Montserrat', sans-serif" }}>
               {content.title ? content.title : (
                 <>
-                  Welcome to{" "}
-                  <span className="text-gradient-gold">Skill</span>{" "}
-                  <span className="text-gradient-teal">Learners</span>
+                  Welcome to <span className="drop-shadow-sm font-extrabold" style={{ color: "#F2B035" }}>Skill</span> <span className="drop-shadow-sm font-extrabold" style={{ color: "#2D8077" }}>Learners</span>
                 </>
               )}
             </h1>
 
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0">
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both">
               {content.subtitle || (
                 <>
                   Upgrade your skills through our <strong className="text-foreground">expert-led courses</strong>, and we'll provide the platform and opportunity for you to achieve{" "}
@@ -91,29 +89,29 @@ const HeroSection = () => {
               )}
             </p>
 
-            <ul className="space-y-3 text-left max-w-md mx-auto lg:mx-0">
+            <ul className="space-y-3 text-left max-w-md mx-auto lg:mx-0 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
               {highlights.map((item, index) => (
                 <li
                   key={index}
                   className="flex items-center gap-3 text-foreground/80"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <CheckCircle2 className="w-5 h-5 text-emerald flex-shrink-0" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500 fill-mode-both">
               <Link to={content.ctaLink || "/register"}>
-                <Button variant="hero" size="xl" className="w-full sm:w-auto group">
+                <Button className="btn-premium w-full sm:w-auto h-auto text-lg px-8 py-4 rounded-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all">
                   {content.ctaText || "Start Learning Now"}
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
               <a href="https://youtube.com/@skilllearners" target="_blank" rel="noopener noreferrer">
-                <Button variant="heroOutline" size="xl" className="w-full sm:w-auto group">
-                  <Play className="w-5 h-5" />
+                <Button variant="outline" size="xl" className="w-full sm:w-auto group rounded-lg border-2 h-auto text-lg px-8 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:scale-105">
+                  <Play className="w-5 h-5 mr-2" />
                   Watch Demo
                 </Button>
               </a>

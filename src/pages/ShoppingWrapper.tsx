@@ -1,5 +1,5 @@
 import ShoppingPage from "./ShoppingPage";
-import AffiliateSidebar from "@/components/layout/AffiliateSidebar";
+import ShoppingSidebar from "@/components/layout/ShoppingSidebar";
 import { useAuth } from "@/hooks/useAuth";
 
 // Simplified wrapper - directly shows shopping page
@@ -9,9 +9,9 @@ const ShoppingWrapper = () => {
 
     if (user) {
         return (
-            <AffiliateSidebar>
+            <ShoppingSidebar>
                 <ShoppingPage />
-            </AffiliateSidebar>
+            </ShoppingSidebar>
         );
     }
 
