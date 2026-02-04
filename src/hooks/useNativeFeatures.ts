@@ -1,5 +1,5 @@
 import { Geolocation } from '@capacitor/geolocation';
-import { NativeBiometric } from 'capacitor-native-biometric';
+// import { NativeBiometric } from 'capacitor-native-biometric';
 import { Capacitor } from '@capacitor/core';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,29 +19,36 @@ export const useNativeFeatures = () => {
     };
 
     const performBiometricAuth = async () => {
+        // Biometric auth will be enabled when building native apps
+        // For now, return true to allow web deployment
+        console.log('Biometric auth not available in web build');
+        return true;
+
+        /* Uncomment when building native apps:
         if (!Capacitor.isNativePlatform()) return true;
-
+        
         try {
-            const result = await NativeBiometric.isAvailable();
-            if (!result.isAvailable) return true;
-
-            await NativeBiometric.verifyIdentity({
-                reason: "For easy log in",
-                title: "Log in",
-                subtitle: "Confirm your identity",
-                description: "Please authenticate to continue.",
-            });
-
-            return true;
+          const result = await NativeBiometric.isAvailable();
+          if (!result.isAvailable) return true;
+    
+          await NativeBiometric.verifyIdentity({
+            reason: "For easy log in",
+            title: "Log in",
+            subtitle: "Confirm your identity",
+            description: "Please authenticate to continue.",
+          });
+          
+          return true;
         } catch (error) {
-            console.error('Biometric auth failed', error);
-            toast({
-                title: "Auth Failed",
-                description: "Could not verify identity. Please use your credentials.",
-                variant: "destructive"
-            });
-            return false;
+          console.error('Biometric auth failed', error);
+          toast({
+            title: "Auth Failed",
+            description: "Could not verify identity. Please use your credentials.",
+            variant: "destructive"
+          });
+          return false;
         }
+        */
     };
 
     return { getCurrentLocation, performBiometricAuth };
