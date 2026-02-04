@@ -1,5 +1,5 @@
 import { Geolocation } from '@capacitor/geolocation';
-import { NativeBiometric } from '@capacitor-community/native-biometric';
+import { NativeBiometric } from 'capacitor-native-biometric';
 import { Capacitor } from '@capacitor/core';
 import { useToast } from '@/hooks/use-toast';
 
