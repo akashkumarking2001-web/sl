@@ -3,6 +3,8 @@ import { ArrowLeft, Star, Clock, Users, Play, CheckCircle2, Award, Shield, BookO
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { Capacitor } from "@capacitor/core";
+import NativeHeader from "@/components/layout/NativeHeader";
 
 // Course data - would typically come from a database
 const coursesData: Record<string, {
@@ -188,13 +190,14 @@ const CourseDetailPage = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const course = courseId ? coursesData[courseId] : null;
+  const isNative = Capacitor.isNativePlatform() || ['8080', '5174'].includes(window.location.port);
 
   if (!course) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Course Not Found</h1>
-          <Link to="/#courses">
+          <Link to="/courses">
             <Button>Back to Courses</Button>
           </Link>
         </div>
@@ -203,6 +206,80 @@ const CourseDetailPage = () => {
   }
 
   const discount = Math.round((1 - course.price / course.mrp) * 100);
+
+  if (isNative) {
+    return (
+      <div className="h-[100dvh] w-full bg-black text-white flex flex-col font-sans overflow-hidden">
+        <NativeHeader title="Course Details" />
+
+        <main className="flex-1 overflow-y-auto pb-24 scrollbar-hide">
+          {/* Hero Image */}
+          <div className="relative h-64 w-full">
+            <img src={course.image} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+            <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-gradient-to-r ${course.color}`}>
+              {course.level}
+            </div>
+          </div>
+
+          <div className="px-6 -mt-12 relative z-10">
+            <div className="glass-card p-6 rounded-[2.5rem]">
+              <h1 className="text-2xl font-black tracking-tight mb-2">{course.title}</h1>
+              <div className="flex items-center gap-4 text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-4">
+                <span className="flex items-center gap-1"><Star className="w-3 h-3 text-primary fill-primary" /> {course.rating}</span>
+                <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {course.students.toLocaleString()}</span>
+                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {course.duration}</span>
+              </div>
+              <p className="text-sm text-gray-400 leading-relaxed mb-6">{course.description}</p>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-white">₹{course.price.toLocaleString()}</span>
+                    <span className="text-xs text-gray-600 line-through">₹{course.mrp.toLocaleString()}</span>
+                  </div>
+                  <span className="text-[10px] font-black text-emerald-500 uppercase">{discount}% Off Special</span>
+                </div>
+                <Link to={`/payment?course=${encodeURIComponent(course.title)}`}>
+                  <Button className="h-12 px-8 rounded-2xl bg-primary text-black font-black uppercase tracking-widest text-[10px] shadow-glow-gold/20 active:scale-95 transition-all">
+                    Enroll Now
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Syllabus Recap */}
+          <div className="px-6 mt-8 space-y-4">
+            <h3 className="text-lg font-black tracking-tight italic mb-4">What's Inside</h3>
+            {course.syllabus.map((mod, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.03] border border-white/5">
+                <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center font-black text-primary border border-white/5">
+                  {i + 1}
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-gray-100">{mod.title}</h4>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase">{mod.lessons.length} Exclusive Lessons</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Instructor Block */}
+          <div className="px-6 py-12">
+            <div className="p-6 rounded-[2.5rem] bg-gradient-to-br from-primary/10 to-transparent border border-primary/10 flex items-center gap-6">
+              <img src={course.instructor.image} className="w-16 h-16 rounded-3xl object-cover border-2 border-primary/20" />
+              <div>
+                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">Mentor</p>
+                <h4 className="text-lg font-black">{course.instructor.name}</h4>
+                <p className="text-xs text-gray-500 font-medium">{course.instructor.title}</p>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -311,14 +388,15 @@ const CourseDetailPage = () => {
               </ul>
 
               <Link to={`/register?course=${encodeURIComponent(course.title)}&plan=${course.recommendedPlan}`}>
-                <Button variant="hero" size="xl" className="w-full mb-3">
-                  Enroll Now
-                  <ArrowRight className="w-5 h-5" />
+                <Button variant="hero" size="xl" className="w-full mb-3 bg-primary text-black font-black uppercase tracking-widest h-16 rounded-2xl shadow-xl shadow-primary/20">
+                  Buy Now
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <p className="text-center text-xs text-muted-foreground">
-                30-day money-back guarantee
-              </p>
+              <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                <Shield className="w-3 h-3" />
+                30-Day Money-Back Guarantee
+              </div>
             </div>
           </div>
         </div>

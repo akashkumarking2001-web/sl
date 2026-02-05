@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, X, Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Capacitor } from '@capacitor/core';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -29,6 +30,7 @@ const AIChatbot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isNative = Capacitor.isNativePlatform() || ['8080', '5174'].includes(window.location.port);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -50,8 +52,6 @@ const AIChatbot = () => {
     setInput('');
     setIsLoading(true);
 
-    // AI Response Strategy: Local Knowledge Base (Non-API)
-    // To ensure consistency and zero-latency.
     const lowerInput = content.toLowerCase();
     let reply = "I can help you with details about our Academy, Affiliate Program, and Packages. What would you like to know?";
 
@@ -67,7 +67,6 @@ const AIChatbot = () => {
       reply = "I recommend the **ELITE Package** if you want to master Digital Marketing & Ads, or the **LEGACY Package** if you are interested in Financial Markets & Trading.";
     }
 
-    // Simulate natural thinking delay
     setTimeout(() => {
       const assistantMessage: Message = {
         role: 'assistant',
@@ -91,7 +90,8 @@ const AIChatbot = () => {
     <>
       <div
         className={cn(
-          "fixed bottom-5 right-5 z-50 transition-all duration-500",
+          "fixed z-50 transition-all duration-500",
+          isNative ? "bottom-[5.5rem] right-4" : "bottom-5 right-5",
           isOpen && "scale-0 opacity-0 pointer-events-none"
         )}
       >
@@ -113,12 +113,13 @@ const AIChatbot = () => {
       <div
         className={cn(
           "fixed z-50 transition-all duration-400 ease-out",
-          "bottom-4 right-4 w-[360px] max-w-[calc(100vw-2rem)]",
+          "right-4 w-[360px] max-w-[calc(100vw-2rem)]",
+          isNative ? "bottom-[5.5rem]" : "bottom-4",
           "lg:bottom-5 lg:right-5",
           "shadow-2xl shadow-black/30",
           isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0 pointer-events-none"
         )}
-        style={{ height: 'min(520px, calc(100vh - 6rem))' }}
+        style={{ height: 'min(520px, calc(100vh - 8rem))' }}
       >
         <div className="relative h-full rounded-2xl bg-card border border-border overflow-hidden flex flex-col">
           <div className="relative p-3 border-b border-border bg-muted/50">
@@ -132,10 +133,10 @@ const AIChatbot = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground text-sm flex items-center gap-1.5">
-                    Business Consultant
-                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">AI</span>
+                    Consultant
+                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">ARIA</span>
                   </h3>
-                  <p className="text-[10px] text-muted-foreground">Official AI Support</p>
+                  <p className="text-[10px] text-muted-foreground">Skill Learners Official AI</p>
                 </div>
               </div>
               <Button
@@ -200,7 +201,7 @@ const AIChatbot = () => {
 
               {messages.length === 1 && !isLoading && (
                 <div className="mt-3 space-y-2">
-                  <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 ml-1">
                     <Sparkles className="h-2.5 w-2.5 text-primary" />
                     Suggested questions:
                   </p>
@@ -222,26 +223,24 @@ const AIChatbot = () => {
 
           <form onSubmit={handleSubmit} className="relative p-3 border-t border-border bg-muted/30">
             <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <Input
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask ARIA anything..."
-                  disabled={isLoading}
-                  className="w-full rounded-lg bg-background border-border focus:border-primary/50 text-foreground placeholder:text-muted-foreground pr-3 py-5 text-sm"
-                />
-              </div>
+              <Input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask ARIA anything..."
+                disabled={isLoading}
+                className="w-full rounded-lg bg-background border-border focus:border-primary/50 text-foreground text-sm"
+              />
               <Button
                 type="submit"
                 size="icon"
                 disabled={!input.trim() || isLoading}
-                className="h-10 w-10 rounded-lg bg-primary hover:bg-primary/90 disabled:opacity-50 transition-all"
+                className="h-10 w-10 shrink-0 rounded-lg bg-primary hover:bg-primary/90 transition-all font-sans"
               >
                 <Send className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-center text-[9px] text-muted-foreground mt-1.5">
+            <p className="text-center text-[9px] text-muted-foreground mt-1.5 font-sans font-bold">
               Powered by Skill Learners AI
             </p>
           </form>

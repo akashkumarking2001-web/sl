@@ -135,12 +135,12 @@ const AdminLogin = () => {
                 <Shield className="w-10 h-10 text-white" />
               </div>
             </div>
-            <h1 className="text-4xl font-black text-white tracking-tight mb-1">
-              SYSTEM <span className="text-red-600">ADMIN</span>
+            <h1 className="text-4xl font-bold text-white tracking-tight mb-1">
+              ADMIN <span className="text-red-600">LOGIN</span>
             </h1>
             <div className="h-1 w-12 bg-red-600 rounded-full mb-3" />
-            <p className="text-slate-500 text-[10px] uppercase font-black tracking-[0.4em] text-center">
-              Restricted Terminal Interface
+            <p className="text-slate-500 text-xs font-semibold tracking-widest text-center">
+              Restricted Access Portal
             </p>
           </div>
 
@@ -190,7 +190,7 @@ const AdminLogin = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-16 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-sm uppercase tracking-widest shadow-[0_10px_30px_rgba(220,38,38,0.3)] active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full h-16 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-base shadow-[0_10px_30px_rgba(220,38,38,0.3)] active:scale-[0.98] transition-all disabled:opacity-50"
             >
               {isLoading ? (
                 <div className="flex items-center gap-3">
@@ -200,7 +200,7 @@ const AdminLogin = () => {
               ) : (
                 <div className="flex items-center gap-3">
                   <Shield className="w-4 h-4" />
-                  Grant Access
+                  Login
                 </div>
               )}
             </Button>
@@ -219,9 +219,9 @@ const AdminLogin = () => {
         <div className="text-center mt-10">
           <Link
             to="/login"
-            className="text-xs font-bold text-slate-600 hover:text-red-500 transition-colors uppercase tracking-widest"
+            className="text-xs font-semibold text-slate-600 hover:text-red-500 transition-colors"
           >
-            Switch to Regular Session
+            Switch to User Login
           </Link>
         </div>
       </div>

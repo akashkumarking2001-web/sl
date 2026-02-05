@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { notify } from "@/lib/notifications";
 import logo from "@/assets/logo.png";
+import { Capacitor } from "@capacitor/core";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +15,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const isNative = Capacitor.isNativePlatform() || ['8080', '5174'].includes(window.location.port);
 
   // Get plan/course from URL params to persist
   const selectedPlan = searchParams.get("plan");
@@ -63,6 +65,71 @@ const Login = () => {
     { icon: Users, text: "Join 10,000+ Active Learners" },
     { icon: Sparkles, text: "Unlock Premium Courses" },
   ];
+
+  if (isNative) {
+    return (
+      <div className="min-h-screen premium-mesh-bg text-white flex flex-col p-6 font-sans relative overflow-hidden">
+        {/* Dynamic Abstract Shapes */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[10%] left-[5%] w-64 h-64 bg-primary/5 rounded-full blur-[100px] float-shape" />
+          <div className="absolute bottom-[10%] right-[5%] w-72 h-72 bg-amber-500/5 rounded-full blur-[110px] float-shape [animation-delay:2s]" />
+        </div>
+
+        <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-10 relative z-10">
+          <div className="space-y-4 text-center animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="p-3 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 w-fit mx-auto shadow-xl">
+              <img src={logo} alt="Skill Learners" className="h-14 w-auto mx-auto drop-shadow-lg" />
+            </div>
+            <h1 className="text-3xl font-black tracking-tight pt-2">Welcome Back</h1>
+            <p className="text-gray-400 font-bold text-sm">Continue your professional journey</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-gray-400 ml-1">Email or Student ID</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full h-14 px-6 rounded-2xl bg-white/5 border border-white/10 text-sm font-black focus:ring-2 focus:ring-primary/20 outline-none transition-all text-white placeholder:text-gray-600"
+                  placeholder="Enter credentials"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-gray-400 ml-1">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full h-14 px-6 rounded-2xl bg-white/5 border border-white/10 text-sm font-black focus:ring-2 focus:ring-primary/20 outline-none transition-all text-white placeholder:text-gray-600"
+                    placeholder="••••••••"
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full h-16 rounded-2xl bg-primary text-black font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.95] transition-all" disabled={isLoading}>
+              {isLoading ? <Loader2 className="animate-spin w-6 h-6" /> : "Sign In"}
+            </Button>
+
+            <div className="text-center space-y-4">
+              <Link to="/forgot" className="block text-xs font-black text-primary tracking-wider">Forgot Password?</Link>
+              <div className="h-px bg-white/10 w-1/2 mx-auto" />
+              <p className="text-sm font-bold text-gray-400">New here? <Link to="/register" className="text-primary ml-1">Create Account</Link></p>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">

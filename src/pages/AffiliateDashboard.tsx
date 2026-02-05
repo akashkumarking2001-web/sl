@@ -177,7 +177,7 @@ const AffiliateDashboard = () => {
                     <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/affiliate/leaderboard">
+                <Link to="/dashboard/leaderboard">
                   <Button variant="outline" className="w-full justify-between group">
                     <span className="flex items-center gap-2">
                       <Award className="w-4 h-4" />

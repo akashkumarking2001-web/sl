@@ -5,14 +5,16 @@ import { useCart } from "@/context/CartContext";
 import { Badge } from "@/components/ui/badge";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const NativeHeader = ({ title }: { title: string }) => {
     const { user, signOut } = useAuth();
     const { totalItems } = useCart();
     const navigate = useNavigate();
-    const isNative = Capacitor.isNativePlatform();
+    const isNative = Capacitor.isNativePlatform() || ['8080', '5174'].includes(window.location.port);
+    const isMobileView = isNative || (typeof window !== 'undefined' && window.innerWidth <= 768);
 
-    if (!isNative && window.innerWidth > 768) return null;
+    if (!isMobileView && !isNative) return null;
 
     const handleAction = async (path: string) => {
         if (isNative) await Haptics.impact({ style: ImpactStyle.Light });
@@ -27,6 +29,8 @@ const NativeHeader = ({ title }: { title: string }) => {
                 </h1>
 
                 <div className="flex items-center gap-2">
+                    <ThemeToggle variant="icon" />
+
                     <button
                         onClick={() => handleAction("/search")}
                         className="p-2 rounded-full hover:bg-muted"
@@ -53,6 +57,18 @@ const NativeHeader = ({ title }: { title: string }) => {
                         <div className="w-7 h-7 bg-primary/10 flex items-center justify-center">
                             <User className="w-4 h-4 text-primary" />
                         </div>
+                    </button>
+
+                    <button
+                        onClick={async () => {
+                            if (isNative) await Haptics.impact({ style: ImpactStyle.Heavy });
+                            await signOut();
+                            // No need to navigate manually, signOut handles href redirection
+                        }}
+                        className="p-2 rounded-full hover:bg-destructive/10 text-destructive transition-colors ml-1"
+                        title="Sign Out"
+                    >
+                        <LogOut className="w-5 h-5" />
                     </button>
                 </div>
             </div>

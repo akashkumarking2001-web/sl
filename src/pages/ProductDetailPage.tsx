@@ -25,6 +25,8 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
+import { Capacitor } from "@capacitor/core";
+import NativeHeader from "@/components/layout/NativeHeader";
 import {
     Dialog,
     DialogContent,
@@ -83,6 +85,7 @@ const ProductDetailPage = () => {
     const { addToCart } = useCart();
     const { toast } = useToast();
     const ref = searchParams.get("ref");
+    const isNative = Capacitor.isNativePlatform() || ['8080', '5174'].includes(window.location.port);
 
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
@@ -589,8 +592,109 @@ const ProductDetailPage = () => {
         );
     }
 
+    // Prepare image gallery and discount calculation
     const allImages = [product.image_url, ...(product.gallery_images || [])];
     const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+
+    // Native Mobile View
+    if (isNative) {
+        return (
+            <div className="h-[100dvh] w-full bg-black text-white flex flex-col font-sans overflow-hidden">
+                <NativeHeader title="Product Details" />
+
+                <main className="flex-1 overflow-y-auto pb-32 scrollbar-hide">
+                    {/* Product Image Section */}
+                    <div className="relative w-full aspect-square bg-white">
+                        <img
+                            src={allImages[selectedImage]}
+                            className="w-full h-full object-contain"
+                            alt={product.name}
+                        />
+                        {allImages.length > 1 && (
+                            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                                {allImages.map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className={cn(
+                                            "w-1.5 h-1.5 rounded-full transition-all",
+                                            selectedImage === i ? "bg-primary w-4" : "bg-gray-300"
+                                        )}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="px-6 py-8 space-y-6">
+                        <div className="space-y-2">
+                            <h1 className="text-2xl font-black tracking-tight leading-tight">{product.name}</h1>
+                            <div className="flex items-center gap-2">
+                                <div className="flex text-amber-500">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star key={i} className={cn("w-3.5 h-3.5", i < (product.average_rating || 5) ? "fill-current" : "text-gray-800")} />
+                                    ))}
+                                </div>
+                                <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">{reviews.length} Reviews</span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-baseline gap-3">
+                            <span className="text-3xl font-black text-white">₹{product.price.toLocaleString()}</span>
+                            <span className="text-sm text-gray-600 line-through font-bold">₹{product.mrp.toLocaleString()}</span>
+                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest border border-emerald-500/30 px-2 py-0.5 rounded-full">{discount}% Off</span>
+                        </div>
+
+                        <div className="glass-card p-5 rounded-3xl border border-white/5 space-y-4">
+                            <p className="text-sm text-gray-400 leading-relaxed font-medium">
+                                {product.short_description}
+                            </p>
+
+                            <div className="grid grid-cols-2 gap-4 pt-2">
+                                <div className="p-3 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center text-center">
+                                    <Truck className="w-5 h-5 text-primary mb-2" />
+                                    <span className="text-[10px] font-black text-white uppercase">Fast Ship</span>
+                                </div>
+                                <div className="p-3 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center text-center">
+                                    <RotateCcw className="w-5 h-5 text-primary mb-2" />
+                                    <span className="text-[10px] font-black text-white uppercase">7 Day Return</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Buy Now Button - Floating / Fixed at bottom? User said clickable. I'll make it prominent. */}
+                        <div className="pt-4 flex gap-3">
+                            <Button
+                                onClick={handleAddToCart}
+                                variant="outline"
+                                className="h-14 flex-1 rounded-2xl border-white/10 bg-white/5 text-white font-black uppercase tracking-widest text-xs"
+                            >
+                                Add Cart
+                            </Button>
+                            <Button
+                                onClick={handleBuyNow}
+                                className="h-14 flex-[2] rounded-2xl bg-primary text-black font-black uppercase tracking-widest text-xs shadow-glow-gold/20 active:scale-95 transition-all"
+                            >
+                                Buy Now
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Specifications Section */}
+                    <div className="px-6 mt-8 pb-12">
+                        <h3 className="text-lg font-black tracking-tight italic mb-4">Specifications</h3>
+                        <div className="space-y-2">
+                            {product.specifications ? Object.entries(product.specifications).map(([k, v]: any) => (
+                                <div key={k} className="flex justify-between items-center p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{k.replace(/_/g, ' ')}</span>
+                                    <span className="text-xs font-black text-gray-200">{v}</span>
+                                </div>
+                            )) : <p className="text-sm text-gray-500">No specifications found.</p>}
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">

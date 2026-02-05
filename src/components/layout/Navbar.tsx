@@ -32,15 +32,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const navLinks = [
-  { name: "Home", href: "/", icon: Home },
-  { name: "Store", href: "/shopping", icon: ShoppingBag },
-  { name: "Courses", href: "/#courses", icon: BookOpen },
-  { name: "Affiliate", href: "/affiliate/apply", icon: UserIcon },
-  { name: "About", href: "/#about", icon: Info },
-  { name: "Contact", href: "/#contact", icon: Mail },
-];
-
 import { Capacitor } from "@capacitor/core";
 
 const Navbar = () => {
@@ -95,11 +86,17 @@ const Navbar = () => {
 
   const isShoppingPage = location.pathname.startsWith("/shopping");
 
+  const navLinks = [
+    { name: "Home", href: user ? "/user-home" : "/", icon: Home },
+    { name: "Store", href: "/shopping", icon: ShoppingBag },
+    { name: "Courses", href: "/#courses", icon: BookOpen },
+    { name: "About", href: "/#about", icon: Info },
+    { name: "Contact", href: "/#contact", icon: Mail },
+  ];
+
   const shoppingLinks = [
-    { name: "Back to Home", href: "/", icon: Home },
-    { name: "Electronics", href: "/shopping?cat=electronics", icon: ShoppingBag },
-    { name: "Digital Assets", href: "/shopping?cat=assets", icon: BookOpen },
-    { name: "Software", href: "/shopping?cat=software", icon: BookOpen },
+    { name: "Back to Home", href: user ? "/user-home" : "/", icon: Home },
+    { name: "Marketplace", href: "/shopping", icon: ShoppingBag },
   ];
 
   const activeLinks = isShoppingPage ? shoppingLinks : navLinks;
@@ -108,25 +105,25 @@ const Navbar = () => {
     <>
       <nav
         className={cn(
-          "fixed top-0 left-0 right-0 z-[100] transition-all duration-500",
+          "fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ease-in-out",
           scrolled
-            ? "bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50 dark:border-gray-800/50 py-3"
-            : "bg-transparent py-5"
+            ? "bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] border-b border-border/30 py-2"
+            : "bg-white/60 dark:bg-slate-950/60 backdrop-blur-md py-3"
         )}
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group shrink-0">
               <img
                 src={logo}
                 alt="Skill Learners"
-                className="h-12 md:h-16 w-auto transition-all duration-300 group-hover:scale-105"
+                className="h-11 md:h-14 w-auto transition-all duration-500 group-hover:scale-[1.02]"
               />
             </Link>
 
             {/* Desktop Mid Navigation */}
-            <div className="hidden lg:flex items-center gap-10">
+            <div className="hidden lg:flex items-center gap-8">
               {activeLinks.map((link) => {
                 const isActive = location.pathname === link.href || (link.href.startsWith("/#") && isIndexPage);
                 return (
@@ -134,36 +131,41 @@ const Navbar = () => {
                     key={link.name}
                     onClick={() => handleNavClick(link.href)}
                     className={cn(
-                      "text-sm font-medium tracking-wider transition-all duration-300 hover:text-primary uppercase",
+                      "relative px-1 py-1.5 text-[14px] font-medium tracking-normal transition-colors duration-500 group",
                       isActive
                         ? "text-primary"
-                        : "text-black dark:text-white"
+                        : "text-foreground/70 hover:text-foreground"
                     )}
                   >
-                    {link.name}
+                    <span className="relative z-10">{link.name}</span>
+                    {/* Elegant center-growing underline */}
+                    <div className={cn(
+                      "absolute bottom-0 left-1/2 -translate-x-1/2 h-[1.5px] bg-primary transition-all duration-500 ease-out",
+                      isActive ? "w-full" : "w-0 group-hover:w-full"
+                    )} />
                   </button>
                 );
               })}
             </div>
 
             {/* Desktop End Actions */}
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-3">
               <ThemeToggle variant="icon" />
 
               {!isShoppingPage && (
                 <Link to="/shopping" className="relative group">
-                  <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full hover:bg-primary/10 hover:text-primary transition-all duration-300">
-                    <ShoppingBag className="w-5 h-5" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-primary/8 hover:text-primary transition-all duration-500">
+                    <ShoppingBag className="w-[18px] h-[18px]" />
                   </Button>
                 </Link>
               )}
 
               {isShoppingPage && (
                 <Link to="/shopping/cart" className="relative group">
-                  <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full hover:bg-primary/10 hover:text-primary transition-all duration-300">
-                    <ShoppingCart className="w-5 h-5" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-primary/8 hover:text-primary transition-all duration-500">
+                    <ShoppingCart className="w-[18px] h-[18px]" />
                     {totalItems > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-black border-2 border-background">
+                      <Badge className="absolute -top-1 -right-1 h-[18px] w-[18px] p-0 flex items-center justify-center bg-primary text-primary-foreground text-[9px] font-medium border-2 border-background rounded-full">
                         {totalItems}
                       </Badge>
                     )}
@@ -174,43 +176,47 @@ const Navbar = () => {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button className="rounded-full h-11 px-5 gap-2 font-black shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-95">
-                      <UserIcon className="w-4 h-4" />
-                      Account
-                      <ChevronDown className="w-4 h-4 opacity-50" />
+                    <Button className="rounded-lg h-9 px-4 gap-2 font-medium text-[13px] bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-500 active:scale-[0.98] shadow-sm hover:shadow-md">
+                      <UserIcon className="w-[15px] h-[15px]" />
+                      <span>Account</span>
+                      <ChevronDown className="w-3 h-3 opacity-60 transition-transform duration-300 group-data-[state=open]:rotate-180" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-gray-200/50 dark:border-gray-800/50 shadow-2xl">
-                    <DropdownMenuItem onClick={() => navigate("/user-home")} className="rounded-xl p-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 font-bold">
-                      <LayoutDashboard className="w-4 h-4 mr-3 text-primary" />
+                  <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5 bg-background/95 backdrop-blur-xl border border-border/50 shadow-xl">
+                    <DropdownMenuItem onClick={() => navigate("/user-home")} className="rounded-lg p-2.5 cursor-pointer hover:bg-primary/8 font-medium text-[13px] transition-colors duration-300">
+                      <LayoutDashboard className="w-4 h-4 mr-2.5 text-primary" />
                       Dashboard
                     </DropdownMenuItem>
                     {isShoppingPage && (
-                      <DropdownMenuItem onClick={() => navigate("/dashboard/orders")} className="rounded-xl p-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 font-bold">
-                        <ShoppingCart className="w-4 h-4 mr-3 text-primary" />
+                      <DropdownMenuItem onClick={() => navigate("/dashboard/orders")} className="rounded-lg p-2.5 cursor-pointer hover:bg-primary/8 font-medium text-[13px] transition-colors duration-300">
+                        <ShoppingCart className="w-4 h-4 mr-2.5 text-primary" />
                         My Orders
                       </DropdownMenuItem>
                     )}
                     {isAdmin && (
-                      <DropdownMenuItem onClick={() => navigate("/admin")} className="rounded-xl p-3 cursor-pointer text-red-500 hover:text-red-600 hover:bg-red-500/10 font-bold">
-                        <Shield className="w-4 h-4 mr-3" />
+                      <DropdownMenuItem onClick={() => navigate("/admin")} className="rounded-lg p-2.5 cursor-pointer text-red-500 hover:text-red-600 hover:bg-red-500/8 font-medium text-[13px] transition-colors duration-300">
+                        <Shield className="w-4 h-4 mr-2.5" />
                         Admin Panel
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuSeparator className="bg-gray-200/50 dark:bg-gray-800/50 my-2" />
-                    <DropdownMenuItem onClick={() => signOut()} className="rounded-xl p-3 cursor-pointer text-destructive hover:bg-destructive/10 font-bold">
-                      <LogOut className="w-4 h-4 mr-3" />
+                    <DropdownMenuSeparator className="my-1.5 bg-border/40" />
+                    <DropdownMenuItem onClick={() => signOut()} className="rounded-lg p-2.5 cursor-pointer text-destructive hover:bg-destructive/8 font-medium text-[13px] transition-colors duration-300">
+                      <LogOut className="w-4 h-4 mr-2.5" />
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <div className="flex items-center gap-5 ml-2">
-                  <Link to="/login" className="text-sm font-extrabold text-black dark:text-white hover:text-primary transition-colors uppercase tracking-widest">
-                    Login
+                <div className="flex items-center gap-2">
+                  <Link to="/login">
+                    <Button variant="ghost" className="h-9 px-4 text-[13px] font-medium text-foreground/70 hover:text-foreground hover:bg-primary/8 rounded-lg transition-all duration-500">
+                      Login
+                    </Button>
                   </Link>
                   <Link to="/register">
-                    <Button className="btn-premium font-bold text-white px-8 py-6 h-auto hover:scale-105 transition-all">Join Now</Button>
+                    <Button className="h-9 px-5 text-[13px] font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg transition-all duration-500 active:scale-[0.98] shadow-sm hover:shadow-md">
+                      Join Now
+                    </Button>
                   </Link>
                 </div>
               )}
@@ -265,33 +271,33 @@ const Navbar = () => {
           )}
         >
           {/* User Header */}
-          <div className="relative p-8 bg-black dark:bg-slate-900 text-white overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
+          <div className="relative p-6 bg-gradient-to-br from-primary/95 to-primary text-white overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5">
               <Shield className="w-32 h-32" />
             </div>
-            <div className="relative z-10 flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                <UserIcon className="w-7 h-7 text-primary-foreground" />
+            <div className="relative z-10 flex items-center gap-3 mb-5">
+              <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                <UserIcon className="w-6 h-6 text-white" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-black text-xl truncate tracking-tight">{user ? (user.email?.split('@')[0]) : 'Guest Student'}</h3>
-                <p className="text-xs text-white/60 font-medium uppercase tracking-widest">{user ? 'Premium Member' : 'Welcome to Academy'}</p>
+                <h3 className="font-semibold text-lg truncate">{user ? (user.email?.split('@')[0]) : 'Guest Student'}</h3>
+                <p className="text-xs text-white/80 font-medium">{user ? 'Premium Member' : 'Welcome to Academy'}</p>
               </div>
             </div>
 
             {!user ? (
-              <div className="flex gap-3 relative z-10">
+              <div className="flex gap-2.5 relative z-10">
                 <Link to="/login" onClick={() => setIsOpen(false)} className="flex-1">
-                  <Button size="lg" variant="secondary" className="w-full font-black rounded-xl">LOGIN</Button>
+                  <Button size="lg" variant="secondary" className="w-full font-medium rounded-lg shadow-sm">Login</Button>
                 </Link>
                 <Link to="/register" onClick={() => setIsOpen(false)} className="flex-1">
-                  <Button size="lg" className="w-full font-black bg-primary text-primary-foreground rounded-xl">JOIN</Button>
+                  <Button size="lg" className="w-full font-medium bg-white text-primary hover:bg-white/90 rounded-lg shadow-sm">Join</Button>
                 </Link>
               </div>
             ) : (
               <div className="flex items-center gap-2 relative z-10">
-                <div className="px-3 py-1 bg-primary/20 border border-primary/30 rounded-full text-[10px] font-black text-primary uppercase tracking-widest">
-                  Verified Account
+                <div className="px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-[10px] font-medium text-white">
+                  ✓ Verified Account
                 </div>
               </div>
             )}
@@ -300,18 +306,18 @@ const Navbar = () => {
           {/* Nav Links */}
           <div className="flex-1 overflow-y-auto py-8">
             <div className="px-6 mb-8">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 mb-6 px-2">Main Navigation</h4>
+              <h4 className="text-xs font-semibold text-muted-foreground/60 mb-6 px-2">Main Navigation</h4>
               <nav className="space-y-2">
                 {navLinks.map((link) => (
                   <button
                     key={link.name}
                     onClick={() => handleNavClick(link.href)}
-                    className="w-full flex items-center gap-5 px-5 py-4 rounded-2xl hover:bg-primary/5 transition-all group active:scale-[0.98]"
+                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-primary/5 transition-all group active:scale-[0.98]"
                   >
                     <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
                       <link.icon className="w-5 h-5" />
                     </div>
-                    <span className="font-black text-sm tracking-wide uppercase transition-colors group-hover:text-primary">{link.name}</span>
+                    <span className="font-semibold text-sm transition-colors group-hover:text-primary">{link.name}</span>
                   </button>
                 ))}
               </nav>
@@ -319,25 +325,25 @@ const Navbar = () => {
 
             {user && (
               <div className="px-6 pb-8">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 mb-6 px-2">Earning Portal</h4>
+                <h4 className="text-xs font-semibold text-muted-foreground/60 mb-6 px-2">Quick Access</h4>
                 <nav className="space-y-2">
                   <button
                     onClick={() => handleNavClick("/user-home")}
-                    className="w-full flex items-center gap-5 px-5 py-4 rounded-2xl hover:bg-emerald/5 transition-all group active:scale-[0.98]"
+                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-emerald-500/5 transition-all group active:scale-[0.98]"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center group-hover:bg-emerald group-hover:text-white transition-all duration-300">
+                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
                       <LayoutDashboard className="w-5 h-5" />
                     </div>
-                    <span className="font-black text-sm tracking-wide uppercase group-hover:text-emerald">My Dashboard</span>
+                    <span className="font-semibold text-sm group-hover:text-emerald-500">My Dashboard</span>
                   </button>
                   <button
                     onClick={() => handleNavClick("/shopping")}
-                    className="w-full flex items-center gap-5 px-5 py-4 rounded-2xl hover:bg-blue-500/5 transition-all group active:scale-[0.98]"
+                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-blue-500/5 transition-all group active:scale-[0.98]"
                   >
                     <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
                       <ShoppingBag className="w-5 h-5" />
                     </div>
-                    <span className="font-black text-sm tracking-wide uppercase group-hover:text-blue-500">Shop Marketplace</span>
+                    <span className="font-semibold text-sm group-hover:text-blue-500">Shop Marketplace</span>
                   </button>
                 </nav>
               </div>
@@ -349,14 +355,14 @@ const Navbar = () => {
             <div className="p-8 border-t border-border/50">
               <Button
                 variant="outline"
-                className="w-full h-14 rounded-2xl border-destructive/20 text-destructive font-black hover:bg-destructive hover:text-white transition-all active:scale-95"
+                className="w-full h-14 rounded-2xl border-destructive/20 text-destructive font-semibold hover:bg-destructive hover:text-white transition-all active:scale-95"
                 onClick={() => {
                   signOut();
                   setIsOpen(false);
                 }}
               >
                 <LogOut className="w-5 h-5 mr-3" />
-                SIGN OUT
+                Sign Out
               </Button>
             </div>
           )}

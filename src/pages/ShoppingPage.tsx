@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ShoppingBag, Search, ShoppingCart, SlidersHorizontal, Loader2, ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,18 @@ const ShoppingPage = () => {
     }, [searchQuery]);
 
     // Check if we are in "Search/Filter Mode"
-    const isSearchMode = debouncedSearchQuery.length > 0 || selectedCategory !== null || minRating !== null || priceRange[0] > 0 || priceRange[1] < 50000;
+    // Note: selectedCategory === null means "All Items" which should show the home view, not search mode
+    const isSearchMode = debouncedSearchQuery.length > 0 || (selectedCategory !== null && selectedCategory !== undefined) || minRating !== null || priceRange[0] > 0 || priceRange[1] < 50000;
+
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        const catId = searchParams.get("category");
+        if (catId) setSelectedCategory(catId);
+
+        const search = searchParams.get("q");
+        if (search) setSearchQuery(search);
+    }, [searchParams]);
 
     useEffect(() => {
         const checkSettings = async () => {
@@ -189,37 +200,37 @@ const ShoppingPage = () => {
     }
 
     return (
-        <div className={`min-h-screen bg-background font-sans text-foreground ${isAuthenticatedView ? '' : 'pt-16 lg:pt-20 border-l border-border/50'}`}>
+        <div className="min-h-screen bg-background font-sans text-foreground">
             {!isAuthenticatedView && <Navbar />}
 
             {/* Hero Section - Brand Themed (Yellow/Black) */}
-            <div className="w-full mb-8 relative z-0">
-                <div className="container mx-auto px-4">
-                    <div className="relative rounded-[2rem] overflow-hidden shadow-xl bg-[#1A1A1A] min-h-[auto] md:min-h-[380px] flex items-center p-6 md:p-12 text-left isolate">
+            <div className={`w-full mb-6 md:mb-8 ${isAuthenticatedView ? 'mt-0' : 'pt-20 md:pt-24'}`}>
+                <div className="container mx-auto px-3 sm:px-4 md:px-6">
+                    <div className="relative rounded-2xl md:rounded-[2rem] overflow-hidden shadow-xl bg-[#1A1A1A] min-h-[280px] sm:min-h-[320px] md:min-h-[380px] flex items-center p-4 sm:p-6 md:p-12 text-left isolate">
                         {/* Futuristic Accents */}
                         <div className="absolute top-0 right-0 w-[40%] h-full bg-[#FBBF24]/10 skew-x-[-20deg] translate-x-[20%] -z-10" />
                         <div className="absolute bottom-0 left-0 w-[60%] h-[30%] bg-gradient-to-t from-[#FBBF24]/5 to-transparent -z-10" />
 
-                        <div className="w-full max-w-3xl space-y-6 animate-in fade-in slide-in-from-left-6 duration-700">
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FBBF24]/10 border border-[#FBBF24]/20 text-[#FBBF24] text-xs font-bold uppercase tracking-wider">
+                        <div className="w-full max-w-3xl space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-left-6 duration-700">
+                            <div className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#FBBF24]/10 border border-[#FBBF24]/20 text-[#FBBF24] text-[11px] font-bold tracking-tight">
                                 <Sparkles className="w-3.5 h-3.5" />
                                 <span>Official Skill Learners Store</span>
                             </div>
 
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1]">
-                                Big Sale on <br />
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-white leading-[1.15]">
+                                Big Sale on <br className="hidden sm:block" />
                                 <span className="text-[#FBBF24]">Premium Tech & Assets</span>
                             </h1>
 
-                            <p className="text-sm sm:text-base md:text-lg text-gray-400 max-w-xl leading-relaxed">
+                            <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-400 max-w-xl leading-relaxed">
                                 Discover the latest electronics, professional templates, and high-quality digital assets curated for peak performance.
                             </p>
 
-                            <div className="flex flex-wrap gap-4 pt-2">
-                                <Button size="lg" className="h-12 sm:h-14 px-6 sm:px-8 rounded-xl bg-[#FBBF24] text-black hover:bg-[#FBBF24]/90 text-sm sm:text-md font-bold shadow-lg shadow-[#FBBF24]/10 w-full sm:w-auto">
+                            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 pt-2">
+                                <Button size="lg" className="h-11 sm:h-12 md:h-14 px-5 sm:px-6 md:px-8 rounded-xl bg-[#FBBF24] text-black hover:bg-[#FBBF24]/90 text-sm sm:text-base font-bold shadow-lg shadow-[#FBBF24]/10 w-full sm:w-auto">
                                     Shop New Arrivals
                                 </Button>
-                                <Button size="lg" variant="outline" className="h-12 sm:h-14 px-6 sm:px-8 rounded-xl border-white/10 hover:bg-white/5 text-white text-sm sm:text-md font-medium w-full sm:w-auto">
+                                <Button size="lg" variant="outline" className="h-11 sm:h-12 md:h-14 px-5 sm:px-6 md:px-8 rounded-xl border-white/10 hover:bg-white/5 text-white text-sm sm:text-base font-medium w-full sm:w-auto">
                                     View Categories
                                 </Button>
                             </div>
@@ -233,30 +244,30 @@ const ShoppingPage = () => {
                 </div>
             </div>
 
-            {/* Toolbar / Search Section - Sticky Fixed */}
-            <div className={`sticky ${isAuthenticatedView ? 'top-[70px] lg:top-4' : 'top-24'} z-30 bg-background/90 backdrop-blur-2xl border border-border shadow-lg shadow-black/5 rounded-full p-2 px-3 flex flex-col md:flex-row items-center gap-3 transition-all duration-300 max-w-5xl mx-auto mt-[-20px] mb-8`}>
+            {/* Toolbar / Search Section - Now Static (Not Sticky) */}
+            <div className="relative z-10 bg-background/98 backdrop-blur-xl border border-border/50 shadow-lg rounded-2xl md:rounded-full p-2 px-3 md:px-4 flex flex-col md:flex-row items-center gap-2 md:gap-3 transition-all duration-300 max-w-5xl mx-3 sm:mx-4 md:mx-auto mb-6 md:mb-8">
                 {isSearchMode && (
-                    <Button variant="ghost" size="icon" onClick={clearFilters} className="shrink-0 hover:bg-muted rounded-full h-10 w-10">
-                        <ArrowLeft className="w-5 h-5" />
+                    <Button variant="ghost" size="icon" onClick={clearFilters} className="shrink-0 hover:bg-muted rounded-full h-9 w-9 md:h-10 md:w-10">
+                        <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
                     </Button>
                 )}
 
                 <div className="flex-1 relative w-full">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Search className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search electronics, assets, software..."
-                        className="pl-12 h-12 bg-transparent border-none focus-visible:ring-0 text-sm w-full font-medium text-foreground placeholder:text-muted-foreground"
+                        className="pl-10 md:pl-12 h-10 md:h-12 bg-transparent border-none focus-visible:ring-0 text-sm w-full font-medium text-foreground placeholder:text-muted-foreground"
                     />
                 </div>
 
-                <div className="flex items-center gap-2 pr-2">
+                <div className="flex items-center gap-2 w-full md:w-auto justify-end pr-1 md:pr-2">
                     <div className="lg:hidden">
                         <Sheet>
                             <SheetTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full text-muted-foreground hover:text-[#FBBF24] hover:bg-[#FBBF24]/5">
-                                    <SlidersHorizontal className="w-5 h-5" />
+                                <Button variant="ghost" size="icon" className="h-9 w-9 md:h-11 md:w-11 rounded-full text-muted-foreground hover:text-[#FBBF24] hover:bg-[#FBBF24]/5">
+                                    <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5" />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="w-[300px]">
@@ -269,13 +280,13 @@ const ShoppingPage = () => {
                         </Sheet>
                     </div>
 
-                    <div className="h-6 w-[1px] bg-border mx-1 hidden md:block" />
+                    <div className="h-5 md:h-6 w-[1px] bg-border mx-1 hidden md:block" />
                     <CartSheet />
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-8">
-                <div className="flex gap-8 items-start">
+            <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-8">
+                <div className="flex gap-6 md:gap-8 items-start">
                     <aside className={`hidden lg:block w-64 shrink-0 sticky ${isAuthenticatedView ? 'top-24' : 'top-32'}`}>
                         <SidebarFilter
                             priceRange={priceRange} setPriceRange={setPriceRange}
@@ -309,10 +320,10 @@ const ShoppingPage = () => {
                                                 <Skeleton className="h-8 w-48" />
                                                 <Skeleton className="h-4 w-20" />
                                             </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                                                 {[...Array(4)].map((_, i) => (
                                                     <div key={i} className="space-y-4">
-                                                        <Skeleton className="aspect-square rounded-3xl" />
+                                                        <Skeleton className="aspect-square rounded-2xl" />
                                                         <div className="space-y-2">
                                                             <Skeleton className="h-4 w-3/4" />
                                                             <Skeleton className="h-4 w-1/2" />

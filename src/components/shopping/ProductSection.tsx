@@ -97,11 +97,11 @@ const ProductSection = ({
     if (loading) {
         return (
             <div className="mb-12">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-6 px-2">
                     <Skeleton className="h-8 w-48" />
                 </div>
-                <div className={`grid gap-6 ${type === "scroll" ? "grid-flow-col auto-cols-[280px] overflow-x-auto no-scrollbar" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"}`}>
-                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-[350px] rounded-2xl" />)}
+                <div className={`grid gap-3 sm:gap-6 ${type === "scroll" ? "grid-flow-col auto-cols-[180px] sm:auto-cols-[280px] overflow-x-auto no-scrollbar" : "grid-cols-2 lg:grid-cols-4"}`}>
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="aspect-[4/5] rounded-2xl" />)}
                 </div>
             </div>
         );
@@ -115,39 +115,46 @@ const ProductSection = ({
         if (!dealProduct) return null;
 
         return (
-            <div className="mb-8 md:mb-16 bg-[#0A0A0B] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-14 text-white relative overflow-hidden shadow-2xl border border-white/5 group mx-0">
+            <div className="mb-8 md:mb-16 bg-[#0F0F10] rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-14 text-white relative overflow-hidden shadow-2xl border border-white/5 group mx-1 md:mx-0">
                 {/* Premium Background Effects */}
-                <div className="absolute top-0 right-0 w-[50%] h-full bg-gradient-to-l from-[#FBBF24]/10 to-transparent pointer-events-none" />
+                <div className="absolute top-0 right-0 w-[50%] h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none" />
 
-                <div className="relative z-10 flex flex-col items-center gap-6 md:gap-20">
-                    <div className="space-y-4 text-center w-full">
-                        <div className="inline-flex items-center gap-2 bg-[#FBBF24] text-black px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] animate-pulse mx-auto">
-                            <Clock className="w-3 h-3" /> Special Offer
+                <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-12">
+                    {/* Product Image - Shows on all screens */}
+                    <div className="relative w-full md:w-1/2 aspect-square rounded-2xl overflow-hidden bg-white p-6 md:p-8 flex items-center justify-center flex-shrink-0 group-hover:scale-[1.02] transition-transform duration-500">
+                        <img
+                            src={dealProduct.image_url || "/placeholder.png"}
+                            alt={dealProduct.name}
+                            className="w-full h-full object-contain"
+                        />
+                        <div className="absolute top-4 right-4 bg-primary text-black text-xs md:text-sm font-black px-3 py-1.5 rounded-lg shadow-lg">
+                            -{Math.round(((dealProduct.mrp - dealProduct.price) / dealProduct.mrp) * 100)}%
+                        </div>
+                    </div>
+
+                    {/* Deal Content */}
+                    <div className="space-y-4 md:space-y-6 text-center md:text-left w-full md:w-1/2">
+                        <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-tight animate-pulse">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>Special Limited Deal</span>
                         </div>
 
-                        <div className="relative w-full aspect-[4/3] md:hidden rounded-2xl overflow-hidden mb-4 bg-white p-2">
-                            <img
-                                src={dealProduct.image_url || "/placeholder.png"}
-                                alt={dealProduct.name}
-                                className="w-full h-full object-contain"
-                            />
-                            <div className="absolute top-2 right-2 bg-[#FBBF24] text-black text-xs font-bold px-2 py-1 rounded-lg">
-                                -{Math.round(((dealProduct.mrp - dealProduct.price) / dealProduct.mrp) * 100)}%
-                            </div>
-                        </div>
-
-                        <h2 className="text-2xl md:text-6xl font-black tracking-tight leading-tight">
+                        <h2 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-white">
                             {title}
                         </h2>
 
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="flex items-baseline gap-3 justify-center">
-                                <span className="text-4xl md:text-6xl font-black text-[#FBBF24]">₹{dealProduct.price.toLocaleString()}</span>
-                                <span className="text-lg text-gray-600 line-through font-bold">₹{dealProduct.mrp.toLocaleString()}</span>
+                        <p className="text-sm md:text-base text-gray-300 line-clamp-2">
+                            {dealProduct.name}
+                        </p>
+
+                        <div className="flex flex-col items-center md:items-start gap-4">
+                            <div className="flex items-baseline gap-3">
+                                <span className="text-4xl md:text-5xl lg:text-6xl font-black text-[#FBBF24]">₹{dealProduct.price.toLocaleString()}</span>
+                                <span className="text-base md:text-lg text-gray-500 line-through font-bold">₹{dealProduct.mrp.toLocaleString()}</span>
                             </div>
                             <Button
                                 onClick={() => onAddToCart(dealProduct)}
-                                className="bg-[#FBBF24] text-black hover:bg-white h-12 md:h-16 px-8 md:px-12 rounded-xl md:rounded-2xl font-black text-lg shadow-xl w-full md:w-auto mt-2"
+                                className="bg-[#FBBF24] text-black hover:bg-white h-12 md:h-16 px-8 md:px-12 rounded-xl md:rounded-2xl font-black text-base md:text-lg shadow-xl w-full md:w-auto"
                             >
                                 Get This Deal
                             </Button>

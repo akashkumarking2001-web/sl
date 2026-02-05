@@ -1,9 +1,9 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
     CheckCircle2, ArrowRight, ShieldCheck, Crown, Sparkles, TrendingUp,
     Zap, BookOpen, ArrowLeft, Star,
-    Rocket, Gem, Map, GraduationCap, X
+    Rocket, Gem, Map, GraduationCap, X, Award
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
@@ -12,6 +12,8 @@ import { usePackages } from "@/hooks/usePackages";
 import { packages as staticPackages, incomeTypes } from "@/data/packages";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Capacitor } from "@capacitor/core";
+import NativeHeader from "@/components/layout/NativeHeader";
 
 // Advanced Classy Design Config - Updated to match PlansSection VIBRANT colors
 const tierConfig: Record<string, {
@@ -92,6 +94,8 @@ const PackageDetailPage = () => {
     const { packageId } = useParams<{ packageId: string }>();
     const navigate = useNavigate();
     const { data: packages, isLoading } = usePackages();
+    const [isExpanded, setIsExpanded] = useState(false);
+    const isNative = Capacitor.isNativePlatform() || ['8080', '5174'].includes(window.location.port);
 
     const pkg = useMemo(() => {
         const searchId = packageId?.toLowerCase();
@@ -167,19 +171,6 @@ const PackageDetailPage = () => {
                         </div>
                     </div>
                 </section>
-                <section className="py-24 bg-slate-50 dark:bg-black/20">
-                    <div className="container mx-auto px-4">
-                        <div className="text-center mb-16 max-w-3xl mx-auto space-y-4">
-                            <Skeleton className="h-4 w-24 mx-auto" />
-                            <Skeleton className="h-10 w-2/3 mx-auto" />
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-                            {[1, 2, 3, 4].map(i => (
-                                <Skeleton key={i} className="h-48 rounded-3xl" />
-                            ))}
-                        </div>
-                    </div>
-                </section>
             </div>
         );
     }
@@ -197,6 +188,98 @@ const PackageDetailPage = () => {
     const mrp = pkg.mrp || Math.round(pkg.price * 2);
     const TierIcon = tier.icon;
     const modules = pkg.modules || [];
+
+    if (isNative) {
+        return (
+            <div className="h-[100dvh] w-full bg-black text-white flex flex-col font-sans overflow-hidden">
+                <NativeHeader title="Package Details" />
+
+                <main className="flex-1 overflow-y-auto pb-32 scrollbar-hide">
+                    {/* Hero Mesh Section */}
+                    <div className="relative pt-12 pb-8 px-6 overflow-hidden">
+                        <div className="absolute inset-0 z-0">
+                            <div className="absolute top-0 right-0 w-64 h-64 blur-[100px] opacity-20" style={{ backgroundColor: tier.themeHex }} />
+                            <div className="absolute bottom-0 left-0 w-48 h-48 blur-[80px] opacity-10 bg-primary" />
+                        </div>
+
+                        <div className="relative z-10 flex flex-col items-center text-center">
+                            <div className="w-20 h-20 rounded-[2rem] glass-card flex items-center justify-center mb-6 animate-in zoom-in-50 duration-700">
+                                <TierIcon className="w-10 h-10" style={{ color: tier.themeHex }} />
+                            </div>
+                            <h1 className="text-3xl font-black tracking-tight mb-3">
+                                <span className="text-gray-500 block text-xs uppercase tracking-[0.3em] font-black mb-1">Academy Tier</span>
+                                {pkg.displayName || pkg.name}
+                            </h1>
+                            <p className="text-gray-400 text-sm font-medium leading-relaxed max-w-xs mb-8">
+                                {tier.description.split('.')[0]}. Elite curriculum for digital pros.
+                            </p>
+
+                            <div className="flex items-center gap-6 mb-8">
+                                <div className="text-center">
+                                    <p className="text-2xl font-black">₹{pkg.price.toLocaleString()}</p>
+                                    <p className="text-[10px] text-gray-500 font-bold line-through uppercase">MRP ₹{mrp.toLocaleString()}</p>
+                                </div>
+                                <div className="w-px h-8 bg-white/10" />
+                                <div className="text-center">
+                                    <p className="text-xs font-black text-emerald-500 uppercase tracking-widest">90% Distrib.</p>
+                                    <p className="text-[10px] text-gray-500 font-bold uppercase">Affiliate Model</p>
+                                </div>
+                            </div>
+
+                            {!isExpanded ? (
+                                <Button
+                                    onClick={() => setIsExpanded(true)}
+                                    className="h-12 px-8 rounded-2xl bg-white/5 border border-white/10 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:text-white"
+                                >
+                                    Read More & Curriculum
+                                </Button>
+                            ) : (
+                                <Link to={`/payment?plan=${pkg.name}`} className="w-full max-w-xs">
+                                    <Button className="w-full h-14 rounded-2xl bg-primary text-black font-black uppercase tracking-widest text-xs shadow-glow-gold/20 active:scale-95 transition-all">
+                                        Enroll Now <ArrowRight className="w-4 h-4 ml-2" />
+                                    </Button>
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+
+                    {isExpanded && (
+                        <div className="px-6 pb-20 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            <div className="h-px w-full bg-white/5 mb-10" />
+
+                            <h3 className="text-lg font-black tracking-tight italic mb-6">Course Modules</h3>
+                            <div className="space-y-4">
+                                {modules.map((mod: any, i: number) => (
+                                    <div key={i} className="p-5 rounded-[2rem] glass-card relative overflow-hidden group">
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-xs font-black text-primary border border-white/5">
+                                                {i + 1}
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="text-sm font-black mb-1">{mod.title.replace(/^Module \d+: /, '')}</h4>
+                                                <p className="text-[10px] text-gray-500 leading-relaxed font-medium">{mod.description}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-12 p-8 rounded-[2.5rem] bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 text-center">
+                                <Award className="w-10 h-10 text-primary mx-auto mb-4" />
+                                <h4 className="text-lg font-black mb-2">Ready to Ascend?</h4>
+                                <p className="text-xs text-gray-400 mb-8 max-w-[240px] mx-auto font-medium">Join 50k+ students and start building your financial empire today.</p>
+                                <Link to={`/payment?plan=${pkg.name}`}>
+                                    <Button className="w-full h-14 rounded-2xl bg-primary text-black font-black uppercase tracking-widest text-xs">
+                                        Finalize Enrollment
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
+                    )}
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-foreground font-sans selection:bg-primary selection:text-white overflow-x-hidden">

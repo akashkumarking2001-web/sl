@@ -14,6 +14,7 @@ import ReferralNotificationProvider from "@/components/ReferralNotificationProvi
 import { CartProvider } from "@/context/CartContext";
 import MobileAppInitializer from "@/components/MobileAppInitializer";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import MobileSimulator from "@/components/MobileSimulator";
 
 // Lazy load route components for code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -52,12 +53,13 @@ const SubmitCoursePage = lazy(() => import("./pages/affiliate/SubmitCoursePage")
 const CourseDetailPage = lazy(() => import("./pages/CourseDetailPage"));
 const PackageDetailPage = lazy(() => import("./pages/PackageDetailPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
+const PlansPage = lazy(() => import("./pages/PlansPage"));
+const AllCoursesPage = lazy(() => import("./pages/AllCoursesPage"));
 
 const queryClient = new QueryClient();
 
 const PageLoader = () => (
   <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-    {/* Minimal premium skeleton loader */}
     <div className="w-full max-w-md p-6 space-y-8 animate-pulse">
       <div className="flex justify-between items-center mb-12">
         <Skeleton className="h-10 w-32 rounded-xl" variant="shimmer" />
@@ -66,7 +68,6 @@ const PageLoader = () => (
           <Skeleton className="h-10 w-10 rounded-full" variant="shimmer" />
         </div>
       </div>
-
       <div className="space-y-4">
         <Skeleton className="h-48 w-full rounded-[2rem]" variant="shimmer" />
         <div className="grid grid-cols-4 gap-4">
@@ -76,14 +77,11 @@ const PageLoader = () => (
           <Skeleton className="h-16 w-full rounded-2xl" variant="shimmer" />
         </div>
       </div>
-
       <div className="flex gap-4 mt-8">
         <Skeleton className="h-9 w-20" variant="shimmer" />
         <Skeleton className="h-9 w-24" variant="shimmer" />
       </div>
     </div>
-
-    {/* Content skeleton */}
     <div className="container mx-auto px-4 py-12">
       <div className="flex flex-col items-center gap-6">
         <Skeleton className="h-8 w-48" variant="shimmer" />
@@ -109,146 +107,151 @@ const App = () => (
           <MobileAppInitializer />
           <CartProvider>
             <ReferralNotificationProvider>
-              <Suspense fallback={<PageLoader />}>
-                <PageTransition>
-                  <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<Index />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/registration-success" element={<RegistrationSuccess />} />
-                    <Route path="/payment" element={<PaymentGateway />} />
-                    <Route path="/course/:courseId" element={<CourseDetailPage />} />
-                    <Route path="/package/:packageId" element={<PackageDetailPage />} />
-                    <Route path="/admin-login" element={<AdminLogin />} />
-                    <Route path="/admin-forgot-password" element={<AdminForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
+              <MobileSimulator>
+                <Suspense fallback={<PageLoader />}>
+                  <PageTransition>
+                    <Routes>
+                      {/* Public Routes */}
+                      <Route path="/" element={<Index />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/registration-success" element={<RegistrationSuccess />} />
+                      <Route path="/payment" element={<PaymentGateway />} />
+                      <Route path="/course/:courseId" element={<CourseDetailPage />} />
+                      <Route path="/package/:packageId" element={<PackageDetailPage />} />
+                      <Route path="/admin-login" element={<AdminLogin />} />
+                      <Route path="/admin-forgot-password" element={<AdminForgotPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
 
-                    {/* Protected Routes */}
-                    <Route path="/user-home" element={
-                      <ProtectedRoute>
-                        <UserHome />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/affiliate" element={
-                      <ProtectedRoute>
-                        <AffiliateDashboard />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/courses" element={
-                      <ProtectedRoute>
-                        <UserCourses />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/learners" element={
-                      <ProtectedRoute>
-                        <LearnersPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/income/:type" element={
-                      <ProtectedRoute>
-                        <IncomeReportPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/wallet" element={
-                      <ProtectedRoute>
-                        <WalletPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/leaderboard" element={
-                      <ProtectedRoute>
-                        <LeaderboardPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/analytics" element={
-                      <ProtectedRoute>
-                        <AnalyticsPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/network" element={
-                      <ProtectedRoute>
-                        <NetworkPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/matrix" element={
-                      <ProtectedRoute>
-                        <MatrixPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/tasks" element={
-                      <ProtectedRoute>
-                        <TasksPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/profile" element={
-                      <ProtectedRoute>
-                        <ProfilePage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/submit-course" element={
-                      <ProtectedRoute>
-                        <SubmitCoursePage />
-                      </ProtectedRoute>
-                    } />
-                    {/* Shopping & E-Commerce Routes */}
-                    <Route path="/shopping" element={<ShoppingWrapper />} />
-                    <Route path="/shopping/cart" element={<CartPage />} />
-                    <Route path="/product/:slug" element={<ProductDetailPage />} />
-                    <Route path="/affiliate-program" element={<AffiliateApplicationPage />} />
-                    <Route path="/dashboard/affiliate-earnings" element={
-                      <ProtectedRoute>
-                        <AffiliateEarningsPage />
-                      </ProtectedRoute>
-                    } />
+                      {/* Protected Routes */}
+                      <Route path="/user-home" element={
+                        <ProtectedRoute>
+                          <UserHome />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/affiliate" element={
+                        <ProtectedRoute>
+                          <AffiliateDashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/courses" element={
+                        <ProtectedRoute>
+                          <UserCourses />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/learners" element={
+                        <ProtectedRoute>
+                          <LearnersPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/income/:type" element={
+                        <ProtectedRoute>
+                          <IncomeReportPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/wallet" element={
+                        <ProtectedRoute>
+                          <WalletPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/leaderboard" element={
+                        <ProtectedRoute>
+                          <LeaderboardPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/analytics" element={
+                        <ProtectedRoute>
+                          <AnalyticsPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/network" element={
+                        <ProtectedRoute>
+                          <NetworkPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/matrix" element={
+                        <ProtectedRoute>
+                          <MatrixPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/tasks" element={
+                        <ProtectedRoute>
+                          <TasksPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/profile" element={
+                        <ProtectedRoute>
+                          <ProfilePage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/submit-course" element={
+                        <ProtectedRoute>
+                          <SubmitCoursePage />
+                        </ProtectedRoute>
+                      } />
+                      {/* Shopping & E-Commerce Routes */}
+                      <Route path="/shopping" element={<ShoppingWrapper />} />
+                      <Route path="/shopping/cart" element={<CartPage />} />
+                      <Route path="/product/:slug" element={<ProductDetailPage />} />
+                      <Route path="/affiliate-program" element={<AffiliateApplicationPage />} />
+                      <Route path="/dashboard/affiliate-earnings" element={
+                        <ProtectedRoute>
+                          <AffiliateEarningsPage />
+                        </ProtectedRoute>
+                      } />
 
-                    <Route path="/dashboard/shopping" element={
-                      <ProtectedRoute>
-                        <ShoppingWrapper />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/my-orders" element={
-                      <ProtectedRoute>
-                        <MyOrdersPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/wishlist" element={
-                      <ProtectedRoute>
-                        <WishlistPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/orders" element={
-                      <ProtectedRoute>
-                        <UserOrders />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/shopping-wallet" element={
-                      <ProtectedRoute>
-                        <ShoppingWalletPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/addresses" element={
-                      <ProtectedRoute>
-                        <AddressesPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard/shopping-profile" element={
-                      <ProtectedRoute>
-                        <ShoppingProfilePage />
-                      </ProtectedRoute>
-                    } />
+                      <Route path="/dashboard/shopping" element={
+                        <ProtectedRoute>
+                          <ShoppingWrapper />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/my-orders" element={
+                        <ProtectedRoute>
+                          <MyOrdersPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/wishlist" element={
+                        <ProtectedRoute>
+                          <WishlistPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/orders" element={
+                        <ProtectedRoute>
+                          <UserOrders />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/shopping-wallet" element={
+                        <ProtectedRoute>
+                          <ShoppingWalletPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/addresses" element={
+                        <ProtectedRoute>
+                          <AddressesPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dashboard/shopping-profile" element={
+                        <ProtectedRoute>
+                          <ShoppingProfilePage />
+                        </ProtectedRoute>
+                      } />
 
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={
-                      <ProtectedRoute requireAdmin={true}>
-                        <SkillLearnersAdmin />
-                      </ProtectedRoute>
-                    } />
+                      {/* Admin Routes */}
+                      <Route path="/admin" element={
+                        <ProtectedRoute requireAdmin={true}>
+                          <SkillLearnersAdmin />
+                        </ProtectedRoute>
+                      } />
 
-                    {/* 404 */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </PageTransition>
-              </Suspense>
+                      <Route path="/plans" element={<PlansPage />} />
+                      <Route path="/courses" element={<AllCoursesPage />} />
+
+                      {/* 404 */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </PageTransition>
+                </Suspense>
+              </MobileSimulator>
               <AIChatbot />
               <MobileBottomNav />
             </ReferralNotificationProvider>

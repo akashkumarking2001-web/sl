@@ -62,12 +62,12 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, className }: Produ
                 {/* Badges */}
                 <div className="absolute top-3 left-3 flex flex-col gap-2">
                     {product.is_featured && (
-                        <Badge className="bg-foreground hover:bg-foreground/90 text-background border-0 rounded-md px-2 py-1 text-[10px] uppercase tracking-wider font-bold shadow-md">
+                        <Badge className="bg-foreground hover:bg-foreground/90 text-background border-0 rounded-md px-2 py-1 text-[10px] tracking-tight font-bold shadow-md">
                             Featured
                         </Badge>
                     )}
                     {discount > 0 && (
-                        <Badge className="bg-destructive hover:bg-destructive/90 text-destructive-foreground border-0 rounded-md px-2 py-1 text-[10px] uppercase tracking-wider font-bold shadow-md">
+                        <Badge className="bg-destructive hover:bg-destructive/90 text-destructive-foreground border-0 rounded-md px-2 py-1 text-[10px] tracking-tight font-bold shadow-md">
                             -{discount}%
                         </Badge>
                     )}
@@ -78,11 +78,11 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, className }: Produ
                     <Button
                         onClick={(e) => handleAction(e, () => onAddToCart(product))}
                         data-testid="add-to-cart-button"
-                        className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-lg rounded-xl h-10 border-none dark:text-black"
+                        className="flex-1 bg-primary text-black hover:bg-primary/90 font-bold shadow-lg rounded-xl h-10 border-none"
                         disabled={product.stock_quantity === 0}
                     >
                         <ShoppingCart className="w-4 h-4 mr-2" />
-                        {product.stock_quantity === 0 ? "No Stock" : "Add To Cart"}
+                        {product.stock_quantity === 0 ? "Out of stock" : "Add to cart"}
                     </Button>
                     <Button
                         size="icon"

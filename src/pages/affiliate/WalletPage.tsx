@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Wallet,
   ArrowUpRight,
@@ -9,7 +10,9 @@ import {
   Bitcoin,
   Building,
   CreditCard,
-  Loader2
+  Loader2,
+  Lock,
+  Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,14 +50,35 @@ const WalletPage = () => {
   const [withdrawalHistory, setWithdrawalHistory] = useState<WithdrawalRequest[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
+  const [hasPurchased, setHasPurchased] = useState(false);
+  const navigate = useNavigate();
 
   const minWithdraw = 500;
 
   useEffect(() => {
     if (user) {
       fetchWalletData();
+      checkPurchaseStatus();
     }
   }, [user]);
+
+  const checkPurchaseStatus = async () => {
+    if (!user) return;
+    try {
+      const { data } = await (supabase as any)
+        .from('course_requests')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'approved')
+        .eq('is_package', true);
+
+      if (data && data.length > 0) {
+        setHasPurchased(true);
+      }
+    } catch (error) {
+      console.error("Error checking purchase status:", error);
+    }
+  };
 
   const fetchWalletData = async () => {
     if (!user) return;
@@ -166,6 +190,31 @@ const WalletPage = () => {
       <AffiliateSidebar>
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AffiliateSidebar>
+    );
+  }
+
+  if (!hasPurchased && !loading) {
+    return (
+      <AffiliateSidebar>
+        <div className="max-w-4xl mx-auto flex flex-col items-center justify-center py-20 px-6 text-center">
+          <div className="w-24 h-24 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-8 animate-pulse shadow-glow-gold">
+            <Lock className="w-12 h-12 text-primary" />
+          </div>
+          <h1 className="text-3xl font-black tracking-tight mb-4">Wallet Restricted</h1>
+          <p className="text-muted-foreground text-sm max-w-md mx-auto mb-8 font-medium leading-relaxed">
+            Your Affiliate Wallet is currently locked. To activate your earning account and access withdrawals, you must purchase a <span className="text-primary font-bold">Combo Package</span> from the Academy.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
+            <Button onClick={() => navigate("/plans")} className="h-14 rounded-2xl bg-primary text-black font-bold text-sm shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+              <Package className="w-4 h-4 mr-2" />
+              View Packages
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/user-home")} className="h-14 rounded-2xl border-white/10 font-bold text-sm bg-white/5 hover:bg-white/10 active:scale-95 transition-all">
+              Dashboard
+            </Button>
+          </div>
         </div>
       </AffiliateSidebar>
     );

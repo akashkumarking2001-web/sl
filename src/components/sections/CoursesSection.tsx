@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Star, Clock, Users, Play, ArrowRight, BookOpen, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCourses } from "@/hooks/useCourses";
 
 const courses = [
   {
@@ -93,13 +94,80 @@ const courses = [
     price: 4499,
     modules: 10,
   },
+  {
+    id: "graphic-design",
+    title: "Mastering Graphic Design",
+    description: "Learn Photoshop, Illustrator, and Figma to create stunning visuals and UI/UX designs.",
+    rating: 4.8,
+    students: 2100,
+    duration: "45 hours",
+    level: "All Levels",
+    image: "https://images.unsplash.com/photo-1572044162444-ad60f128b18a?w=400&h=250&fit=crop",
+    color: "from-pink-500 to-rose-600",
+    recommendedPlan: "MOMENTUM",
+    mrp: 6499,
+    price: 1999,
+    modules: 14,
+  },
+  {
+    id: "business-automation",
+    title: "No-Code Business Automation",
+    description: "Learn to automate your business workflows using Zapier, Make, and Airtable without writing code.",
+    rating: 4.9,
+    students: 1200,
+    duration: "20 hours",
+    level: "Intermediate",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop",
+    color: "from-indigo-500 to-blue-700",
+    recommendedPlan: "SUMMIT",
+    mrp: 12999,
+    price: 5999,
+    modules: 8,
+  },
+  {
+    id: "video-editing",
+    title: "Cine-Video Editing Masterclass",
+    description: "Professional video editing using Premiere Pro and After Effects for social media and film.",
+    rating: 4.7,
+    students: 3500,
+    duration: "55 hours",
+    level: "Beginner",
+    image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&h=250&fit=crop",
+    color: "from-red-500 to-orange-600",
+    recommendedPlan: "APEX",
+    mrp: 8999,
+    price: 3499,
+    modules: 20,
+  },
 ];
 
 const CoursesSection = () => {
   const navigate = useNavigate();
+  const { data: dbCourses, isLoading } = useCourses();
 
-  const handleCourseClick = (course: typeof courses[0]) => {
-    // Navigate to course detail page
+  // Combine DB courses with static ones
+  // We prioritize static data for instant render, then augment/replace with DB data if available
+  const allCourses = [...(dbCourses || [])];
+
+  // Map static courses to ensure metadata consistency
+  const processedStaticCourses = courses.map(c => ({
+    ...c,
+    course_name: c.title,
+    thumbnail_url: c.image,
+    is_active: true
+  }));
+
+  // Simple deduplication or merging logic
+  const staticIds = new Set(allCourses.map(c => c.id));
+  processedStaticCourses.forEach(sc => {
+    if (!staticIds.has(sc.id)) {
+      allCourses.push(sc);
+    }
+  });
+
+  const displayCourses = allCourses.slice(0, 6); // Show top 6
+
+  const handleCourseClick = (course: any) => {
     navigate(`/course/${course.id}`);
   };
 
@@ -119,14 +187,14 @@ const CoursesSection = () => {
             Top <span className="text-gradient-teal">Courses</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Explore our most popular skill-building courses curated by industry experts. 
+            Explore our most popular skill-building courses curated by industry experts.
             Each course is designed for practical application and real-world results.
           </p>
         </div>
 
         {/* Courses Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {courses.map((course, index) => (
+          {displayCourses.map((course, index) => (
             <div
               key={course.id}
               onClick={() => handleCourseClick(course)}
@@ -141,7 +209,7 @@ const CoursesSection = () => {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
-                
+
                 {/* Play button overlay */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="w-16 h-16 rounded-full bg-card/90 flex items-center justify-center shadow-elevated">
@@ -206,7 +274,7 @@ const CoursesSection = () => {
 
         {/* View All */}
         <div className="text-center mt-12">
-          <Link to="/register">
+          <Link to="/courses">
             <Button variant="hero" size="lg" className="group">
               Explore All Courses
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

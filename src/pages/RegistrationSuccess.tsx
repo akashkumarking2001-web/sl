@@ -145,32 +145,32 @@ const RegistrationSuccess = () => {
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 p-4 mb-8">
                   <CheckCircle className="w-12 h-12 text-emerald-500" />
                 </div>
-                <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter uppercase italic">
-                  Welcome <span className="text-primary italic">Warrior!</span>
+                <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">
+                  Registration <span className="text-primary">Successful!</span>
                 </h1>
-                <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed mb-10 font-medium font-display">
-                  Congratulations <span className="text-foreground font-black underline decoration-primary underline-offset-4">{userData.name}</span>! Your digital academy account has been successfully provisioned. You are now an official member of the Skill Learners movement.
+                <p className="text-base text-muted-foreground max-w-2xl leading-relaxed mb-10 font-medium">
+                  Congratulations <span className="text-foreground font-bold underline decoration-primary underline-offset-4">{userData.name}</span>! Your account has been successfully created. You can now access your dashboard and start your learning journey.
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Unique ID Card */}
                   <div className="bg-muted/50 border border-border/50 rounded-3xl p-6 relative group hover:border-primary/50 transition-all">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">Unique Academy ID</label>
+                    <label className="text-[10px] font-semibold text-muted-foreground tracking-widest mb-3 block">Unique Academy ID</label>
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <Fingerprint className="w-6 h-6 text-primary" />
-                        <span className="text-2xl font-black font-mono tracking-widest text-foreground">{userData.id}</span>
+                        <span className="text-xl font-bold font-mono tracking-widest text-foreground">{userData.id}</span>
                       </div>
                       <button onClick={() => copyToClipboard(userData.id || "", "User ID")} className="p-3 bg-background border rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm">
                         <Copy className="w-4 h-4" />
                       </button>
                     </div>
-                    <div className="mt-4 px-3 py-1 bg-primary/10 rounded-full text-[9px] font-black text-primary uppercase tracking-widest inline-block">Global Tier Verified</div>
+                    <div className="mt-4 px-3 py-1 bg-primary/10 rounded-full text-[9px] font-semibold text-primary uppercase tracking-widest inline-block">Global Tier Verified</div>
                   </div>
 
                   {/* Credentials */}
                   <div className="bg-muted/50 border border-border/50 rounded-3xl p-6 group hover:border-primary/50 transition-all">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3 block">Access Key</label>
+                    <label className="text-[10px] font-semibold text-muted-foreground tracking-widest mb-3 block">Access Key</label>
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <Key className="w-6 h-6 text-primary" />
@@ -178,7 +178,7 @@ const RegistrationSuccess = () => {
                           type={showPassword ? "text" : "password"}
                           value={userData.password}
                           readOnly
-                          className="bg-transparent text-xl font-black font-mono text-foreground focus:outline-none w-32"
+                          className="bg-transparent text-lg font-bold font-mono text-foreground focus:outline-none w-32"
                         />
                       </div>
                       <div className="flex gap-2">
@@ -200,8 +200,8 @@ const RegistrationSuccess = () => {
                     <Mail className="w-5 h-5" />
                   </div>
                   <div className="text-left">
-                    <p className="text-[11px] font-black text-amber-500 uppercase tracking-widest">Verify Your Inbox</p>
-                    <p className="text-xs font-bold text-muted-foreground/80 leading-relaxed uppercase tracking-tight">We have sent a confirmation link to <span className="text-foreground">{userData.email}</span>. Please verify to activate full portal features.</p>
+                    <p className="text-[11px] font-semibold text-amber-500 tracking-widest">Verify Your Inbox</p>
+                    <p className="text-xs font-medium text-muted-foreground/80 leading-relaxed tracking-tight">We have sent a confirmation link to <span className="text-foreground">{userData.email}</span>. Please verify to activate all features.</p>
                   </div>
                 </div>
               </div>
@@ -227,18 +227,18 @@ const RegistrationSuccess = () => {
                   <div className={cn("w-16 h-16 rounded-[1.5rem] flex items-center justify-center shadow-xl mb-10 text-white", selectedPlan.color)}>
                     <selectedPlan.icon className="w-8 h-8" />
                   </div>
-                  <p className="text-[10px] font-black tracking-[0.4em] text-muted-foreground uppercase mb-2">Selected Package</p>
-                  <h3 className="text-4xl font-black mb-3 tracking-tight italic uppercase">{selectedPlan.name}</h3>
-                  <div className="text-3xl font-black text-primary mb-10">{selectedPlan.price}</div>
+                  <p className="text-[10px] font-semibold tracking-widest text-muted-foreground mb-2">Selected Package</p>
+                  <h3 className="text-3xl font-bold mb-3 tracking-tight">{selectedPlan.name}</h3>
+                  <div className="text-3xl font-bold text-primary mb-10">{selectedPlan.price}</div>
 
                   <div className="space-y-4 mb-20 flex-1">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-6">Core Benefit Matrix</p>
+                    <p className="text-[10px] font-semibold text-muted-foreground tracking-widest mb-6">Course Benefits</p>
                     {selectedPlan.benefits.map((benefit, i) => (
                       <div key={i} className="flex items-center gap-3">
                         <div className="w-6 h-6 rounded-full bg-emerald-500/10 flex items-center justify-center">
                           <Check className="w-3.5 h-3.5 text-emerald-500" />
                         </div>
-                        <span className="text-sm font-bold text-foreground/80">{benefit}</span>
+                        <span className="text-sm font-semibold text-foreground/80">{benefit}</span>
                       </div>
                     ))}
                   </div>
@@ -246,8 +246,8 @@ const RegistrationSuccess = () => {
                   <div className="mt-autom pt-8 border-t border-border/50 text-center">
                     <div className="p-4 bg-muted/50 rounded-2xl border flex items-center justify-between">
                       <div className="text-left leading-none">
-                        <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Package License</p>
-                        <p className="text-xs font-black text-emerald-500 uppercase tracking-tighter">Verified & Active</p>
+                        <p className="text-[9px] font-semibold text-muted-foreground mb-1">Package License</p>
+                        <p className="text-xs font-bold text-emerald-500">Verified & Active</p>
                       </div>
                       <Shield className="w-8 h-8 text-emerald-500/50" />
                     </div>
@@ -257,7 +257,7 @@ const RegistrationSuccess = () => {
             ) : (
               <div className="h-full bg-muted border-2 border-dashed border-border rounded-[3rem] p-12 flex flex-col items-center justify-center text-center">
                 <Trophy className="w-16 h-16 text-muted-foreground opacity-20 mb-6" />
-                <p className="text-muted-foreground font-black uppercase text-xs tracking-widest">Custom Plan Enrollment</p>
+                <p className="text-muted-foreground font-semibold text-xs tracking-widest">Custom Plan Enrollment</p>
               </div>
             )}
           </div>
@@ -265,29 +265,27 @@ const RegistrationSuccess = () => {
 
         {/* Footer Actions */}
         <div className="mt-12 flex flex-col md:flex-row gap-6 max-w-4xl mx-auto">
-          <Link to="/login" className="flex-[2] h-20">
-            <Button className="w-full h-full rounded-[2rem] bg-primary text-primary-foreground font-black text-lg uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] transition-all group overflow-hidden relative active:scale-95">
+          <Link to="/login" className="flex-[2] h-16">
+            <Button className="w-full h-full rounded-2xl bg-primary text-primary-foreground font-bold text-base shadow-lg shadow-primary/20 hover:scale-[1.01] transition-all group overflow-hidden relative active:scale-[0.98]">
               <span className="relative z-10 flex items-center gap-3">
-                Enter Executive Terminal
-                <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                Go to Login Page
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 w-full animate-shimmer" />
             </Button>
           </Link>
-          <Link to="/user-home" className="flex-1 h-20">
-            <Button variant="outline" className="w-full h-full rounded-[2rem] border-2 border-border/50 font-black uppercase tracking-widest hover:bg-muted transition-all text-muted-foreground hover:text-foreground active:scale-95">
-              Dashboard
+          <Link to="/user-home" className="flex-1 h-16">
+            <Button variant="outline" className="w-full h-full rounded-2xl border-2 border-border/50 font-bold hover:bg-muted transition-all text-muted-foreground hover:text-foreground active:scale-[0.98]">
+              Go to Dashboard
             </Button>
           </Link>
         </div>
 
-        {/* Support Section */}
         <div className="mt-16 text-center">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Secured Experience</p>
-          <div className="flex flex-wrap items-center justify-center gap-10 opacity-40">
-            <div className="flex items-center gap-2"><Lock className="w-4 h-4" /> <span className="text-[10px] font-black tracking-tighter">TLS 1.3 ENCRYPTED</span></div>
-            <div className="flex items-center gap-2"><Shield className="w-4 h-4" /> <span className="text-[10px] font-black tracking-tighter">SOC2 COMPLIANT</span></div>
-            <div className="flex items-center gap-2"><Globe className="w-4 h-4" /> <span className="text-[10px] font-black tracking-tighter">GDPR PROTECTED</span></div>
+          <p className="text-xs font-semibold text-muted-foreground tracking-widest mb-4">Secured Experience</p>
+          <div className="flex flex-wrap items-center justify-center gap-10 opacity-70">
+            <div className="flex items-center gap-2"><Lock className="w-4 h-4" /> <span className="text-[10px] font-semibold">TLS 1.3 Encrypted</span></div>
+            <div className="flex items-center gap-2"><Shield className="w-4 h-4" /> <span className="text-[10px] font-semibold">SOC2 Compliant</span></div>
+            <div className="flex items-center gap-2"><Globe className="w-4 h-4" /> <span className="text-[10px] font-semibold">GDPR Protected</span></div>
           </div>
         </div>
       </div>
@@ -301,8 +299,8 @@ const StatRow = ({ label, value, icon: Icon }: { label: string; value: string; i
       <Icon className="w-5 h-5" />
     </div>
     <div className="min-w-0">
-      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-tighter mb-0.5">{label}</p>
-      <p className="text-sm font-black text-foreground truncate">{value || "-"}</p>
+      <p className="text-[10px] font-semibold text-muted-foreground tracking-widest mb-0.5">{label}</p>
+      <p className="text-sm font-semibold text-foreground truncate">{value || "-"}</p>
     </div>
   </div>
 );

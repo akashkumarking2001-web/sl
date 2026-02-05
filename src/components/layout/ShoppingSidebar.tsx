@@ -11,7 +11,8 @@ import {
     Menu,
     X,
     CreditCard,
-    Package
+    Package,
+    LayoutDashboard
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -20,21 +21,20 @@ import { useAuth } from "@/hooks/useAuth";
 
 const shoppingMenuSections = [
     {
-        label: "Store",
+        label: "Marketplace",
         items: [
+            { icon: LayoutDashboard, label: "User Home Page", href: "/user-home", description: "Back to Dashboard" },
             { icon: Home, label: "Shop Home", href: "/shopping", description: "Browse products" },
             { icon: ShoppingBag, label: "My Orders", href: "/dashboard/orders", description: "Track your purchases" },
             { icon: ShoppingCart, label: "My Cart", href: "/shopping/cart", description: "View cart items" },
-            { icon: Heart, label: "Wishlist", href: "/dashboard/wishlist", description: "Saved items" },
         ]
     },
     {
         label: "Account",
         items: [
-            { icon: Wallet, label: "Shopping Wallet", href: "/dashboard/shopping-wallet", description: "Balance & Credits" },
-            { icon: Users, label: "Affiliate Center", href: "/dashboard/affiliate", description: "Commissions & Links" },
-            { icon: MapPin, label: "Addresses", href: "/dashboard/addresses", description: "Manage delivery info" },
-            { icon: User, label: "Shopping Profile", href: "/dashboard/shopping-profile", description: "Preferences & Settings" },
+            { icon: Wallet, label: "Wallet", href: "/dashboard/shopping-wallet", description: "Balance & Credits" },
+            { icon: Users, label: "Affiliates", href: "/dashboard/affiliate", description: "Commissions" },
+            { icon: User, label: "Profile", href: "/dashboard/shopping-profile", description: "Settings" },
         ]
     }
 ];

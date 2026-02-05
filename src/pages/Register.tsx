@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { countries, getStatesByCountry } from "@/data/countries";
 import logo from "@/assets/logo.png";
 import { supabase } from "@/integrations/supabase/client";
+import { Capacitor } from "@capacitor/core";
 
 import { packages as staticPackages } from "@/data/packages";
 import { usePackages } from "@/hooks/usePackages";
@@ -32,6 +33,7 @@ const Register = () => {
 
   const selectedPlanCode = searchParams.get("plan");
   const selectedCourse = searchParams.get("course");
+  const isNative = Capacitor.isNativePlatform() || ['8080', '5174'].includes(window.location.port);
 
   // Helper to find package in a list
   const findPackage = (list: any[]) => list?.find(p =>
@@ -246,6 +248,112 @@ const Register = () => {
     { icon: Wallet, text: "Earn through referral program" },
     { icon: Sparkles, text: "Exclusive bonus content" },
   ];
+
+  if (isNative) {
+    return (
+      <div className="min-h-screen premium-mesh-bg text-white flex flex-col p-6 font-sans relative overflow-hidden">
+        {/* Dynamic Abstract Shapes */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[5%] right-[5%] w-64 h-64 bg-primary/5 rounded-full blur-[100px] float-shape" />
+          <div className="absolute bottom-[10%] left-[5%] w-72 h-72 bg-amber-500/5 rounded-full blur-[110px] float-shape [animation-delay:3s]" />
+        </div>
+
+        <div className="max-w-md mx-auto w-full space-y-8 py-10 relative z-10">
+          <div className="text-center space-y-3 animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="p-3 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 w-fit mx-auto shadow-xl">
+              <img src={logo} alt="Skill Learners" className="h-14 mx-auto drop-shadow-lg" />
+            </div>
+            <h1 className="text-3xl font-black tracking-tight leading-tight pt-2">Join the Academy</h1>
+            <p className="text-gray-400 font-bold text-sm">Create your pathway to excellence</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 gap-5">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-gray-400 ml-1">Referral Code (Optional)</label>
+                <input type="text" value={formData.sponsorId} onChange={(e) => setFormData({ ...formData, sponsorId: e.target.value.toUpperCase() })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600 uppercase" placeholder="Sponsor ID" />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-gray-400 ml-1">Full Name</label>
+                <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="John Doe" />
+              </div>
+
+              <div className="grid grid-cols-1 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-400 ml-1">Email Address</label>
+                  <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="john@example.com" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-400 ml-1">Mobile Number</label>
+                  <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="+91 0000000000" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-gray-400 ml-1">Date of Birth</label>
+                <input type="date" required value={formData.dob} onChange={(e) => setFormData({ ...formData, dob: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-400 ml-1">Country</label>
+                  <div className="relative">
+                    <select required value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white appearance-none focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                      <option value="" className="bg-black">Select</option>
+                      {countries.map(c => <option key={c.code} value={c.name} className="bg-black">{c.name}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-400 ml-1">State</label>
+                  <div className="relative">
+                    <select required value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white appearance-none focus:ring-2 focus:ring-primary/20 outline-none transition-all disabled:opacity-50" disabled={!formData.country}>
+                      <option value="" className="bg-black">{formData.country ? "Select" : "..."}</option>
+                      {availableStates.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-gray-400 ml-1">Full Address</label>
+                <input type="text" required value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="Street, City, Area" />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-gray-400 ml-1">Pincode</label>
+                <input type="text" required value={formData.pincode} onChange={(e) => setFormData({ ...formData, pincode: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="000000" />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-gray-400 ml-1">Password</label>
+                <div className="relative">
+                  <input type={showPassword ? "text" : "password"} required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="••••••••" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2 pt-2">
+              <input type="checkbox" required checked={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 text-primary focus:ring-primary" />
+              <p className="text-[10px] font-bold text-gray-500 leading-tight">I accept the Academy's <Link to="/terms" className="text-primary underline">Terms of Service</Link></p>
+            </div>
+
+            <Button type="submit" className="w-full h-18 rounded-2xl bg-primary text-black font-black text-xl shadow-[0_15px_30px_rgba(251,191,36,0.3)] hover:scale-[1.02] active:scale-[0.95] transition-all" disabled={isLoading}>
+              {isLoading ? <Loader2 className="animate-spin w-7 h-7" /> : "Initiate Enrollment"}
+            </Button>
+
+            <p className="text-center text-sm font-bold text-gray-400">Member already? <Link to="/login" className="text-primary font-black ml-1">Login</Link></p>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background">

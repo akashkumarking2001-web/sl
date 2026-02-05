@@ -10,7 +10,7 @@ interface ThemeToggleProps {
 }
 
 const ThemeToggle = ({ variant = "icon", className }: ThemeToggleProps) => {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
@@ -19,16 +19,15 @@ const ThemeToggle = ({ variant = "icon", className }: ThemeToggleProps) => {
       setTheme(savedTheme);
       applyTheme(savedTheme);
     } else {
-      // Default to system preference
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setTheme(prefersDark ? "dark" : "light");
-      applyTheme(prefersDark ? "dark" : "light");
+      // Default to light mode as per user requirement
+      setTheme("light");
+      applyTheme("light");
     }
   }, []);
 
   const applyTheme = (newTheme: Theme) => {
     const root = document.documentElement;
-    
+
     if (newTheme === "system") {
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       root.classList.toggle("dark", prefersDark);
@@ -39,26 +38,26 @@ const ThemeToggle = ({ variant = "icon", className }: ThemeToggleProps) => {
 
   const toggleTheme = () => {
     setIsAnimating(true);
-    
+
     const newTheme: Theme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
     applyTheme(newTheme);
-    
+
     setTimeout(() => setIsAnimating(false), 500);
   };
 
   const cycleTheme = () => {
     setIsAnimating(true);
-    
+
     const themes: Theme[] = ["light", "dark", "system"];
     const currentIndex = themes.indexOf(theme);
     const newTheme = themes[(currentIndex + 1) % themes.length];
-    
+
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
     applyTheme(newTheme);
-    
+
     setTimeout(() => setIsAnimating(false), 500);
   };
 
@@ -76,35 +75,35 @@ const ThemeToggle = ({ variant = "icon", className }: ThemeToggleProps) => {
         aria-label="Toggle theme"
       >
         {/* Animated background glow */}
-        <div 
+        <div
           className={cn(
             "absolute inset-0 rounded-full transition-all duration-500",
-            isDark 
-              ? "bg-gradient-to-tr from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/20 group-hover:to-yellow-500/10" 
+            isDark
+              ? "bg-gradient-to-tr from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/20 group-hover:to-yellow-500/10"
               : "bg-gradient-to-tr from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-indigo-500/10"
           )}
         />
-        
+
         {/* Sun icon */}
-        <Sun 
+        <Sun
           className={cn(
             "w-5 h-5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-500",
-            isDark 
-              ? "rotate-0 scale-100 opacity-100 text-amber-500" 
+            isDark
+              ? "rotate-0 scale-100 opacity-100 text-amber-500"
               : "-rotate-90 scale-0 opacity-0"
           )}
         />
-        
+
         {/* Moon icon */}
-        <Moon 
+        <Moon
           className={cn(
             "w-5 h-5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-500",
-            isDark 
-              ? "rotate-90 scale-0 opacity-0" 
+            isDark
+              ? "rotate-90 scale-0 opacity-0"
               : "rotate-0 scale-100 opacity-100 text-blue-500"
           )}
         />
-        
+
         {/* Invisible placeholder for sizing */}
         <Sun className="w-5 h-5 opacity-0" />
       </button>
@@ -129,7 +128,7 @@ const ThemeToggle = ({ variant = "icon", className }: ThemeToggleProps) => {
           isDark ? "opacity-100" : "opacity-0"
         )}>
           {[...Array(3)].map((_, i) => (
-            <div 
+            <div
               key={i}
               className="absolute w-1 h-1 bg-white/60 rounded-full animate-pulse"
               style={{
@@ -140,19 +139,19 @@ const ThemeToggle = ({ variant = "icon", className }: ThemeToggleProps) => {
             />
           ))}
         </div>
-        
+
         {/* Cloud (light mode) */}
         <div className={cn(
           "absolute right-2 top-2 w-4 h-2 bg-white rounded-full transition-opacity duration-300",
           isDark ? "opacity-0" : "opacity-60"
         )} />
-        
+
         {/* Toggle knob */}
         <div
           className={cn(
             "relative w-7 h-7 rounded-full shadow-md transition-all duration-500 flex items-center justify-center",
-            isDark 
-              ? "translate-x-7 bg-slate-800" 
+            isDark
+              ? "translate-x-7 bg-slate-800"
               : "translate-x-0 bg-gradient-to-br from-amber-300 to-orange-400"
           )}
         >
@@ -168,7 +167,7 @@ const ThemeToggle = ({ variant = "icon", className }: ThemeToggleProps) => {
 
   // Pill variant - three-way toggle
   return (
-    <div 
+    <div
       className={cn(
         "flex items-center gap-1 p-1 rounded-full bg-muted/50 border border-border",
         className
@@ -190,8 +189,8 @@ const ThemeToggle = ({ variant = "icon", className }: ThemeToggleProps) => {
           }}
           className={cn(
             "relative p-2 rounded-full transition-all duration-300",
-            theme === value 
-              ? "bg-card text-foreground shadow-sm" 
+            theme === value
+              ? "bg-card text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"
           )}
           aria-label={label}

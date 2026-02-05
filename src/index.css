@@ -81,22 +81,36 @@
     --radius: 0.75rem;
 
     /* Standardized Spacing Tokens (UX Consistency) */
-    --spacing-xs: 0.5rem;    /* 8px - tight spacing */
-    --spacing-sm: 0.75rem;   /* 12px - small gaps */
-    --spacing-md: 1rem;      /* 16px - default spacing */
-    --spacing-lg: 1.5rem;    /* 24px - section spacing */
-    --spacing-xl: 2rem;      /* 32px - large sections */
-    --spacing-2xl: 3rem;     /* 48px - page sections */
-    --spacing-3xl: 4rem;     /* 64px - hero sections */
+    --spacing-xs: 0.5rem;
+    /* 8px - tight spacing */
+    --spacing-sm: 0.75rem;
+    /* 12px - small gaps */
+    --spacing-md: 1rem;
+    /* 16px - default spacing */
+    --spacing-lg: 1.5rem;
+    /* 24px - section spacing */
+    --spacing-xl: 2rem;
+    /* 32px - large sections */
+    --spacing-2xl: 3rem;
+    /* 48px - page sections */
+    --spacing-3xl: 4rem;
+    /* 64px - hero sections */
 
     /* Component Spacing Standards */
-    --card-padding: var(--spacing-lg);        /* 24px for cards */
-    --section-gap: var(--spacing-xl);         /* 32px between sections */
-    --grid-gap: var(--spacing-md);            /* 16px for grids */
-    --button-padding-x: var(--spacing-md);    /* 16px horizontal */
-    --button-padding-y: var(--spacing-sm);    /* 12px vertical */
-    --input-padding: var(--spacing-md);       /* 16px for inputs */
-    --page-padding: var(--spacing-lg);        /* 24px page edges */
+    --card-padding: var(--spacing-lg);
+    /* 24px for cards */
+    --section-gap: var(--spacing-xl);
+    /* 32px between sections */
+    --grid-gap: var(--spacing-md);
+    /* 16px for grids */
+    --button-padding-x: var(--spacing-md);
+    /* 16px horizontal */
+    --button-padding-y: var(--spacing-sm);
+    /* 12px vertical */
+    --input-padding: var(--spacing-md);
+    /* 16px for inputs */
+    --page-padding: var(--spacing-lg);
+    /* 24px page edges */
 
     /* Extended Design Tokens - Premium Gold */
     --gold: 45 85% 55%;
@@ -230,6 +244,26 @@
   }
 }
 
+@layer utilities {
+  .premium-mesh-bg {
+    @apply bg-[#030303];
+    background-image:
+      radial-gradient(at 0% 0%, rgba(251, 191, 36, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(251, 191, 36, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  .glass-card {
+    @apply backdrop-blur-3xl bg-white/5 border border-white/10 shadow-2xl;
+  }
+
+  .glass-morphism {
+    @apply backdrop-blur-2xl bg-white/5 border border-white/10;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -314,6 +348,26 @@
 
   .bg-gradient-neon {
     background: var(--gradient-neon);
+  }
+
+  /* Premium Light Mode Background */
+  .premium-bg-light {
+    background-color: hsl(40 20% 97%);
+    background-image:
+      radial-gradient(at 0% 0%, hsla(45, 85%, 55%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(210, 85%, 52%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(265, 70%, 55%, 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(152, 65%, 42%, 0.1) 0px, transparent 50%);
+  }
+
+  /* Dark mode equivalent */
+  .dark .premium-bg-dark {
+    background-color: hsl(230 25% 9%);
+    background-image:
+      radial-gradient(at 0% 0%, hsla(42, 80%, 58%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(210, 88%, 55%, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(265, 72%, 60%, 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(152, 68%, 48%, 0.08) 0px, transparent 50%);
   }
 
   /* Glow effects */
@@ -606,6 +660,97 @@
     opacity: 1;
     filter: blur(2px);
   }
+}
+
+@keyframes mesh-animate {
+  0% {
+    transform: scale(1) rotate(0deg) translate(0, 0);
+  }
+
+  33% {
+    transform: scale(1.1) rotate(2deg) translate(1%, 1%);
+  }
+
+  66% {
+    transform: scale(0.95) rotate(-1deg) translate(-1%, 0.5%);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg) translate(0, 0);
+  }
+}
+
+@keyframes mesh-bounce {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(2%, 2%) scale(1.1);
+  }
+}
+
+.animate-mesh-bounce {
+  animation: mesh-bounce 15s ease-in-out infinite;
+}
+
+@keyframes logo-float {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+.logo-float {
+  animation: logo-float 6s ease-in-out infinite;
+}
+
+.premium-mesh-bg {
+  background-color: #050505;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(45, 88%, 55%, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(210, 85%, 52%, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(265, 70%, 55%, 0.06) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(152, 65%, 42%, 0.08) 0px, transparent 50%);
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-mesh-bg::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, hsla(45, 88%, 55%, 0.02) 0%, transparent 70%);
+  animation: mesh-animate 25s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes float-shape {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  50% {
+    transform: translate(15px, -25px) rotate(4deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.float-shape {
+  animation: float-shape 12s ease-in-out infinite;
 }
 
 @keyframes micro-bounce {

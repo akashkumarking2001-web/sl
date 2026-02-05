@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -13,15 +13,25 @@ import {
   Gem,
   Trophy,
   Sparkles,
-  Award
+  Award,
+  Search,
+  ChevronRight,
+  ShoppingCart,
+  Zap,
+  ArrowUpRight,
+  LockKeyhole
 } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import logo from "@/assets/logo.png";
 import { packages } from "@/data/packages";
 import CourseViewer from "@/components/CourseViewer";
 import CourseQuiz from "@/components/CourseQuiz";
 import CourseCertificate from "@/components/CourseCertificate";
 import { useAllCourseProgress } from "@/hooks/useCourseProgress";
+import NativeHeader from "@/components/layout/NativeHeader";
 
 // Sample course data with modules and episodes
 const courseData = {
@@ -34,7 +44,7 @@ const courseData = {
     students: 4100,
     rating: 4.9,
     progress: 75,
-    enrolled: true,
+    enrolled: false,
     modules: [
       {
         id: "mod1",
@@ -96,7 +106,7 @@ const courseData = {
     students: 1800,
     rating: 4.9,
     progress: 45,
-    enrolled: true,
+    enrolled: false,
     modules: [
       {
         id: "ai-mod1",
@@ -157,7 +167,7 @@ const courseData = {
     students: 2900,
     rating: 4.7,
     progress: 90,
-    enrolled: true,
+    enrolled: false,
     modules: [
       {
         id: "ec-mod1",
@@ -231,9 +241,22 @@ const UserCourses = () => {
   const [showQuiz, setShowQuiz] = useState<string | null>(null);
   const [showCertificate, setShowCertificate] = useState<string | null>(null);
   const navigate = useNavigate();
+  const isNative = Capacitor.isNativePlatform() || ['8080', '5174'].includes(window.location.port);
 
   // Load all course progress from database
   const { progressMap, isLoading: isProgressLoading } = useAllCourseProgress();
+  const { profile } = useAuth();
+
+  // Define logic for which plans unlock which courses
+  const planUnlockLevels: Record<string, number> = {
+    "SPARK": 1,
+    "MOMENTUM": 2,
+    "SUMMIT": 3,
+    "TITAN": 4,
+    "LEGACY": 5
+  };
+
+  const userLevel = profile?.purchased_plan ? (planUnlockLevels[profile.purchased_plan.toUpperCase()] || 0) : 0;
 
   // Calculate progress percentage from database
   const getProgress = (courseId: string) => {
@@ -243,13 +266,15 @@ const UserCourses = () => {
   };
 
   const courses = useMemo(() => [
-    { ...courseData["Digital Marketing Mastery"], progress: getProgress("dm-001") },
-    { ...courseData["AI & Prompt Engineering"], progress: getProgress("ai-001") },
-    { ...courseData["E-commerce & Dropshipping"], progress: getProgress("ec-001") },
-    { id: "wd-001", title: "Web Development Bootcamp", description: "Learn HTML, CSS, JavaScript & modern frameworks", image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop", duration: "40 hours", students: 2500, rating: 4.9, progress: 0, enrolled: false },
-  ], [progressMap]);
+    { ...courseData["Digital Marketing Mastery"], level: 1, progress: getProgress("dm-001"), enrolled: userLevel >= 1 },
+    { ...courseData["AI & Prompt Engineering"], level: 2, progress: getProgress("ai-001"), enrolled: userLevel >= 2 },
+    { ...courseData["E-commerce & Dropshipping"], level: 3, progress: getProgress("ec-001"), enrolled: userLevel >= 3 },
+    { id: "wd-001", title: "Web Development Bootcamp", level: 4, description: "Learn HTML, CSS, JavaScript & modern frameworks", image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop", duration: "40 hours", students: 2500, rating: 4.9, progress: 0, enrolled: userLevel >= 4 },
+  ], [progressMap, userLevel]);
 
   const enrolledCourses = courses.filter(c => c.enrolled);
+
+  // displayCourses for the original website layout
   const displayCourses = activeTab === "enrolled" ? enrolledCourses : courses;
 
   const handleCourseComplete = (courseId: string) => {
@@ -262,6 +287,96 @@ const UserCourses = () => {
     setShowCertificate("Digital Marketing Mastery");
   };
 
+  if (isNative) {
+    return (
+      <div className="min-h-screen bg-[#000000] text-white flex flex-col font-sans selection:bg-primary/30">
+        {/* Native Status Top Spacer */}
+        <div className="h-12 bg-black w-full" />
+
+        {/* Course Viewer Overlay */}
+        {viewingCourse && courseData[viewingCourse as keyof typeof courseData] && (
+          <CourseViewer
+            course={courseData[viewingCourse as keyof typeof courseData]}
+            onClose={() => setViewingCourse(null)}
+            onComplete={handleCourseComplete}
+          />
+        )}
+
+        {/* Ultra-Premium Header */}
+        <NativeHeader title="My Academy" />
+
+        <main className="flex-1 overflow-y-auto pb-32">
+          {/* Section: My Courses */}
+          <section className="mt-6">
+            <div className="px-6 flex items-center justify-between mb-6">
+              <h3 className="text-lg font-black tracking-tight italic">Purchased Courses</h3>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] px-2 py-1 bg-primary text-black rounded-md">{enrolledCourses.length} Active</span>
+            </div>
+
+            {enrolledCourses.length > 0 ? (
+              <div className="px-6 space-y-4">
+                {enrolledCourses.map((course, i) => (
+                  <div key={i} className="group relative rounded-[2.5rem] bg-white/[0.03] border border-white/10 overflow-hidden active:scale-[0.98] transition-all">
+                    <img src={course.image} className="w-full h-40 object-cover opacity-50 grayscale group-hover:grayscale-0 transition-all duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                    <div className="absolute inset-x-6 bottom-6 flex items-end justify-between">
+                      <div className="flex-1 mr-4">
+                        <h4 className="text-lg font-black tracking-tight mb-1">{course.title}</h4>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full" style={{ width: `${course.progress}%` }} />
+                          </div>
+                          <span className="text-[10px] font-black text-primary">{course.progress}%</span>
+                        </div>
+                      </div>
+                      <Button size="icon" className="w-12 h-12 rounded-2xl bg-primary text-black shadow-xl shadow-primary/20" onClick={() => setViewingCourse(course.title)}>
+                        <Play className="w-5 h-5 fill-current" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mx-6 p-10 rounded-[3rem] bg-white/[0.02] border border-dashed border-white/10 text-center animate-in fade-in zoom-in duration-700">
+                <div className="w-20 h-20 rounded-[2.5rem] bg-primary/5 flex items-center justify-center mx-auto mb-8 relative">
+                  <div className="absolute inset-0 bg-primary/10 blur-2xl animate-pulse rounded-full" />
+                  <BookOpen className="w-10 h-10 text-primary relative z-10" />
+                </div>
+                <h4 className="text-lg font-black mb-4 tracking-tight">Your Journey Starts Here</h4>
+                <p className="text-gray-400 text-sm font-medium leading-relaxed italic px-4">
+                  "You haven't purchased any courses yet. Start your learning journey by buying a course today!"
+                </p>
+                <Button
+                  onClick={() => navigate("/courses")}
+                  className="mt-8 h-12 px-8 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-[10px] shadow-xl hover:scale-105 active:scale-95 transition-all"
+                >
+                  Browse Library
+                </Button>
+              </div>
+            )}
+          </section>
+
+          {/* Premium Shop Integration Box */}
+          <section className="mt-16 px-6 pb-20">
+            <div className="p-10 rounded-[3rem] bg-gradient-to-br from-[#FBBF24] to-[#F59E0B] text-black relative overflow-hidden shadow-[0_30px_60px_-15px_rgba(251,191,36,0.5)]">
+              <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-white/20 rounded-full blur-[80px]" />
+              <Zap className="absolute bottom-[-10px] left-[-10px] w-32 h-32 text-black/5 rotate-12" />
+
+              <h3 className="text-3xl font-black tracking-tighter leading-none mb-4 uppercase italic">Ascend <br /> Equipment Store</h3>
+              <p className="text-black/60 text-xs font-black uppercase tracking-widest mb-8 leading-tight">Master the tools of the elite. Get exclusive tech, electronics, and digital assets.</p>
+
+              <Button onClick={() => navigate("/shopping")} className="h-14 px-8 rounded-2xl bg-black text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl hover:scale-105 active:scale-95 transition-all">
+                Enter Shopping Hub
+                <ArrowUpRight className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
+  // --- RESTORED ORIGINAL WEBSITE LAYOUT ---
   return (
     <div className="min-h-screen bg-background">
       {/* Course Viewer */}
@@ -313,13 +428,18 @@ const UserCourses = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Premium Combo Packs */}
-        <section className="mb-12">
+        {/* Premium Combo Packages (Affiliate Unlock) */}
+        <section className="mb-16">
           <div className="text-center mb-8">
             <h1 className="text-3xl lg:text-4xl font-bold font-display mb-4">
-              Unlock <span className="text-gradient-gold">Financial Freedom</span>
+              Premium <span className="text-gradient-gold">Combo Packages</span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Premium Skill & Income Combo Packs</p>
+            <div className="max-w-2xl mx-auto p-4 rounded-2xl bg-primary/5 border border-primary/20 mb-6">
+              <p className="text-sm text-primary font-bold flex items-center justify-center gap-2">
+                <LockKeyhole className="w-4 h-4" />
+                Purchasing a Combo Package is mandatory to unlock your Affiliate Wallet & earning features.
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide lg:grid lg:grid-cols-5 lg:gap-5">
@@ -345,7 +465,7 @@ const UserCourses = () => {
                   )}
                   <p className="text-xs text-muted-foreground mb-3">{plan.shortDesc}</p>
                   <Link to={`/payment?plan=${plan.name}`}>
-                    <Button variant={plan.popular ? "hero" : "outline"} size="sm" className="w-full">Buy Now</Button>
+                    <Button variant={plan.popular ? "hero" : "outline"} size="sm" className="w-full">Get Started</Button>
                   </Link>
                 </div>
               );
@@ -353,7 +473,7 @@ const UserCourses = () => {
           </div>
         </section>
 
-        {/* Individual Courses */}
+        {/* Individual Courses Section */}
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold font-display">Expert-Led Courses</h2>
@@ -389,11 +509,13 @@ const UserCourses = () => {
                         <div className="h-full bg-gradient-gold rounded-full" style={{ width: `${course.progress}%` }} />
                       </div>
                       <Button variant="hero" className="w-full" onClick={() => setViewingCourse(course.title)}>
-                        <Play className="w-4 h-4" />{course.progress > 0 ? "Continue" : "Start"} Learning
+                        <Play className="w-4 h-4 mr-2" />{course.progress > 0 ? "Continue" : "Start"} Learning
                       </Button>
                     </div>
                   ) : (
-                    <Button variant="outline" className="w-full"><Lock className="w-4 h-4" />Unlock Course</Button>
+                    <Link to="/shopping">
+                      <Button variant="outline" className="w-full"><Lock className="w-4 h-4 mr-2" />Unlock Course</Button>
+                    </Link>
                   )}
                 </div>
               </div>

@@ -26,6 +26,7 @@ interface UserMetadata {
 interface UserProfile {
   id: string;
   user_id: string;
+  student_id: string | null;
   full_name: string | null;
   email: string | null;
   phone: string | null;
@@ -36,6 +37,12 @@ interface UserProfile {
   avatar_url: string | null;
   created_at: string;
   role: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  pincode: string | null;
+  country: string | null;
+  dob: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,7 +109,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 referred_by: null,
                 has_purchased: null,
                 purchased_plan: null,
-                avatar_url: null
+                avatar_url: null,
+                address: null,
+                city: null,
+                state: null,
+                pincode: null,
+                country: 'India',
+                dob: null,
+                student_id: 'SL-ADMIN-001'
               });
             }
           }
@@ -149,7 +163,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 referred_by: null,
                 has_purchased: null,
                 purchased_plan: null,
-                avatar_url: null
+                avatar_url: null,
+                address: null,
+                city: null,
+                state: null,
+                pincode: null,
+                country: 'India',
+                dob: null,
+                student_id: 'SL-ADMIN-001'
               });
             }
             return;
@@ -390,7 +411,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           referred_by: null,
           has_purchased: null,
           purchased_plan: null,
-          avatar_url: null
+          avatar_url: null,
+          address: null,
+          city: null,
+          state: null,
+          pincode: null,
+          country: 'India',
+          dob: null,
+          student_id: 'SL-ADMIN-001'
         } as any);
         setLoading(false);
       }
