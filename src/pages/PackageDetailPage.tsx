@@ -29,64 +29,64 @@ const tierConfig: Record<string, {
     glassBg: string;       // Secondary backgrounds
 }> = {
     bronze: {
-        name: "Basic Package",
-        mentorTitle: "The Digital Content Creator Vault",
+        name: "Beginner",
+        mentorTitle: "The Creator’s Asset Vault",
         icon: Zap,
         gradient: "from-blue-600 to-blue-400",
-        color: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white",
-        accentBorder: "border-blue-200 dark:border-blue-800",
-        themeHex: "#2563EB", // Royal Blue
+        color: "bg-slate-900",
+        accentBorder: "border-blue-500/20",
+        themeHex: "#3b82f6",
         borderGradient: "from-blue-400 to-blue-600",
-        glassBg: "bg-blue-50 dark:bg-blue-900/20",
-        description: "The Digital Content Creator Vault. Perfect for beginners who want to master the foundational digital skills with a massive library of assets."
+        glassBg: "bg-blue-500/10",
+        description: "The Creator’s Asset Vault. Perfect for beginners who want to master foundational digital skills with a massive library of assets."
     },
     silver: {
-        name: "Starter Package",
-        mentorTitle: "YouTube Mastery & Traffic Engine",
-        icon: TrendingUp, // Sparkles in PlansSection, utilizing TrendingUp here for variety or match? Let's match PlansSection -> Sparkles? No constant import issues. Keeping TrendingUp to avoid import errors unless I added Sparkles. I added Sparkles to imports previously? Yes. Let's Use Sparkles to match.
+        name: "Intermediate",
+        mentorTitle: "Social Media & Content Mastery",
+        icon: Sparkles,
         gradient: "from-emerald-500 to-teal-400",
-        color: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white",
-        accentBorder: "border-emerald-200 dark:border-emerald-800",
-        themeHex: "#10B981", // Emerald
+        color: "bg-teal-950",
+        accentBorder: "border-emerald-500/20",
+        themeHex: "#10b981",
         borderGradient: "from-emerald-400 to-emerald-600",
-        glassBg: "bg-emerald-50 dark:bg-emerald-900/20",
-        description: "YouTube Mastery & Traffic Engine. Unlock growth-focused strategies and learn how to trigger viral growth on social platforms."
+        glassBg: "bg-emerald-500/10",
+        description: "Social Media & Content Mastery. Growth-focused strategies for traffic, views, and social dominance across all platforms."
     },
     gold: {
-        name: "Professional Package",
-        mentorTitle: "Sales Automation & Funnel King",
-        icon: Rocket, // Star in PlansSection.
+        name: "Advanced",
+        mentorTitle: "E-Commerce & Affiliate Tycoon",
+        icon: Star,
         gradient: "from-amber-500 to-orange-500",
-        color: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white",
-        accentBorder: "border-amber-200 dark:border-amber-800",
-        themeHex: "#F59E0B", // Gold
+        color: "bg-zinc-950",
+        accentBorder: "border-amber-500/20",
+        themeHex: "#fbbf24",
         borderGradient: "from-amber-400 to-amber-600",
-        glassBg: "bg-amber-50 dark:bg-amber-900/20",
-        description: "Sales Automation & Funnel King. Master high-ticket sales, psychology, and automated funnels for 24/7 revenue."
+        glassBg: "bg-amber-500/10",
+        description: "E-Commerce & Affiliate Tycoon. Master high-ticket sales, psychology, and automated funnels for consistent, automated revenue."
     },
     platinum: {
-        name: "Premium Package",
-        mentorTitle: "The Digital Agency Titan",
+        name: "Expert",
+        mentorTitle: "AI-Powered Digital Marketing Agency",
         icon: Gem,
         gradient: "from-violet-600 to-purple-500",
-        color: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white",
-        accentBorder: "border-violet-200 dark:border-violet-800",
-        themeHex: "#8B5CF6", // Violet
+        color: "bg-indigo-950",
+        accentBorder: "border-violet-500/20",
+        themeHex: "#8b5cf6",
         borderGradient: "from-violet-400 to-violet-600",
-        glassBg: "bg-violet-50 dark:bg-violet-900/20",
-        description: "The Digital Agency Titan. Elite strategies for SEO, ROAS, and scaling a digital marketing agency to the moon."
+        glassBg: "bg-violet-500/10",
+        description: "AI-Powered Digital Marketing Agency. Elite strategies for SEO, performance marketing, and scaling a high-ROAS digital agency."
     },
     diamond: {
-        name: "Enterprise Package",
+        name: "Master",
         mentorTitle: "Wealth Creation & Trading Mastery",
         icon: Crown,
         gradient: "from-emerald-800 to-green-600",
-        color: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white",
-        accentBorder: "border-emerald-700 dark:border-emerald-900",
-        themeHex: "#064E3B", // Deep Forest Green
+        color: "bg-emerald-950",
+        accentBorder: "border-emerald-500/20",
+        themeHex: "#059669",
         borderGradient: "from-emerald-700 to-green-900",
-        glassBg: "bg-emerald-50 dark:bg-emerald-900/20",
-        description: "Wealth Creation & Trading Mastery. Elite financial strategies, forex market structure, and generating generational wealth."
+        glassBg: "bg-emerald-500/10",
+        description: "Wealth Creation & Trading Mastery. Elite financial strategies, forex market structure, and generating generational wealth through smart investing."
     },
 };
 
@@ -353,53 +353,68 @@ const PackageDetailPage = () => {
                             />
 
                             {/* The Card */}
-                            <div className="relative rounded-[2rem] bg-white/10 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 p-1 shadow-2xl transition-all hover:-translate-y-2">
-                                <div className="bg-white/50 dark:bg-slate-900/50 rounded-[1.8rem] p-8 relative overflow-hidden">
-
+                            <div className={cn("relative rounded-[2.5rem] border-2 shadow-2xl overflow-hidden transition-all hover:-translate-y-2", tier.color, tier.accentBorder)}>
+                                <div className="p-8 md:p-10 relative overflow-hidden">
                                     {/* Header */}
-                                    <div className="flex justify-between items-start mb-8">
-                                        <div className="p-3 rounded-xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/20 shadow-sm">
-                                            <TierIcon className="w-8 h-8" style={{ color: tier.themeHex }} />
+                                    <div className="flex justify-between items-start mb-10">
+                                        <div className={cn("p-4 rounded-2xl bg-white/5 border border-white/10 shadow-lg", tier.glassBg)}>
+                                            <TierIcon className="w-10 h-10" style={{ color: tier.themeHex }} />
                                         </div>
-                                        {pkg.tagline === "BEST VALUE" || pkg.name.includes("Professional") ? (
-                                            <div className="px-3 py-1 rounded-lg bg-emerald-500 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg flex items-center gap-1.5">
+                                        {pkg.popular && (
+                                            <div className="px-4 py-2 rounded-xl bg-amber-500 text-[10px] font-black uppercase tracking-[0.2em] text-black shadow-xl flex items-center gap-2">
                                                 <Star className="w-3 h-3 fill-current" /> Best Value
-                                            </div>
-                                        ) : (
-                                            <div className="px-3 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                                                Standard
                                             </div>
                                         )}
                                     </div>
 
                                     {/* Title */}
-                                    <div className="mb-8">
-                                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{pkg.displayName}</h2>
-                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Lifetime Access</p>
+                                    <div className="mb-10">
+                                        <h2 className="text-3xl font-black text-white mb-2">{tier.name}</h2>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">{pkg.headline}</p>
                                     </div>
 
-                                    {/* Price */}
-                                    <div className="space-y-4 mb-8">
-                                        <div className="flex justify-between items-center pb-4 border-b border-slate-200/50 dark:border-slate-700/50">
-                                            <span className="text-xs font-bold text-slate-400 uppercase">Market Price</span>
-                                            <span className="text-lg font-bold text-slate-400 line-through">₹{mrp.toLocaleString()}</span>
+                                    {/* Price & Savings */}
+                                    <div className="space-y-6 mb-10">
+                                        <div className="flex justify-between items-center pb-4 border-b border-white/5">
+                                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Market Value</span>
+                                            <span className="text-xl font-bold text-slate-500 line-through">₹{mrp.toLocaleString()}</span>
                                         </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">Your Price</span>
-                                            <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">₹{pkg.price.toLocaleString()}</span>
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <span className="text-xs font-black text-emerald-500 uppercase tracking-widest block mb-1">Academy Price</span>
+                                                <span className="text-5xl font-black text-white tracking-tighter">₹{pkg.price.toLocaleString()}</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                                                    Save ₹{(mrp - pkg.price).toLocaleString()}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    {/* Bundles/Bonus - CLEAR HIGHLIGHTING */}
+                                    {pkg.bonus && (
+                                        <div className="mb-10 p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-start gap-4">
+                                            <div className="mt-1">
+                                                <Sparkles className="w-5 h-5 text-amber-500" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-black text-amber-500 uppercase tracking-widest mb-1">Premium Bonus Includes:</p>
+                                                <p className="text-sm font-bold text-white leading-snug">{pkg.bonus}</p>
+                                                <p className="text-[10px] text-emerald-400 font-bold mt-2 uppercase tracking-tight">Worth ₹{(pkg.price - 699).toLocaleString()}+ — FREE</p>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Trust Badges */}
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 p-2 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Secure
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="flex items-center justify-center gap-2 bg-white/5 p-3 rounded-xl text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                                            <ShieldCheck className="w-4 h-4 text-emerald-500" /> Secure Pay
                                         </div>
-                                        <div className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 p-2 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" /> Verified
+                                        <div className="flex items-center justify-center gap-2 bg-white/5 p-3 rounded-xl text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                                            <Award className="w-4 h-4 text-amber-500" /> Certified
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
@@ -491,37 +506,35 @@ const PackageDetailPage = () => {
                 </div>
             </section>
 
-            {/* REGISTRATION CTA */}
-            <section id="enroll" className="py-32 relative overflow-hidden">
-                <div className="container relative mx-auto px-4 max-w-5xl z-10">
-                    <div className="relative p-[3px] rounded-[3rem] bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent animate-in zoom-in-95 duration-1000">
-                        <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-12 lg:p-24 text-center shadow-[0_20px_100px_-20px_rgba(0,0,0,0.1)] relative overflow-hidden group">
+            {/* REGISTRATION CTA - Compact & Balanced */}
+            <section id="enroll" className="py-20 relative overflow-hidden">
+                <div className="container relative mx-auto px-4 max-w-4xl z-10">
+                    <div className="bg-slate-900 rounded-[3rem] p-10 lg:p-16 text-center border-2 border-white/10 shadow-3xl relative overflow-hidden group">
 
-                            {/* Center Glow */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-[500px] max-h-[500px] bg-primary/10 blur-[120px] rounded-full opacity-50 animate-pulse" style={{ backgroundColor: `${tier.themeHex}20` }} />
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px] -mr-32 -mt-32" />
 
-                            <div className="relative z-10 space-y-10">
-                                <h2 className="text-5xl lg:text-8xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                        <div className="relative z-10 space-y-8">
+                            <div>
+                                <h2 className="text-4xl lg:text-5xl font-black text-white tracking-tight mb-4 leading-tight">
                                     Join the <span style={{ color: tier.themeHex }}>Elite</span> Today.
                                 </h2>
-                                <p className="text-xl text-slate-600 dark:text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed">
-                                    Secure your spot in the <span className="font-bold text-slate-900 dark:text-white">{pkg.name}</span> and start your journey to financial freedom immediately.
+                                <p className="text-lg text-slate-400 font-bold max-w-xl mx-auto leading-relaxed">
+                                    Secure your spot in the <span className="text-white underline decoration-primary/50 underline-offset-4">{tier.name} Academy</span> and start your ascend.
                                 </p>
+                            </div>
 
-                                <div className="max-w-md mx-auto relative group">
-                                    <Link to={`/register?plan=${pkg.name}`}>
-                                        <Button
-                                            className="w-full h-24 rounded-3xl text-2xl font-black shadow-2xl transition-all hover:scale-[1.02] hover:shadow-[0_20px_60px_-10px_rgba(var(--theme-rgb),0.5)] border-t border-white/20"
-                                            style={{ backgroundColor: tier.themeHex }}
-                                        >
-                                            Enroll Now <ArrowRight className="w-8 h-8 ml-3" />
-                                        </Button>
-                                    </Link>
-                                    <div className="mt-8 flex justify-center gap-8 text-xs font-black uppercase tracking-widest text-slate-400">
-                                        <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> No Hidden Fees</span>
-                                        <span className="flex items-center gap-2"><Zap className="w-4 h-4 text-amber-500" /> Instant Access</span>
-                                    </div>
+                            <div className="max-w-md mx-auto space-y-6">
+                                <Link to={`/payment?plan=${pkg.name}`}>
+                                    <Button
+                                        className="w-full h-20 rounded-2xl text-xl font-black shadow-2xl transition-all hover:scale-[1.02] hover:shadow-primary/20"
+                                        style={{ backgroundColor: tier.themeHex, color: tier.themeHex === '#fbbf24' ? 'black' : 'white' }}
+                                    >
+                                        Enroll Now <ArrowRight className="w-6 h-6 ml-3" />
+                                    </Button>
+                                </Link>
+                                <div className="flex justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                    <span className="flex items-center gap-2"><Crown className="w-4 h-4 text-amber-500" /> Exclusive Access</span>
+                                    <span className="flex items-center gap-2"><Zap className="w-4 h-4 text-blue-500" /> Instant Setup</span>
                                 </div>
                             </div>
                         </div>

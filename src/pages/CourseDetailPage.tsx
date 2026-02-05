@@ -1,10 +1,11 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, Clock, Users, Play, CheckCircle2, Award, Shield, BookOpen, ArrowRight } from "lucide-react";
+import { ArrowLeft, Star, Clock, Users, Play, CheckCircle2, Award, Shield, BookOpen, ArrowRight, Zap, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Capacitor } from "@capacitor/core";
 import NativeHeader from "@/components/layout/NativeHeader";
+import { cn } from "@/lib/utils";
 
 // Course data - would typically come from a database
 const coursesData: Record<string, {
@@ -282,202 +283,243 @@ const CourseDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#FDFDFC]">
       <Navbar />
 
-      {/* Hero Section - Fixed text contrast */}
-      <section className="pt-24 pb-12 relative overflow-hidden bg-slate-900">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 z-0" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50 z-0" />
+      {/* Hero Section - Sophisticated High-Contrast Design */}
+      <section className="pt-32 pb-20 relative overflow-hidden">
+        {/* Abstract Background Design */}
+        <div className="absolute inset-0 bg-[#FDFDFC] z-0" />
+        <div className="absolute top-0 right-0 w-[50%] h-[100%] bg-gradient-to-l from-slate-100/50 to-transparent z-0" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-[100px] z-0" />
 
-        <div className="container relative mx-auto px-4 text-white z-10">
+        <div className="container relative mx-auto px-4 z-10 transition-all duration-700 animate-in fade-in">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-white/70 hover:text-white mb-6 transition-colors"
+            className="flex items-center gap-2 text-slate-400 hover:text-slate-900 mb-8 transition-colors font-bold text-[10px] uppercase tracking-widest group"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            Back to Academy
           </button>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${course.color} text-white mb-4`}>
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            <div className="space-y-8">
+              <span className={`inline-flex px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-gradient-to-r ${course.color} text-white shadow-lg shadow-primary/10`}>
                 {course.level}
               </span>
-              <h1 className="text-3xl lg:text-5xl font-bold font-display text-white mb-4">
+              <h1 className="text-4xl lg:text-7xl font-black text-[#1A1F2C] leading-[1.05] tracking-tight">
                 {course.title}
               </h1>
-              <p className="text-lg text-white/70 mb-6">
-                {course.fullDescription}
+              <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-xl">
+                {course.description} {course.fullDescription.split('.')[0]}. Master in-demand skills with our elite curriculum.
               </p>
 
-              <div className="flex flex-wrap items-center gap-6 text-white/70 mb-8">
-                <div className="flex items-center gap-1">
-                  <Star className="w-5 h-5 text-primary fill-primary" />
-                  <span className="font-bold text-white">{course.rating}</span>
-                  <span>rating</span>
+              <div className="flex flex-wrap items-center gap-8 text-slate-500">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100">
+                    <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-slate-900 leading-none">{course.rating}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Rating</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Users className="w-5 h-5" />
-                  <span>{course.students.toLocaleString()} students</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
+                    <Users className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-slate-900 leading-none">{course.students.toLocaleString()}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Students</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-5 h-5" />
-                  <span>{course.duration}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <BookOpen className="w-5 h-5" />
-                  <span>{course.modules} modules</span>
-                </div>
-              </div>
-
-              {/* Instructor */}
-              <div className="flex items-center gap-3">
-                <img
-                  src={course.instructor.image}
-                  alt={course.instructor.name}
-                  className="w-12 h-12 rounded-full object-cover ring-2 ring-primary"
-                />
-                <div>
-                  <p className="text-white font-medium">{course.instructor.name}</p>
-                  <p className="text-white/60 text-sm">{course.instructor.title}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Course Card */}
-            <div className="glass-card bg-card/90 p-6 rounded-2xl shadow-2xl">
-              <div className="relative h-48 rounded-xl overflow-hidden mb-6">
-                <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                  <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-                    <Play className="w-6 h-6 text-primary-foreground ml-1" fill="currentColor" />
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                    <Clock className="w-5 h-5 text-emerald-500" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-slate-900 leading-none">{course.duration}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Duration</span>
                   </div>
                 </div>
               </div>
 
-              {/* Pricing */}
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-4xl font-bold">₹{course.price.toLocaleString()}</span>
-                  <span className="text-xl text-muted-foreground line-through">₹{course.mrp.toLocaleString()}</span>
+              {/* Instructor */}
+              <div className="flex items-center gap-4 p-4 rounded-[2rem] bg-white border border-slate-100 shadow-sm max-w-fit pr-8">
+                <img
+                  src={course.instructor.image}
+                  alt={course.instructor.name}
+                  className="w-14 h-14 rounded-2xl object-cover"
+                />
+                <div>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Academy Mentor</p>
+                  <p className="text-lg font-black text-slate-900">{course.instructor.name}</p>
                 </div>
-                <span className="inline-block px-3 py-1 rounded-lg bg-emerald/20 text-emerald font-bold text-sm">
-                  {discount}% OFF - Limited Time Offer!
-                </span>
               </div>
+            </div>
 
-              {/* Features */}
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-emerald" />
-                  <span>Lifetime access</span>
-                </li>
-                <li className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-emerald" />
-                  <span>Certificate of completion</span>
-                </li>
-                <li className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-emerald" />
-                  <span>24/7 mentor support</span>
-                </li>
-                <li className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-emerald" />
-                  <span>Downloadable resources</span>
-                </li>
-              </ul>
+            {/* Premium Course Card */}
+            <div className="relative group animate-in slide-in-from-right-12 duration-1000">
+              <div className="absolute inset-0 bg-primary/20 blur-[100px] opacity-0 group-hover:opacity-30 transition-opacity" />
+              <div className="relative bg-white p-2 rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] border border-slate-100 transition-all hover:-translate-y-2">
+                <div className="relative h-64 rounded-[2rem] overflow-hidden mb-8">
+                  <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
+                    <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-2xl">
+                      <Play className="w-8 h-8 text-white ml-1 fill-white" />
+                    </div>
+                  </div>
+                </div>
 
-              <Link to={`/register?course=${encodeURIComponent(course.title)}&plan=${course.recommendedPlan}`}>
-                <Button variant="hero" size="xl" className="w-full mb-3 bg-primary text-black font-black uppercase tracking-widest h-16 rounded-2xl shadow-xl shadow-primary/20">
-                  Buy Now
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                <Shield className="w-3 h-3" />
-                30-Day Money-Back Guarantee
+                <div className="px-6 pb-6 space-y-8">
+                  {/* Pricing Section */}
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest line-through">MRP ₹{course.mrp.toLocaleString()}</span>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-5xl font-black text-slate-900 tracking-tighter">₹{course.price.toLocaleString()}</span>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Full Lifetime Access</span>
+                        </div>
+                      </div>
+                      <div className="bg-emerald-500 text-white px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] shadow-lg shadow-emerald-500/20 animate-pulse">
+                        -{discount}% OFF
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex items-center justify-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Enrollment ends soon! Limited slots available.</span>
+                    </div>
+                  </div>
+
+                  {/* Features */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { icon: Shield, text: "Lifetime Access", color: "text-blue-500", bg: "bg-blue-50" },
+                      { icon: Award, text: "Certified Course", color: "text-emerald-500", bg: "bg-emerald-50" },
+                      { icon: Zap, text: "Instant Setup", color: "text-amber-500", bg: "bg-amber-50" },
+                      { icon: Play, text: "40+ HQ Lessons", color: "text-violet-500", bg: "bg-violet-50" }
+                    ].map((feat, i) => (
+                      <div key={i} className="flex items-center gap-2.5">
+                        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center bg-slate-50 border border-slate-100")}>
+                          <feat.icon className={cn("w-4 h-4", feat.color)} />
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-600">{feat.text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-4">
+                    <Link to={`/register?course=${encodeURIComponent(course.title)}&plan=${course.recommendedPlan}`}>
+                      <Button className="w-full h-18 rounded-[1.5rem] bg-slate-900 hover:bg-black text-white font-black uppercase tracking-widest text-sm shadow-2xl transition-all hover:scale-[1.02] flex items-center justify-center gap-3">
+                        BUY NOW
+                        <ArrowRight className="w-5 h-5" />
+                      </Button>
+                    </Link>
+                    <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                      30-Day Money-Back Guarantee
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* What You'll Learn */}
-      <section className="py-16 bg-muted/30">
+      {/* What You'll Learn - High Contrast & Clean Spacing */}
+      <section className="py-24 bg-[#FAFAFA] border-y border-slate-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl lg:text-3xl font-bold font-display mb-8">What You'll Learn</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="max-w-3xl mb-16">
+            <h2 className="text-3xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight mb-4">
+              What You Will <span className="text-primary italic">Master</span>
+            </h2>
+            <p className="text-lg text-slate-500 font-medium">Gain practical, high-income skills through our step-by-step masterclass modules.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {course.whatYouLearn.map((item, index) => (
-              <div key={index} className="flex items-start gap-3 p-4 glass-card rounded-xl">
-                <CheckCircle2 className="w-5 h-5 text-emerald flex-shrink-0 mt-0.5" />
-                <span>{item}</span>
+              <div key={index} className="flex items-start gap-4 p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                </div>
+                <span className="text-base font-bold text-slate-700 leading-snug">{item}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Syllabus */}
-      <section className="py-16">
+      {/* Syllabus - Premium Hierarchy */}
+      <section className="py-24">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl lg:text-3xl font-bold font-display mb-8">Course Syllabus</h2>
-          <div className="space-y-4 max-w-3xl">
-            {course.syllabus.map((module, index) => (
-              <div key={index} className="glass-card rounded-xl overflow-hidden">
-                <div className="p-4 bg-primary/5 border-b border-border">
-                  <h3 className="font-bold flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm text-primary font-bold">
-                      {index + 1}
+          <div className="flex flex-col lg:flex-row gap-16">
+            <div className="lg:w-1/3">
+              <h2 className="text-3xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight sticky top-32">
+                Course <br /> Curriculum
+              </h2>
+            </div>
+
+            <div className="lg:w-2/3 space-y-6">
+              {course.syllabus.map((module, index) => (
+                <div key={index} className="group p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:border-primary/20 transition-all">
+                  <div className="flex items-center gap-6 mb-6">
+                    <span className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-xl font-black italic">
+                      {String(index + 1).padStart(2, '0')}
                     </span>
-                    {module.title}
-                  </h3>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">{module.title}</h3>
+                  </div>
+
+                  <div className="pl-20">
+                    <ul className="grid sm:grid-cols-2 gap-4">
+                      {module.lessons.map((lesson, lessonIndex) => (
+                        <li key={lessonIndex} className="flex items-center gap-3 text-sm font-bold text-slate-500">
+                          <Play className="w-4 h-4 text-primary" />
+                          {lesson}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <ul className="space-y-2">
-                    {module.lessons.map((lesson, lessonIndex) => (
-                      <li key={lessonIndex} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Play className="w-4 h-4 text-primary" />
-                        {lesson}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Requirements */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-24 bg-[#FAFAFA] border-t border-slate-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl lg:text-3xl font-bold font-display mb-8">Requirements</h2>
-          <ul className="space-y-3 max-w-2xl">
+          <h2 className="text-2xl lg:text-4xl font-black text-slate-900 tracking-tight mb-12">Prerequisites</h2>
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl">
             {course.requirements.map((req, index) => (
-              <li key={index} className="flex items-center gap-3">
+              <div key={index} className="flex items-center gap-4 p-6 bg-white rounded-2xl border border-slate-100">
                 <div className="w-2 h-2 rounded-full bg-primary" />
-                <span>{req}</span>
-              </li>
+                <span className="text-base font-bold text-slate-600">{req}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10" />
-        <div className="container relative mx-auto px-4 text-center">
-          <Award className="w-16 h-16 text-primary mx-auto mb-6" />
-          <h2 className="text-3xl lg:text-4xl font-bold font-display mb-4">
-            Ready to Start Your Journey?
+      {/* Final CTA Section */}
+      <section className="py-32 relative overflow-hidden">
+        <div className="container relative mx-auto px-4 text-center z-10">
+          <div className="w-24 h-24 rounded-[2rem] bg-primary/10 flex items-center justify-center mx-auto mb-10 border border-primary/20">
+            <Award className="w-12 h-12 text-primary" />
+          </div>
+          <h2 className="text-4xl lg:text-7xl font-black text-slate-900 tracking-tighter mb-8 max-w-4xl mx-auto leading-[0.95]">
+            Secure Your Spot in the <span className="text-primary italic">Elite</span> Class.
           </h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-            Join thousands of students who have transformed their careers with this course.
+          <p className="text-xl text-slate-500 font-bold mb-12 max-w-xl mx-auto leading-relaxed">
+            Join thousands of professionals scaling their careers with this premium masterclass.
           </p>
           <Link to={`/register?course=${encodeURIComponent(course.title)}&plan=${course.recommendedPlan}`}>
-            <Button variant="hero" size="xl" className="group">
-              Enroll Now for ₹{course.price.toLocaleString()}
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <Button className="h-20 px-12 rounded-[2rem] bg-slate-900 hover:bg-black text-white text-xl font-black uppercase tracking-widest shadow-3xl hover:scale-105 transition-all flex items-center gap-4 mx-auto">
+              ENROLL NOW FOR ₹{course.price.toLocaleString()}
+              <ArrowRight className="w-6 h-6" />
             </Button>
           </Link>
         </div>

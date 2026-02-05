@@ -82,23 +82,13 @@ const ShoppingPage = () => {
     const fetchSections = async (retryCount = 0) => {
         setLoadingSections(true);
         try {
-            const url = new URL(`${SUPABASE_URL}/rest/v1/store_sections`);
-            url.searchParams.append("select", "*");
-            url.searchParams.append("is_active", "eq.true");
-            url.searchParams.append("order", "display_order.asc");
+            const { data, error } = await supabase
+                .from("store_sections")
+                .select("*")
+                .eq("is_active", true)
+                .order("display_order", { ascending: true });
 
-            const response = await fetch(url.toString(), {
-                method: "GET",
-                headers: {
-                    "apikey": SUPABASE_ANON_KEY,
-                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-
-            const data = await response.json();
+            if (error) throw error;
             setSections(data || []);
         } catch (error: any) {
             console.warn(`Sections attempt ${retryCount + 1} failed:`, error.message);
@@ -112,37 +102,27 @@ const ShoppingPage = () => {
         }
     };
 
-    // Fallback constants
-    const SUPABASE_URL = "https://vwzqaloqlvlewvijiqeu.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3enFhbG9xbHZsZXd2aWppcWV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNjMwMjQsImV4cCI6MjA4NDkzOTAyNH0.oEuQrpidyXbKYdy3SpuMDTHZveqZNHaJHMY3TK3ir2E";
-
     const fetchFilteredProducts = async (retryCount = 0) => {
         setLoadingResults(true);
         try {
-            const url = new URL(`${SUPABASE_URL}/rest/v1/products`);
-            url.searchParams.append("select", "*");
-            url.searchParams.append("is_active", "eq.true");
+            let query = supabase
+                .from("products")
+                .select("*")
+                .eq("is_active", true)
+                .gte("price", priceRange[0])
+                .lte("price", priceRange[1]);
 
-            if (debouncedSearchQuery) url.searchParams.append("name", `ilike.*${debouncedSearchQuery}*`);
-            if (selectedCategory) url.searchParams.append("category_id", `eq.${selectedCategory}`);
+            if (debouncedSearchQuery) {
+                query = query.ilike("name", `%${debouncedSearchQuery}%`);
+            }
 
-            // Price Filter
-            url.searchParams.append("price", `gte.${priceRange[0]}`);
-            url.searchParams.append("price", `lte.${priceRange[1]}`);
+            if (selectedCategory) {
+                query = query.eq("category_id", selectedCategory);
+            }
 
-            const response = await fetch(url.toString(), {
-                method: "GET",
-                headers: {
-                    "apikey": SUPABASE_ANON_KEY,
-                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-
-            const data = await response.json();
-            setFilteredProducts(data || []);
+            const { data, error } = await query;
+            if (error) throw error;
+            setFilteredProducts((data as any) || []);
 
         } catch (error: any) {
             console.warn(`Search attempt ${retryCount + 1} failed:`, error.message);
@@ -320,7 +300,7 @@ const ShoppingPage = () => {
                                                 <Skeleton className="h-8 w-48" />
                                                 <Skeleton className="h-4 w-20" />
                                             </div>
-                                            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                                            <div className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6"} id="product-grid">
                                                 {[...Array(4)].map((_, i) => (
                                                     <div key={i} className="space-y-4">
                                                         <Skeleton className="aspect-square rounded-2xl" />
@@ -401,7 +381,7 @@ const ShoppingPage = () => {
                                 {loadingResults ? (
                                     <div className="flex justify-center py-20"><Loader2 className="animate-spin w-8 h-8 text-[#FBBF24]" /></div>
                                 ) : filteredProducts.length > 0 ? (
-                                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6" id="search-results-grid">
                                         {filteredProducts.map(product => (
                                             <ProductCard
                                                 key={product.id}

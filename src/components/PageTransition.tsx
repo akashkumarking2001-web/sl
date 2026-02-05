@@ -19,7 +19,7 @@ const PageTransition = ({ children }: PageTransitionProps) => {
     const timer = setTimeout(() => {
       setDisplayChildren(children);
       setIsTransitioning(false);
-    }, 150);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, [location.pathname]);
@@ -27,10 +27,10 @@ const PageTransition = ({ children }: PageTransitionProps) => {
   return (
     <div
       className={cn(
-        "transition-all duration-300 ease-out",
+        "transition-all duration-400 cubic-bezier(0.16, 1, 0.3, 1)",
         isTransitioning
-          ? "opacity-0 translate-y-2 scale-[0.99]"
-          : "opacity-100 translate-y-0 scale-100"
+          ? "opacity-0 translate-x-4 scale-[0.98] blur-sm"
+          : "opacity-100 translate-x-0 scale-100 blur-0"
       )}
     >
       {displayChildren}

@@ -14,6 +14,7 @@ import {
     CreditCard,
     AlertCircle,
     ArrowLeft,
+    Receipt,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -349,14 +350,27 @@ const OrderStatusTracker = () => {
                                         </div>
                                     </div>
 
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setSelectedItem(item)}
-                                    >
-                                        <Eye className="w-4 h-4 mr-2" />
-                                        Details
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Link to={`/payment-proof?id=${item.id}`}>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-4"
+                                            >
+                                                <Receipt className="w-4 h-4 mr-2" />
+                                                Receipt
+                                            </Button>
+                                        </Link>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setSelectedItem(item)}
+                                            className="rounded-xl"
+                                        >
+                                            <Eye className="w-4 h-4 mr-2" />
+                                            Details
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 {/* Timeline */}

@@ -18,7 +18,10 @@ import {
   MapPin,
   CreditCard,
   Truck,
-  Clock
+  Clock,
+  Plus,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -193,7 +196,7 @@ const PaymentGateway = () => {
           setVerificationState('success');
           clearInterval(interval);
           // Redirect to course after delay
-          setTimeout(() => navigate('/dashboard'), 3000);
+          setTimeout(() => navigate(`/payment-proof?id=${currentPaymentId}`), 3000);
         }
       }, 3000); // Check every 3 seconds
 
@@ -299,12 +302,16 @@ const PaymentGateway = () => {
               cashback_amount: (item.cashback || 0) * item.quantity
             });
           }
-          const { error: bulkError } = await (supabase.from("shopping_orders") as any).insert(ordersToInsert);
+          const { data: inserts, error: bulkError } = await (supabase.from("shopping_orders") as any).insert(ordersToInsert).select();
           if (bulkError) throw bulkError;
 
           clearCart();
           setIsSubmitted(true);
           toast({ title: "Success", description: "Order placed successfully." });
+
+          if (inserts && inserts.length > 0) {
+            setTimeout(() => navigate(`/payment-proof?id=${inserts[0].id}`), 1500);
+          }
 
         } else if (productData) {
           let affiliateUserId = null;
@@ -328,7 +335,7 @@ const PaymentGateway = () => {
             }
           }
 
-          const { error: orderError } = await (supabase.from("shopping_orders") as any).insert({
+          const { data: orderData, error: orderError } = await (supabase.from("shopping_orders") as any).insert({
             user_id: user.id,
             product_id: productData.id,
             total_price: finalCalculatedPrice,
@@ -339,10 +346,13 @@ const PaymentGateway = () => {
             affiliate_user_id: affiliateUserId,
             affiliate_commission: commissionAmount,
             cashback_amount: productData.cashback_amount || 0
-          });
+          }).select().single();
           if (orderError) throw orderError;
           setIsSubmitted(true);
           toast({ title: "Order Placed", description: "Verifying transaction..." });
+          if (orderData) {
+            setTimeout(() => navigate(`/payment-proof?id=${orderData.id}`), 1500);
+          }
 
         } else {
           // DIGITAL PRODUCT - Main Focus
@@ -403,55 +413,52 @@ const PaymentGateway = () => {
   const itemName = isCartSource ? `${cart.length} Items` : (productData ? productData.name : selectedPlan.name);
   const basePrice = isCartSource ? cartSubtotal : (productData ? productData.price : selectedPlan.price);
 
+  // Main Render
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
-        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-full hover:bg-slate-100">
-              <ArrowLeft className="w-5 h-5 text-slate-600" />
+    <div className="min-h-screen bg-[#F8F9FB] dark:bg-[#0A0A0B] font-sans text-slate-900 pb-20 transition-colors duration-500">
+      <header className="bg-white/80 dark:bg-[#0A0A0B]/80 backdrop-blur-xl border-b border-black/5 dark:border-white/5 sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3 md:gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-full hover:bg-black/5 dark:hover:bg-white/5 h-10 w-10">
+              <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </Button>
             <div className="flex items-center gap-2">
-              <div className="bg-emerald-100 p-2 rounded-full">
-                <Shield className="w-5 h-5 text-emerald-600 fill-current" />
+              <div className="bg-emerald-500/10 p-2 rounded-xl">
+                <Shield className="w-5 h-5 text-emerald-500" />
               </div>
-              <span className="font-bold text-lg tracking-tight text-slate-900">Secure Checkout</span>
+              <span className="font-black text-base md:text-lg tracking-tight text-slate-900 dark:text-white uppercase">Secure Checkout</span>
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-400">
-            {isPhysical && (
-              <>
-                <span className={cn("transition-colors", checkoutStep === 'address' ? "text-slate-900" : "")}>Address</span>
-                <ChevronRight className="w-3 h-3" />
-              </>
-            )}
-            <span className={cn("transition-colors", checkoutStep === 'method' ? "text-slate-900" : "")}>Method</span>
-            <ChevronRight className="w-3 h-3" />
-            <span className={cn("transition-colors", checkoutStep === 'payment' ? "text-slate-900" : "")}>Payment</span>
+          <div className="hidden md:flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            {['Address', 'Method', 'Payment'].map((step, i) => (
+              <div key={step} className="flex items-center gap-2">
+                <span className={cn("transition-all", (i === 0 && checkoutStep === 'address') || (i === 1 && checkoutStep === 'method') || (i === 2 && checkoutStep === 'payment') ? "text-primary scale-110" : "")}>{step}</span>
+                {i < 2 && <ChevronRight className="w-3 h-3 opacity-30" />}
+              </div>
+            ))}
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12 max-w-6xl">
-        {/* ... existing content ... */}
-        <div className="grid lg:grid-cols-12 gap-12 items-start">
-          {/* ... existing grid content ... */}
-          {/* Left Column: Steps */}
-          <div className="lg:col-span-8 space-y-8">
+      <main className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+        <div className="grid lg:grid-cols-12 gap-8 md:gap-12 items-start">
 
-            {/* STEP 1: ADDRESS (Physical Only) */}
-            {isPhysical && (checkoutStep === 'address' || selectedAddress) && (
+          {/* Left Column: Process Steps */}
+          <div className="lg:col-span-8 space-y-6 md:space-y-8">
+
+            {/* STEP 1: ADDRESS */}
+            {isPhysical && (
               <div className={cn(
-                "bg-white p-8 rounded-[2rem] border transition-all duration-500",
-                checkoutStep === 'address' ? "border-[#FBBF24] shadow-xl shadow-[#FBBF24]/5 ring-4 ring-[#FBBF24]/10" : "border-slate-100 opacity-60 grayscale-[0.5]"
+                "bg-white dark:bg-zinc-900/50 p-6 md:p-8 rounded-[2.5rem] border transition-all duration-500 shadow-sm",
+                checkoutStep === 'address' ? "border-primary/50 shadow-xl shadow-primary/5 ring-1 ring-primary/20" : "border-black/5 dark:border-white/5 opacity-80"
               )}>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-black flex items-center gap-3 text-slate-900">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200">1</div>
-                    Delivery Address
-                  </h2>
-                  {checkoutStep !== 'address' && <Button variant="link" onClick={() => setCheckoutStep('address')} className="text-[#FBBF24] font-bold">Change</Button>}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center font-black transition-all", checkoutStep === 'address' ? "bg-primary text-black shadow-lg shadow-primary/20" : "bg-black/5 dark:bg-white/5 text-slate-400")}>1</div>
+                    <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white">Shipping Address</h2>
+                  </div>
+                  {checkoutStep !== 'address' && <Button variant="ghost" onClick={() => setCheckoutStep('address')} className="text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/10 rounded-xl px-4">Change</Button>}
                 </div>
 
                 {checkoutStep === 'address' ? (
@@ -467,71 +474,70 @@ const PaymentGateway = () => {
                           setCheckoutStep('method');
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
-                        className="h-14 px-8 rounded-xl bg-[#FBBF24] text-black hover:bg-[#FBBF24]/90 font-bold text-lg shadow-lg shadow-[#FBBF24]/20"
+                        className="h-14 px-8 rounded-2xl bg-primary text-black hover:bg-primary/90 font-black text-base shadow-xl shadow-primary/20 w-full sm:w-auto"
                         disabled={!selectedAddress}
                       >
-                        Proceed to Method <ChevronRight className="w-5 h-5 ml-2" />
+                        Select Payment Method <ArrowRight className="w-5 h-5 ml-2" />
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="pl-14">
-                    <p className="font-bold text-lg text-slate-900">{selectedAddress?.full_name}</p>
-                    <p className="text-slate-500">{selectedAddress?.address_line1}, {selectedAddress?.city}</p>
-                    <p className="text-slate-500">{selectedAddress?.state} - {selectedAddress?.postal_code}</p>
+                  <div className="pl-14 border-l-2 border-black/5 dark:border-white/5 ml-5 py-2">
+                    <p className="font-black text-lg text-slate-900 dark:text-white">{selectedAddress?.full_name}</p>
+                    <p className="text-slate-500 font-medium text-sm mt-1">{selectedAddress?.address_line1}, {selectedAddress?.city}</p>
+                    <p className="text-slate-500 font-medium text-sm">{selectedAddress?.state} - {selectedAddress?.postal_code}</p>
                   </div>
                 )}
               </div>
             )}
 
-
             {/* STEP 2: METHOD */}
             {(checkoutStep === 'method' || checkoutStep === 'payment') && (
               <div className={cn(
-                "bg-white p-8 rounded-[2rem] border transition-all duration-500",
-                checkoutStep === 'method' ? "border-[#FBBF24] shadow-xl shadow-[#FBBF24]/5 ring-4 ring-[#FBBF24]/10" : "border-slate-100"
+                "bg-white dark:bg-zinc-900/50 p-6 md:p-8 rounded-[2.5rem] border transition-all duration-500 shadow-sm",
+                checkoutStep === 'method' ? "border-primary/50 shadow-xl shadow-primary/5 ring-1 ring-primary/20" : "border-black/5 dark:border-white/5"
               )}>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-black flex items-center gap-3 text-slate-900">
-                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-bold border", checkoutStep === 'method' ? "bg-slate-900 text-white border-slate-900" : "bg-slate-100 text-slate-500 border-slate-200")}>{isPhysical ? 2 : 1}</div>
-                    Payment Method
-                  </h2>
-                  {checkoutStep === 'payment' && <Button variant="link" onClick={() => setCheckoutStep('method')} className="text-[#FBBF24] font-bold">Change</Button>}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center font-black transition-all", checkoutStep === 'method' ? "bg-primary text-black shadow-lg shadow-primary/20" : "bg-black/5 dark:bg-white/5 text-slate-400")}>{isPhysical ? 2 : 1}</div>
+                    <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white">Payment Method</h2>
+                  </div>
+                  {checkoutStep === 'payment' && <Button variant="ghost" onClick={() => setCheckoutStep('method')} className="text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/10 rounded-xl px-4">Change</Button>}
                 </div>
 
                 {checkoutStep === 'method' ? (
-                  <div className="grid sm:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pl-2">
+                  <div className="grid sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <button
                       onClick={() => setPaymentMethod('upi')}
                       className={cn(
-                        "p-6 rounded-2xl border-2 text-left transition-all hover:shadow-lg relative overflow-hidden group",
-                        paymentMethod === 'upi' ? "border-blue-500 bg-blue-50/50" : "border-slate-100 hover:border-slate-200 bg-slate-50/50"
+                        "p-6 rounded-[2rem] border-2 text-left transition-all relative overflow-hidden group",
+                        paymentMethod === 'upi' ? "border-primary bg-primary/5 shadow-lg shadow-primary/5" : "border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10"
                       )}
                     >
                       <div className="relative z-10">
-                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform"><IndianRupee className="w-6 h-6" /></div>
-                        <span className="font-bold text-lg block mb-1 text-slate-900">UPI Payment</span>
-                        <p className="text-sm text-slate-500 font-medium">Google Pay, PhonePe, Paytm</p>
+                        <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6", paymentMethod === 'upi' ? "bg-primary text-black shadow-lg shadow-primary/20" : "bg-black/5 dark:bg-white/5 text-slate-400")}><IndianRupee className="w-7 h-7" /></div>
+                        <span className="font-black text-xl block mb-2 text-slate-900 dark:text-white">UPI Payment</span>
+                        <p className="text-sm text-slate-500 font-bold leading-relaxed">Direct transfer via Google Pay, PhonePe or Paytm</p>
                       </div>
-                      {paymentMethod === 'upi' && <div className="absolute top-4 right-4 text-blue-500"><CheckCircle2 className="w-6 h-6 fill-current" /></div>}
+                      {paymentMethod === 'upi' && <div className="absolute top-6 right-6 text-primary animate-in zoom-in duration-300"><CheckCircle2 className="w-8 h-8 fill-current" /></div>}
                     </button>
 
                     <button
                       onClick={() => setPaymentMethod('crypto')}
                       className={cn(
-                        "p-6 rounded-2xl border-2 text-left transition-all hover:shadow-lg relative overflow-hidden group",
-                        paymentMethod === 'crypto' ? "border-amber-500 bg-amber-50/50" : "border-slate-100 hover:border-slate-200 bg-slate-50/50"
+                        "p-6 rounded-[2rem] border-2 text-left transition-all relative overflow-hidden group",
+                        paymentMethod === 'crypto' ? "border-amber-500 bg-amber-500/5 shadow-lg shadow-amber-500/5" : "border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10"
                       )}
                     >
                       <div className="relative z-10">
-                        <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 mb-4 group-hover:scale-110 transition-transform"><Bitcoin className="w-6 h-6" /></div>
-                        <span className="font-bold text-lg block mb-1 text-slate-900">Crypto (USDT)</span>
-                        <p className="text-sm text-slate-500 font-medium">TRC20 Network Only</p>
+                        <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-6", paymentMethod === 'crypto' ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20" : "bg-black/5 dark:bg-white/5 text-slate-400")}><Bitcoin className="w-7 h-7" /></div>
+                        <span className="font-black text-xl block mb-2 text-slate-900 dark:text-white">USDT (TRC20)</span>
+                        <p className="text-sm text-slate-500 font-bold leading-relaxed">Fast & Decentralized crypto payment</p>
                       </div>
-                      {paymentMethod === 'crypto' && <div className="absolute top-4 right-4 text-amber-500"><CheckCircle2 className="w-6 h-6 fill-current" /></div>}
+                      {paymentMethod === 'crypto' && <div className="absolute top-6 right-6 text-amber-500 animate-in zoom-in duration-300"><CheckCircle2 className="w-8 h-8 fill-current" /></div>}
                     </button>
 
-                    <div className="sm:col-span-2 mt-6 flex justify-end">
+                    <div className="sm:col-span-2 mt-8">
                       <Button
                         onClick={() => {
                           if (!paymentMethod) return toast({ title: "Select Method", variant: "destructive" });
@@ -539,18 +545,18 @@ const PaymentGateway = () => {
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
                         disabled={!paymentMethod}
-                        className="h-14 px-8 rounded-xl bg-[#FBBF24] text-black hover:bg-[#FBBF24]/90 font-bold text-lg shadow-lg shadow-[#FBBF24]/20 w-full sm:w-auto"
+                        className="h-16 px-10 rounded-2xl bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] transition-transform font-black text-lg shadow-2xl w-full"
                       >
-                        Continue to Pay <ChevronRight className="w-5 h-5 ml-2" />
+                        Continue to Payment <ArrowRight className="w-6 h-6 ml-3" />
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="pl-14 flex items-center gap-3 text-lg font-bold text-slate-900">
-                    <div className={cn("p-2 rounded-lg", paymentMethod === 'upi' ? "bg-blue-100 text-blue-600" : "bg-amber-100 text-amber-600")}>
-                      {paymentMethod === 'upi' ? <IndianRupee className="w-5 h-5" /> : <Bitcoin className="w-5 h-5" />}
+                  <div className="pl-14 flex items-center gap-4 text-xl font-black text-slate-900 dark:text-white border-l-2 border-black/5 dark:border-white/5 ml-5 py-2">
+                    <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", paymentMethod === 'upi' ? "bg-primary/10 text-primary" : "bg-amber-500/10 text-amber-500")}>
+                      {paymentMethod === 'upi' ? <IndianRupee className="w-6 h-6" /> : <Bitcoin className="w-6 h-6" />}
                     </div>
-                    {paymentMethod === 'upi' ? 'UPI Transfer' : 'Crypto (USDT)'}
+                    {paymentMethod === 'upi' ? 'Unified Payments Interface' : 'Tether USDT (TRC20)'}
                   </div>
                 )}
               </div>
@@ -558,250 +564,284 @@ const PaymentGateway = () => {
 
             {/* STEP 3: PAYMENT FORM */}
             {checkoutStep === 'payment' && (
-              <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="flex items-center gap-3 mb-8 pb-6 border-b border-slate-100">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
-                    <Shield className="w-6 h-6" />
+              <div className="bg-white dark:bg-zinc-900/50 p-6 md:p-10 rounded-[2.5rem] border border-black/5 dark:border-white/5 shadow-2xl animate-in fade-in slide-in-from-bottom-6 duration-700">
+                <div className="flex flex-col md:flex-row items-center gap-6 mb-10 pb-8 border-b border-black/5 dark:border-white/5">
+                  <div className="w-16 h-16 rounded-[1.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-500/5 transition-transform hover:rotate-12">
+                    <Shield className="w-8 h-8" />
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-900">Complete Payment</h2>
-                    <p className="text-slate-500 font-medium">Scan the code or copy details below</p>
+                  <div className="text-center md:text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Final Step: Pay & Confirm</h2>
+                    <p className="text-slate-500 font-bold mt-1">Complete your transaction to activate your purchase</p>
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8 mb-8">
-                  {/* QR / Details */}
-                  <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex flex-col items-center text-center">
+                <div className="grid md:grid-cols-2 gap-10 mb-10">
+                  {/* QR Display */}
+                  <div className="bg-black/5 dark:bg-white/5 p-8 rounded-[2rem] border border-black/5 dark:border-white/5 flex flex-col items-center text-center group">
                     {(isPhysical ? settings?.shop_qr_code_url : settings?.qr_code_url) ? (
-                      <img src={isPhysical ? settings.shop_qr_code_url : settings.qr_code_url} className="w-48 h-48 rounded-xl shadow-sm mb-4 bg-white p-2" />
-                    ) : (
-                      <div className="w-48 h-48 rounded-xl bg-white border-2 border-dashed border-slate-200 flex items-center justify-center mb-4 text-slate-300">
-                        <QrCode className="w-12 h-12" />
-                      </div>
-                    )}
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Scan to Pay</p>
-                  </div>
-
-                  {/* Copy Fields */}
-                  <div className="space-y-6 flex flex-col justify-center">
-                    {paymentMethod === 'upi' ? (
-                      <div className="space-y-4">
-                        <Label className="text-slate-500 uppercase text-xs font-bold tracking-wider">UPI ID</Label>
-                        <div className="flex gap-2">
-                          <div className="relative flex-1">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <span className="text-slate-400 font-bold">@</span>
-                            </div>
-                            <Input value={(isPhysical ? settings?.shop_upi_id : settings?.upi_id) || "admin@upi"} readOnly className="pl-8 h-12 bg-slate-50 border-slate-200 font-bold text-slate-900" />
-                          </div>
-                          <Button size="icon" className="h-12 w-12 rounded-xl" variant="outline" onClick={() => copyToClipboard((isPhysical ? settings?.shop_upi_id : settings?.upi_id), "UPI")}><Copy className="w-4 h-4" /></Button>
-                        </div>
-                        <div className="bg-blue-50 text-blue-700 p-3 rounded-xl text-xs font-bold">
-                          Use Google Pay, PhonePe or Paytm to transfer the exact amount.
-                        </div>
+                      <div className="relative">
+                        <img src={isPhysical ? settings.shop_qr_code_url : settings.qr_code_url} className="w-56 h-56 rounded-2xl shadow-2xl bg-white p-3 transition-transform group-hover:scale-105 duration-500" />
+                        <div className="absolute inset-0 border-[6px] border-primary/20 rounded-2xl pointer-events-none scale-105 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        <Label className="text-slate-500 uppercase text-xs font-bold tracking-wider">Tether (USDT) Address</Label>
-                        <div className="flex gap-2">
-                          <Input value={(isPhysical ? settings?.shop_usdt_address : settings?.usdt_address) || "TRC20..."} readOnly className="h-12 bg-slate-50 border-slate-200 font-mono text-xs font-bold text-slate-900" />
-                          <Button size="icon" className="h-12 w-12 rounded-xl" variant="outline" onClick={() => copyToClipboard((isPhysical ? settings?.shop_usdt_address : settings?.usdt_address), "Address")}><Copy className="w-4 h-4" /></Button>
-                        </div>
-                        <div className="bg-amber-50 text-amber-700 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 shrink-0" /> Important: Send to TRC20 Network only.
-                        </div>
+                      <div className="w-56 h-56 rounded-[2rem] bg-white dark:bg-zinc-800 border-2 border-dashed border-black/10 dark:border-white/10 flex items-center justify-center mb-4 transition-colors group-hover:border-primary/50">
+                        <QrCode className="w-16 h-16 text-slate-200 dark:text-zinc-700" />
                       </div>
                     )}
-                  </div>
-                </div>
-
-                <form onSubmit={handleSubmit} className="bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-100 space-y-6">
-                  <div>
-                    <Label className="text-slate-900 font-bold mb-2 block">Transaction ID / UTR Number</Label>
-                    <Input
-                      value={transactionId}
-                      onChange={e => setTransactionId(e.target.value)}
-                      placeholder="e.g. 123456789012"
-                      className="h-14 bg-white border-slate-200 focus:border-[#FBBF24] text-lg tracking-wide rounded-xl shadow-sm"
-                      required
-                    />
-                    <p className="text-xs text-slate-500 mt-2 font-medium">Enter the 12-digit reference number from your payment app.</p>
-                  </div>
-                  <div>
-                    <Label className="text-slate-900 font-bold mb-2 block">Payment Screenshot</Label>
-                    <div className="h-24 border-2 border-dashed border-slate-200 rounded-xl bg-white flex flex-col items-center justify-center text-slate-400 hover:border-[#FBBF24] hover:text-[#FBBF24] transition-colors cursor-pointer relative">
-                      <input type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" />
-                      {screenshot ? (
-                        <span className="font-bold text-emerald-500 flex items-center gap-2"><Check className="w-4 h-4" /> {screenshot.name} selected</span>
-                      ) : (
-                        <>
-                          <Upload className="w-6 h-6 mb-1" />
-                          <span className="text-xs font-bold">Upload Proof</span>
-                        </>
-                      )}
+                    <div className="mt-6 space-y-2">
+                      <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Merchant QR Code</p>
+                      <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Scan using any payment app</p>
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full h-16 rounded-2xl text-lg font-black bg-black hover:bg-zinc-800 text-white shadow-xl mt-4 border border-zinc-800/10" disabled={isSubmitting}>
-                    {isSubmitting ? <Loader2 className="animate-spin w-6 h-6" /> : `Confirm & Pay ₹${finalCalculatedPrice.toLocaleString()}`}
+                  {/* Copy Fields */}
+                  <div className="space-y-8 flex flex-col justify-center">
+                    {paymentMethod === 'upi' ? (
+                      <div className="space-y-4">
+                        <Label className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest pl-1">Target UPI ID</Label>
+                        <div className="flex gap-2 relative group">
+                          <Input value={(isPhysical ? settings?.shop_upi_id : settings?.upi_id) || "admin@upi"} readOnly className="h-16 pl-6 pr-16 bg-black/5 dark:bg-white/5 border-none font-black text-lg text-slate-900 dark:text-white rounded-2xl group-hover:bg-primary/5 transition-colors" />
+                          <Button size="icon" className="absolute right-2 top-2 h-12 w-12 rounded-xl bg-white dark:bg-zinc-800 shadow-lg border-none hover:bg-primary hover:text-black transition-all" variant="outline" onClick={() => copyToClipboard((isPhysical ? settings?.shop_upi_id : settings?.upi_id), "UPI")}><Copy className="w-5 h-5" /></Button>
+                        </div>
+                        <div className="bg-primary/10 text-primary p-4 rounded-2xl text-[11px] font-black uppercase tracking-tight flex items-center gap-3">
+                          <IndianRupee className="w-4 h-4" /> Transfer exact amount: ₹{finalCalculatedPrice.toLocaleString()}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <Label className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest pl-1">USDT (TRC20) Wallet</Label>
+                        <div className="flex gap-2 relative group">
+                          <Input value={(isPhysical ? settings?.shop_usdt_address : settings?.usdt_address) || "TRC20..."} readOnly className="h-16 pl-6 pr-16 bg-black/5 dark:bg-white/5 border-none font-black text-xs text-slate-900 dark:text-white rounded-2xl group-hover:bg-amber-500/5 transition-colors" />
+                          <Button size="icon" className="absolute right-2 top-2 h-12 w-12 rounded-xl bg-white dark:bg-zinc-800 shadow-lg border-none hover:bg-amber-500 hover:text-white transition-all" variant="outline" onClick={() => copyToClipboard((isPhysical ? settings?.shop_usdt_address : settings?.usdt_address), "Address")}><Copy className="w-5 h-5" /></Button>
+                        </div>
+                        <div className="bg-amber-500/10 text-amber-500 p-4 rounded-2xl text-[11px] font-black uppercase tracking-tight flex items-start gap-3">
+                          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                          <span>Ensure you are using the <strong className="underline underline-offset-2">TRC20 Network</strong> only or funds will be lost.</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <Label className="text-sm font-black text-slate-900 dark:text-white pl-1">Transaction / Ref Number</Label>
+                      <Input
+                        value={transactionId}
+                        onChange={e => setTransactionId(e.target.value)}
+                        placeholder="UTR / TxId e.g. 1234..."
+                        className="h-16 bg-black/[0.03] dark:bg-white/[0.03] border-2 border-transparent focus:border-primary text-xl font-black tracking-widest rounded-2xl transition-all shadow-inner"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-sm font-black text-slate-900 dark:text-white pl-1">Payment Proof (IMG)</Label>
+                      <div className="h-16 border-2 border-dashed border-black/10 dark:border-white/10 rounded-2xl bg-black/[0.03] dark:bg-white/[0.03] flex items-center justify-center text-slate-400 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden group">
+                        <input type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                        {screenshot ? (
+                          <div className="flex items-center gap-3 px-4 w-full">
+                            <div className="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20"><Check className="w-5 h-5 text-white" /></div>
+                            <span className="font-black text-xs text-emerald-600 dark:text-emerald-400 truncate">{screenshot.name}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3 px-4 transition-transform group-hover:scale-105">
+                            <Upload className="w-5 h-5 text-primary" />
+                            <span className="text-xs font-black uppercase tracking-widest">Attach Screenshot</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full h-20 rounded-[2rem] text-xl font-black bg-primary text-black hover:scale-[1.01] transition-all shadow-[0_20px_50px_rgba(251,191,36,0.2)] dark:shadow-[0_20px_50px_rgba(251,191,36,0.1)] mt-4 relative overflow-hidden group" disabled={isSubmitting}>
+                    <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-4">
+                        <Loader2 className="animate-spin w-8 h-8" />
+                        <span>Confirming...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        <span>Request Final Validation</span>
+                        <div className="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center"><ChevronRight className="w-6 h-6" /></div>
+                      </div>
+                    )}
                   </Button>
                 </form>
+
+                <div className="mt-10 pt-8 border-t border-black/5 dark:border-white/5 grid grid-cols-3 gap-4">
+                  {['Instant', 'Secure', 'Direct'].map((word) => (
+                    <div key={word} className="flex flex-col items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse"></div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{word}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
 
-          {/* Right Column: Order Summary (Conditionally Rendered) */}
-          {!isDigital && (
-            <div className="lg:col-span-4 sticky top-24">
-              <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50">
-                <h3 className="font-black text-xl mb-6 text-slate-900">Order Summary</h3>
-                {/* ... content ... */}
-                {/* ... reusing existing summary block ... */}
-                <div className="space-y-4 mb-8">
-                  <div className="flex justify-between text-sm font-medium text-slate-500">
-                    <span>Product</span>
-                    <span className="text-slate-900 font-bold truncate max-w-[150px]">{itemName}</span>
+          {/* Right Column: Order Summary Card (Receipt Style) */}
+          <div className="lg:col-span-4 sticky top-24 space-y-6">
+            <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-black/5 dark:border-white/5 shadow-2xl relative overflow-hidden">
+              {/* Receipt Jagged Edge Effect TOP */}
+              <div className="absolute top-0 left-0 right-0 h-2 bg-[radial-gradient(circle_at_50%_100%,transparent_5px,#F8F9FB_6px)] dark:bg-[radial-gradient(circle_at_50%_100%,transparent_5px,#0A0A0B_6px)] bg-[length:20px_10px]"></div>
+
+              <div className="text-center mb-8">
+                <img src={logo} alt="SL" className="h-10 mx-auto mb-4 opacity-80" />
+                <h3 className="font-black text-xl text-slate-900 dark:text-white uppercase tracking-tighter">Order Summary</h3>
+                <p className="text-[10px] font-black text-slate-400 tracking-widest uppercase mt-1">Transaction Ref: #{Math.random().toString(36).slice(2, 10).toUpperCase()}</p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Item Title</span>
+                      <span className="text-sm font-black text-slate-900 dark:text-white leading-tight mt-1 truncate max-w-[180px]">{itemName}</span>
+                    </div>
+                    <div className="text-right flex flex-col">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Price</span>
+                      <span className="text-sm font-black text-slate-900 dark:text-white mt-1">₹{basePrice.toLocaleString()}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-sm font-medium text-slate-500">
-                    <span>Subtotal</span>
-                    <span>₹{basePrice.toLocaleString()}</span>
-                  </div>
+
                   {couponDiscount > 0 && (
-                    <div className="flex justify-between text-sm font-bold text-emerald-500">
-                      <span>Coupon Applied</span>
-                      <span>-₹{couponDiscount.toLocaleString()}</span>
+                    <div className="flex justify-between items-center bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/10 animate-in zoom-in duration-500">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-emerald-500" />
+                        <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase">Coupon Bonus</span>
+                      </div>
+                      <span className="text-sm font-black text-emerald-600">-₹{couponDiscount.toLocaleString()}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm font-medium text-slate-500">
-                    <span>Shipping</span>
-                    <span className="text-emerald-600 font-bold">Free</span>
-                  </div>
-                  <div className="h-px bg-slate-100 my-2" />
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-lg text-slate-900">Total</span>
-                    <span className="font-black text-3xl text-[#FBBF24]">₹{finalCalculatedPrice.toLocaleString()}</span>
+
+                  <div className="flex justify-between items-center text-slate-500 px-1">
+                    <span className="text-[10px] font-black uppercase tracking-widest">Processing</span>
+                    <span className="text-[10px] font-black uppercase text-emerald-500">Free</span>
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-xl flex gap-3 text-xs font-medium text-slate-500 leading-relaxed border border-slate-100">
-                  <Shield className="w-5 h-5 shrink-0 text-emerald-500" />
-                  <p>Your payment information is encrypted. We do not store your credit card details.</p>
+                <div className="border-t-2 border-dashed border-black/5 dark:border-white/5 pt-6 flex justify-between items-end">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">Grand Total</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Inclusive of taxes</span>
+                  </div>
+                  <span className="text-4xl font-black text-primary drop-shadow-sm transition-all hover:scale-105 cursor-default">₹{finalCalculatedPrice.toLocaleString()}</span>
                 </div>
 
-                <div className="mt-8 flex items-center justify-center gap-2 opacity-50 grayscale hover:grayscale-0 transition-all">
-                  <div className="h-6 w-10 bg-slate-200 rounded"></div>
-                  <div className="h-6 w-10 bg-slate-200 rounded"></div>
-                  <div className="h-6 w-10 bg-slate-200 rounded"></div>
+                <div className="bg-black/5 dark:bg-white/5 p-4 rounded-2xl flex gap-3 text-xs font-bold text-slate-500 dark:text-slate-400 leading-relaxed group">
+                  <Shield className="w-5 h-5 shrink-0 text-emerald-500 group-hover:animate-bounce" />
+                  <p>Your acquisition is protected by military-grade encryption and real-time ledger verification.</p>
                 </div>
               </div>
 
-              <div className="mt-6 text-center">
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Need Help?</p>
-                <Button variant="link" className="text-[#FBBF24] font-bold">Contact Support</Button>
+              {/* Receipt Jagged Edge Effect BOTTOM */}
+              <div className="absolute bottom-0 left-0 right-0 h-2 bg-[radial-gradient(circle_at_50%_0%,transparent_5px,#F8F9FB_6px)] dark:bg-[radial-gradient(circle_at_50%_0%,transparent_5px,#0A0A0B_6px)] bg-[length:20px_10px]"></div>
+            </div>
+
+            <div className="text-center p-6 bg-primary/5 rounded-[2rem] border border-primary/20 animate-pulse">
+              <p className="text-[10px] font-black text-primary uppercase tracking-widest">Priority Validation Active</p>
+              <div className="mt-3 flex justify-center gap-1">
+                {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/40"></div>)}
               </div>
             </div>
-          )}
+          </div>
         </div>
       </main>
 
-      {/* Verification Overlay for Digital Products */}
+      {/* VERIFICATION OVERLAY - REDESIGNED */}
       {verificationState !== 'idle' && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-300 border border-white/20 relative overflow-hidden">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-2xl z-[100] flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
+          <div className="bg-white dark:bg-zinc-900 rounded-[3rem] p-8 md:p-12 max-w-lg w-full shadow-[0_50px_100px_rgba(0,0,0,0.5)] relative overflow-hidden border border-white/10">
 
-            {/* Background Decorative Blob */}
-            <div className="absolute -top-20 -left-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+            {/* Background Animations */}
+            <div className="absolute -top-32 -left-32 w-64 h-64 bg-primary/20 rounded-full blur-[100px] animate-pulse"></div>
+            <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-emerald-500/20 rounded-full blur-[100px] animate-pulse delay-1000"></div>
 
             {verificationState === 'verifying' && (
-              <div className="text-center relative z-10 space-y-8">
-                <div className="w-24 h-24 mx-auto relative flex items-center justify-center">
-                  {/* Animated Progress Ring */}
-                  <svg className="w-full h-full rotate-[-90deg]" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" strokeWidth="8" />
-                    <circle
-                      cx="50" cy="50" r="45" fill="none" stroke="#FBBF24" strokeWidth="8" strokeLinecap="round"
-                      strokeDasharray="283"
-                      strokeDashoffset={283 - (283 * timeLeft) / 60}
-                      className="transition-all duration-1000 ease-linear"
-                    />
+              <div className="text-center relative z-10 space-y-10">
+                <div className="relative w-32 h-32 mx-auto">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="8" className="text-black/5 dark:text-white/5" />
+                    <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" strokeDasharray="289" strokeDashoffset={289 - (289 * timeLeft) / 60} className="text-primary transition-all duration-1000 ease-linear" />
                   </svg>
-                  <div className="absolute inset-0 flex items-center justify-center flex-col">
-                    <span className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">{timeLeft}</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">Sec</span>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-3xl font-black text-slate-900 dark:text-white tabular-nums">{timeLeft}</span>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Confirming</span>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white">Verifying Payment...</h3>
-                  <p className="text-slate-500 text-sm font-medium leading-relaxed">
-                    We are confirming your transaction with the bank. This usually takes less than a minute.
+                <div className="space-y-4">
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Authenticating Bank Data</h3>
+                  <p className="text-slate-500 font-bold leading-relaxed max-w-xs mx-auto">
+                    A dedicated validator is reviewing your Transaction ID against the merchant ledger. Stand by...
                   </p>
                 </div>
 
-                <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest animate-pulse">Do not close/refresh</p>
-
+                <div className="pt-8 space-y-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Live Connection Established</span>
+                  </div>
                   <Button
                     variant="ghost"
                     onClick={() => navigate('/dashboard')}
-                    className="w-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl h-12 text-xs font-bold"
+                    className="w-full text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl h-14 text-xs font-black uppercase tracking-widest"
                   >
-                    Skip Waiting & Check Later
+                    Proceed to Dashboard (Background Check)
                   </Button>
                 </div>
               </div>
             )}
 
             {verificationState === 'success' && (
-              <div className="text-center relative z-10 space-y-6">
-                <div className="w-24 h-24 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center shadow-lg shadow-green-500/20 animate-in zoom-in duration-300">
-                  <CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" />
+              <div className="text-center relative z-10 space-y-8 animate-in zoom-in duration-500">
+                <div className="w-24 h-24 mx-auto bg-emerald-500 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-emerald-500/40 rotate-12">
+                  <Check className="w-12 h-12 text-white stroke-[4]" />
                 </div>
-                <div>
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Payment Verified!</h3>
-                  <p className="text-slate-500 text-sm">Your purchase has been activated successfully.</p>
+                <div className="space-y-2">
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white">Validation Success!</h3>
+                  <p className="text-slate-500 font-bold">Your assets have been unlocked and tied to your profile.</p>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" /> Redirecting to dashboard...
+                <div className="bg-emerald-500/10 p-5 rounded-2xl text-sm font-black text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-3">
+                  <Loader2 className="w-5 h-5 animate-spin" /> Synchronizing Dashboard...
                 </div>
               </div>
             )}
 
             {verificationState === 'timeout' && (
-              <div className="text-center relative z-10 space-y-6">
-                <div className="w-20 h-20 mx-auto bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mb-4 border border-amber-100">
-                  <Clock className="w-10 h-10 text-amber-500" />
+              <div className="text-center relative z-10 space-y-8">
+                <div className="w-24 h-24 mx-auto bg-primary/20 rounded-[2rem] flex items-center justify-center border-2 border-primary/50">
+                  <Clock className="w-12 h-12 text-primary" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Taking Longer Than Usual</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    We received your request, but verification is still pending. Don't worry, your funds are safe!
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white">Verification Lag Encountered</h3>
+                  <p className="text-slate-500 font-bold leading-relaxed">
+                    The bank response is delayed. Your transaction has been logged and will be verified manually within 15 minutes.
                   </p>
                 </div>
 
                 <div className="space-y-3">
                   <Button
-                    className="w-full bg-primary text-black hover:bg-primary/90 font-bold rounded-xl h-12 shadow-lg shadow-primary/20"
+                    className="w-full bg-primary text-black hover:scale-[1.02] transition-transform font-black rounded-2xl h-16 shadow-xl"
                     onClick={() => navigate('/dashboard')}
                   >
-                    Go to Dashboard
-                    <ChevronRight className="w-4 h-4 ml-2" />
+                    Enter Dashboard Now
                   </Button>
 
                   <Button
                     variant="outline"
-                    className="w-full border-slate-200 dark:border-slate-700 rounded-xl h-11 text-xs font-bold text-emerald-600"
-                    onClick={() => window.open(`https://wa.me/${settings?.whatsapp_number || ''}?text=Hi, I made a payment but it's pending. Trans ID: ${transactionId}`, '_blank')}
+                    className="w-full border-black/10 dark:border-white/10 rounded-2xl h-16 text-xs font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary transition-all"
+                    onClick={() => window.open(`https://wa.me/${settings?.whatsapp_number || ''}?text=Hi, My payment is taking time. ID: ${transactionId}`, '_blank')}
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Contact Support
+                    <MessageCircle className="w-5 h-5 mr-3" /> Report Delay
                   </Button>
                 </div>
               </div>
             )}
-
           </div>
         </div>
       )}

@@ -53,11 +53,12 @@ const MobileBottomNav = () => {
     return (
         <div
             className={cn(
-                "fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[350px] z-[100] transition-all duration-500 md:hidden",
+                "fixed left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[350px] z-[100] transition-all duration-500 md:hidden",
+                "bottom-[calc(1rem+env(safe-area-inset-bottom,0px))]",
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0"
             )}
         >
-            <div className="bg-black/90 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex justify-evenly items-center h-16 px-1">
+            <div className="bg-white/80 dark:bg-black/90 backdrop-blur-2xl border border-black/5 dark:border-white/10 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex justify-evenly items-center h-16 px-1">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path || (item.path !== '/user-home' && location.pathname.startsWith(item.path.split('/dashboard')[1] || item.path));
                     return (

@@ -280,57 +280,47 @@ const UserHome = () => {
             </div>
           </section>
 
-          {/* Mobile Featured Packages Section */}
+          {/* Mobile Combo Packages Entry */}
           <section className="px-6 mt-10">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Combo Packages</h3>
-              <Link to="/plans" className="text-[10px] font-black text-primary uppercase tracking-widest">View All</Link>
-            </div>
-            <div className="space-y-4">
-              {packagesList.slice(0, 5).map((pkg) => (
-                <div key={pkg.id} className="glass-card p-4 rounded-3xl border border-white/5 flex items-center gap-4 bg-white/[0.02]" onClick={() => navigate(`/package/${pkg.id}`)}>
-                  <div className={cn("w-16 h-16 rounded-2xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-lg",
-                    pkg.color_theme === 'diamond' ? 'from-green-500 to-emerald-700' : 'from-primary to-orange-600'
-                  )}>
-                    <Package className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-black truncate tracking-tight">{pkg.name} Academy</h4>
-                    <p className="text-[10px] text-muted-foreground font-bold tracking-widest">{pkg.code}</p>
-                    <p className="text-lg font-black text-primary mt-1">₹{pkg.price.toLocaleString()}</p>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-muted-foreground/30" />
+            <div className="p-8 rounded-[2rem] bg-gradient-to-br from-[#1A1A1B] to-[#2D2D2E] border border-white/5 shadow-2xl relative overflow-hidden group active:scale-[0.98] transition-all" onClick={() => navigate("/plans")}>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16" />
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest mb-3">
+                  <Crown className="w-3 h-3" />
+                  Premium
                 </div>
-              ))}
+                <h3 className="text-2xl font-black text-white leading-tight mb-2">Combo <span className="text-primary">Packages</span></h3>
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-6">Unlock all-in-one academy access</p>
+                <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-widest">
+                  View Plans <ArrowRight className="w-3 h-3" />
+                </div>
+              </div>
             </div>
           </section>
 
           {/* Mobile Available Courses Section */}
           <section className="px-6 mt-12">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Mastery Courses</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Mastering Skills</h3>
               <Link to="/courses" className="text-[10px] font-black text-primary uppercase tracking-widest">Explore</Link>
             </div>
-            <div className="grid grid-cols-1 gap-6">
-              {displayCourses.map((course) => (
-                <div key={course.id} className="glass-card rounded-[2rem] overflow-hidden border border-white/5 active:scale-[0.98] transition-all" onClick={() => navigate(`/course/${course.id}`)}>
-                  <div className="h-44 relative">
+            <div className="space-y-4">
+              {displayCourses.slice(0, 4).map((course) => (
+                <div
+                  key={course.id}
+                  className="glass-card p-3 rounded-3xl border border-white/5 active:scale-[0.98] transition-all flex gap-4"
+                  onClick={() => navigate(`/course/${course.id}`)}
+                >
+                  <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0">
                     <img src={course.image} className="w-full h-full object-cover" alt={course.title} />
-                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-extrabold text-white uppercase tracking-widest">
-                      {course.modules} Units
-                    </div>
                   </div>
-                  <div className="p-6">
-                    <h4 className="text-lg font-black tracking-tight leading-none mb-2">{course.title}</h4>
-                    <div className="flex items-center justify-between items-end">
-                      <div>
-                        <div className="flex items-center gap-1 text-primary text-xs font-black">
-                          <Star className="w-3 h-3 fill-primary" />
-                          <span>{course.rating}</span>
-                        </div>
-                        <p className="text-xl font-black mt-1">₹{course.price.toLocaleString()}</p>
+                  <div className="flex-1 flex flex-col justify-center min-w-0">
+                    <h4 className="text-sm font-black tracking-tight leading-tight line-clamp-2 mb-2">{course.title}</h4>
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-black text-white">₹{course.price.toLocaleString()}</span>
+                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                        <ChevronRight className="w-4 h-4 text-primary" />
                       </div>
-                      <Button size="sm" className="rounded-xl h-10 px-5 bg-white text-black font-black uppercase text-[10px] tracking-widest shadow-xl">Enroll Now</Button>
                     </div>
                   </div>
                 </div>
@@ -548,101 +538,73 @@ const UserHome = () => {
               </div>
 
               <div className="space-y-12">
-                {/* Quick Preview: Top 2 Packages */}
+                {/* Simplified Combo Packages Entry */}
                 <section className="space-y-6 pt-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold flex items-center gap-2">
-                        <Package className="w-6 h-6 text-orange-500" />
-                        Featured Packages
-                      </h2>
-                      <p className="text-sm text-muted-foreground">Premium bundles with maximum value and affiliate benefits.</p>
-                    </div>
-                    <Link to="/plans">
-                      <Button variant="ghost" className="text-primary hover:text-primary/80">
-                        View All <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </Link>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {packagesList?.slice(0, 2).map((pkg) => (
-                      <div key={pkg.id} className="glass-card rounded-3xl overflow-hidden group hover:border-primary/30 transition-all border border-white/5 bg-gradient-to-br from-card to-muted/30">
-                        <div className="p-1 h-32 relative overflow-hidden">
-                          <div className={cn("absolute inset-0 bg-gradient-to-br opacity-20", pkg.color_theme === 'diamond' ? 'from-green-500 to-emerald-900' : 'from-primary to-orange-600')} />
-                          <div className="relative z-10 p-6 flex items-center gap-4">
-                            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
-                              <Crown className="w-8 h-8 text-white" />
-                            </div>
-                            <div>
-                              <h3 className="text-xl font-bold text-white">{pkg.name} Academy</h3>
-                              <Badge variant="secondary" className="bg-white/10 text-white border-white/10 text-[10px] uppercase font-bold">{pkg.code}</Badge>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-6 pt-2">
-                          <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{pkg.headline || "Complete digital transformation blueprint."}</p>
-                          <div className="flex items-center justify-between mb-6">
-                            <div>
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Enrollment Fee</p>
-                              <p className="text-2xl font-bold text-gradient-gold">₹{pkg.price.toLocaleString()}</p>
-                            </div>
-                            <Button variant="outline" size="sm" className="rounded-xl border-primary/30 text-primary hover:bg-primary hover:text-white" onClick={() => navigate(`/package/${pkg.id}`)}>
-                              View Details
-                            </Button>
-                          </div>
-                          <Button className="w-full rounded-2xl bg-primary text-black font-bold h-12 shadow-lg shadow-primary/20" onClick={() => navigate("/payment")}>
-                            Upgrade Now
-                          </Button>
-                        </div>
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-8 rounded-[2rem] bg-gradient-to-br from-[#1A1A1B] to-[#2D2D2E] border border-white/5 shadow-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-32 -mt-32 transition-transform duration-700 group-hover:scale-110" />
+
+                    <div className="relative z-10 text-center md:text-left">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest mb-4">
+                        <Crown className="w-3 h-3" />
+                        Premium Academy
                       </div>
-                    ))}
+                      <h2 className="text-3xl md:text-4xl font-black text-white leading-tight mb-2">
+                        Unlock Elite <span className="text-primary">Combo Packages</span>
+                      </h2>
+                      <p className="text-gray-400 text-sm max-w-md">
+                        Get all-in-one access to our most powerful skill-building courses and maximum affiliate benefits.
+                      </p>
+                    </div>
+
+                    <div className="relative z-10 w-full md:w-auto">
+                      <Button
+                        size="xl"
+                        variant="hero"
+                        className="w-full md:w-auto rounded-2xl px-10 py-8 text-lg shadow-glow-gold/20"
+                        onClick={() => navigate("/plans")}
+                      >
+                        Explore Packages
+                        <ChevronRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </div>
                   </div>
                 </section>
 
-                {/* Quick Preview: Top 4 Courses */}
+                {/* Simplified Courses Preview */}
                 <section className="space-y-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between px-2">
                     <div>
-                      <h2 className="text-2xl font-bold flex items-center gap-2">
-                        <ShoppingCart className="w-6 h-6 text-emerald" />
-                        Featured Courses
+                      <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald/10 flex items-center justify-center">
+                          <BookOpen className="w-5 h-5 text-emerald" />
+                        </div>
+                        Trending Skills
                       </h2>
-                      <p className="text-sm text-muted-foreground">Master specific skills with our expert-led modules.</p>
                     </div>
                     <Link to="/courses">
-                      <Button variant="ghost" className="text-primary hover:text-primary/80">
-                        View All <ArrowRight className="w-4 h-4 ml-2" />
+                      <Button variant="ghost" className="text-emerald hover:text-emerald-dark font-black text-xs uppercase tracking-widest">
+                        Explore All
                       </Button>
                     </Link>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {displayCourses.map((course) => (
                       <div
                         key={course.id}
-                        className="glass-card rounded-3xl overflow-hidden group hover:border-primary/30 transition-all border border-white/5 cursor-pointer"
+                        className="bg-card rounded-3xl overflow-hidden group hover:shadow-2xl transition-all border border-border/50 cursor-pointer flex gap-4 p-3"
                         onClick={() => navigate(`/course/${course.id}`)}
                       >
-                        <div className="relative h-40 overflow-hidden">
-                          <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                          <div className="absolute top-3 right-3 px-2 py-1 rounded bg-black/60 backdrop-blur-md text-[10px] font-bold text-white">
-                            {course.modules} Modules
-                          </div>
+                        <div className="relative w-28 h-28 shrink-0 overflow-hidden rounded-2xl">
+                          <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
                         </div>
-                        <div className="p-5">
-                          <h3 className="font-bold text-lg mb-1 truncate">{course.title}</h3>
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="flex items-center gap-1">
-                              <Star className="w-3.5 h-3.5 text-primary fill-primary" />
-                              <span className="text-xs font-bold">{course.rating}</span>
-                            </div>
-                            <div className="flex items-center gap-1 text-muted-foreground text-xs">
-                              <Users className="w-3.5 h-3.5" />
-                              <span>{course.students.toLocaleString()}</span>
-                            </div>
+                        <div className="flex flex-col justify-center flex-1 min-w-0">
+                          <h3 className="font-bold text-sm mb-1 truncate">{course.title}</h3>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-[10px] font-black text-emerald uppercase tracking-tighter">Premium Course</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-xl font-bold">₹{course.price.toLocaleString()}</span>
-                            <Button size="sm" variant="hero" className="rounded-xl px-4 text-xs font-bold">Buy Now</Button>
+                            <span className="text-base font-black">₹{course.price.toLocaleString()}</span>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                           </div>
                         </div>
                       </div>

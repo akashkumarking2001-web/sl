@@ -697,11 +697,15 @@ const ProductDetailPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
+        <div className="min-h-screen bg-[#FDFDFC] font-sans">
             <Navbar />
-            <div className="container mx-auto px-4 py-8 pt-24">
-                <Button variant="ghost" onClick={() => navigate("/shopping")} className="mb-8 gap-2 pl-0 hover:bg-transparent hover:text-primary">
-                    <ChevronLeft className="w-4 h-4" /> Back to Shop
+            <div className="container mx-auto px-4 py-12 pt-32 transition-all duration-700 animate-in fade-in">
+                <Button
+                    variant="ghost"
+                    onClick={() => navigate("/shopping")}
+                    className="mb-10 gap-2 pl-0 hover:bg-transparent text-slate-400 hover:text-slate-900 font-bold text-[10px] uppercase tracking-widest group"
+                >
+                    <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Collective
                 </Button>
 
                 <div className="grid lg:grid-cols-2 gap-12">
@@ -729,231 +733,256 @@ const ProductDetailPage = () => {
                         )}
                     </div>
 
-                    {/* Info */}
-                    <div className="space-y-8">
-                        <div>
+                    <div className="space-y-10">
+                        <div className="space-y-6">
                             {product.is_featured && (
-                                <Badge className="mb-4 bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200 gap-1"><Star className="w-3 h-3 fill-current" /> Featured</Badge>
+                                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest gap-2 shadow-sm">
+                                    <Star className="w-3.5 h-3.5 fill-current" /> Curated Selection
+                                </Badge>
                             )}
-                            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 dark:text-white mb-4 leading-tight">{product.name}</h1>
+                            <h1 className="text-4xl lg:text-6xl font-black text-[#1A1F2C] leading-[1.1] tracking-tighter">{product.name}</h1>
 
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="flex text-amber-500">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={cn("w-5 h-5", i < (product.average_rating || 5) ? "fill-current" : "text-slate-200")} />
-                                    ))}
+                            <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex text-amber-500">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star key={i} className={cn("w-4 h-4", i < (product.average_rating || 5) ? "fill-current" : "text-slate-200")} />
+                                        ))}
+                                    </div>
+                                    <span className="text-xs font-black text-slate-900 border-b-2 border-primary/20">{product.average_rating || 5.0}</span>
                                 </div>
-                                <span className="text-slate-500 font-medium">{reviews.length} reviews</span>
+                                <div className="h-4 w-px bg-slate-200" />
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{reviews.length} Verified Reviews</span>
                                 {product.stock_quantity < 10 && (
-                                    <span className="text-rose-500 font-bold text-sm animate-pulse">Only {product.stock_quantity} Left!</span>
+                                    <>
+                                        <div className="h-4 w-px bg-slate-200" />
+                                        <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest animate-pulse">Running Out: {product.stock_quantity} Left</span>
+                                    </>
                                 )}
                             </div>
 
-                            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">{product.short_description}</p>
+                            <p className="text-lg text-slate-600 font-medium leading-relaxed max-w-xl">{product.short_description}</p>
                         </div>
 
-                        <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 shadow-sm space-y-6">
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-black text-slate-900 dark:text-white">₹{product.price.toLocaleString()}</span>
-                                <span className="text-lg text-slate-400 line-through">₹{product.mrp.toLocaleString()}</span>
-                                <Badge variant="destructive">{discount}% OFF</Badge>
-                            </div>
-
-                            {(product.affiliate_commission_amount > 0 || product.affiliate_commission_percentage > 0) && (
-                                <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl">
-                                    <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
-                                        <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-blue-700 dark:text-blue-300">
-                                            {isAffiliate ? "Your Earnings:" : "Share & Earn:"} ₹{product.affiliate_commission_amount || (product.price * (product.affiliate_commission_percentage || 0)) / 100}
-                                        </p>
-                                        <p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-medium uppercase tracking-wider">Per Successful Referral</p>
-                                    </div>
-                                    {!isAffiliate && (
-                                        <Link to="/affiliate/apply" className="ml-auto text-xs font-bold text-blue-600 underline">Apply</Link>
-                                    )}
-                                </div>
-                            )}
-
-                            {product.cashback_amount > 0 && (
-                                <div className="flex gap-3 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
-                                    <div className="p-2 bg-emerald-100 rounded-lg h-fit"><Tag className="w-4 h-4 text-emerald-600" /></div>
-                                    <div>
-                                        <p className="font-bold text-emerald-700">Earn ₹{product.cashback_amount} Cashback</p>
-                                        <p className="text-xs text-emerald-600"> credited to your wallet upon delivery.</p>
+                        <div className="p-8 bg-white rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] border border-slate-100 space-y-8">
+                            <div className="space-y-2">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest line-through">MRP ₹{product.mrp.toLocaleString()}</span>
+                                <div className="flex items-baseline gap-4">
+                                    <span className="text-5xl font-black text-slate-900 tracking-tighter">₹{product.price.toLocaleString()}</span>
+                                    <div className="bg-emerald-500 text-white px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-lg shadow-emerald-500/20">
+                                        -{discount}% OFF
                                     </div>
                                 </div>
-                            )}
-
-                            <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
-                                <div className="flex items-center border border-slate-200 rounded-xl h-12">
-                                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-4 hover:bg-slate-50 h-full rounded-l-xl">-</button>
-                                    <span className="w-12 text-center font-bold">{quantity}</span>
-                                    <button onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))} className="px-4 hover:bg-slate-50 h-full rounded-r-xl">+</button>
-                                </div>
-                                <Button onClick={handleAddToCart} disabled={product.stock_quantity === 0} className="flex-1 h-12 rounded-xl font-bold text-base shadow-lg shadow-primary/20">
-                                    {product.stock_quantity > 0 ? "Add to Cart" : "Out of Stock"}
-                                </Button>
-                                {isAffiliate && (
-                                    <Button variant="outline" size="icon" onClick={generateAffiliateLink} className="h-12 w-12 rounded-xl border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-600">
-                                        <Share2 className="w-5 h-5" />
-                                    </Button>
-                                )}
-                                <Button variant="outline" size="icon" onClick={addToWishlist} className="h-12 w-12 rounded-xl border-slate-200">
-                                    <Heart className="w-5 h-5" />
-                                </Button>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4 text-center">
-                            {[
-                                { icon: Truck, label: "Fast Delivery", sub: "2-4 Days" },
-                                { icon: ShieldCheck, label: "Secure Pay", sub: "Encrypted" },
-                                { icon: RotateCcw, label: "Easy Return", sub: "7 Days" }
-                            ].map((item, i) => (
-                                <div key={i} className="p-4 rounded-2xl bg-white border border-slate-100">
-                                    <item.icon className="w-6 h-6 mx-auto mb-2 text-primary" />
-                                    <p className="font-bold text-xs text-slate-900">{item.label}</p>
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">{item.sub}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-20">
-                    <Tabs defaultValue="desc" className="w-full">
-                        <TabsList className="w-full justify-start border-b border-slate-200 bg-transparent p-0 mb-8 overflow-x-auto">
-                            <TabsTrigger value="desc" className="px-8 py-4 text-base font-bold bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary rounded-none">Description</TabsTrigger>
-                            <TabsTrigger value="specs" className="px-8 py-4 text-base font-bold bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary rounded-none">Specifications</TabsTrigger>
-                            <TabsTrigger value="reviews" className="px-8 py-4 text-base font-bold bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary rounded-none">Reviews ({reviews.length})</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="desc" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="prose prose-lg max-w-none text-slate-600 dark:text-slate-300">
-                                <p className="whitespace-pre-line">{product.description}</p>
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="specs">
-                            <div className="grid md:grid-cols-2 gap-4">
-                                {product.specifications ? Object.entries(product.specifications).map(([k, v]: any) => (
-                                    <div key={k} className="flex justify-between p-4 bg-white border border-slate-100 rounded-xl">
-                                        <span className="font-semibold text-slate-500 capitalize">{k.replace(/_/g, " ")}</span>
-                                        <span className="font-bold text-slate-900">{v}</span>
-                                    </div>
-                                )) : <p>No specifications available.</p>}
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="reviews">
-                            <div className="flex justify-between items-center mb-8">
-                                <h3 className="text-2xl font-bold">Customer Reviews</h3>
-                                <Button onClick={() => setShowReviewDialog(true)} className="gap-2 rounded-xl">
-                                    <PenLine className="w-4 h-4" /> Write Review
-                                </Button>
                             </div>
 
-                            {reviews.length > 0 ? (
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    {reviews.map(review => (
-                                        <div key={review.id} className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar>
-                                                        <AvatarImage src={review.profiles?.avatar_url} />
-                                                        <AvatarFallback>U</AvatarFallback>
-                                                    </Avatar>
-                                                    <div>
-                                                        <p className="font-bold text-sm text-slate-900">{review.profiles?.full_name || 'Anonymous'}</p>
-                                                        <div className="flex text-amber-500 text-xs">
-                                                            {[...Array(5)].map((_, i) => (
-                                                                <Star key={i} className={cn("w-3 h-3", i < review.rating ? "fill-current" : "text-slate-200")} />
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <span className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</span>
-                                            </div>
-                                            <p className="text-slate-600 text-sm leading-relaxed">{review.comment}</p>
+                            <div className="space-y-4">
+                                {(product.affiliate_commission_amount > 0 || product.affiliate_commission_percentage > 0) && (
+                                    <div className="flex items-center gap-4 p-4 bg-blue-50/50 border border-blue-100 rounded-[1.5rem] group cursor-default">
+                                        <div className="w-10 h-10 bg-white rounded-xl shadow-sm border border-blue-100 flex items-center justify-center transition-transform group-hover:scale-110">
+                                            <TrendingUp className="w-5 h-5 text-blue-600" />
                                         </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-                                    <Star className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                                    <p>No reviews yet. Be the first to review!</p>
-                                </div>
-                            )}
-                        </TabsContent>
-                    </Tabs>
-                </div>
+                                        <div>
+                                            <p className="text-xs font-black text-blue-700 uppercase tracking-widest mb-0.5">
+                                                {isAffiliate ? "Network Earnings:" : "Affiliate Potential:"}
+                                            </p>
+                                            <p className="text-base font-black text-slate-900">₹{product.affiliate_commission_amount || (product.price * (product.affiliate_commission_percentage || 0)) / 100} Reward</p>
+                                        </div>
+                                        {!isAffiliate && (
+                                            <Link to="/affiliate/apply" className="ml-auto text-[10px] font-black text-blue-600 border-b-2 border-blue-600/30 hover:border-blue-600 transition-colors">BECOME PARTNER</Link>
+                                        )}
+                                    </div>
+                                )}
 
-                <div className="mt-24">
-                    <ProductSection
-                        title="Related Products"
-                        type="scroll"
-                        limit={4}
-                        categoryId={product.category_id}
-                        excludeProductId={product.id}
-                        onAddToCart={() => { }}
-                        onAddToWishlist={() => { }}
-                    />
-                </div>
-            </div>
+                                {product.cashback_amount > 0 && (
+                                    <div className="flex items-center gap-4 p-4 bg-emerald-50/50 border border-emerald-100 rounded-[1.5rem] group cursor-default">
+                                        <div className="w-10 h-10 bg-white rounded-xl shadow-sm border border-emerald-100 flex items-center justify-center transition-transform group-hover:scale-110">
+                                            <Tag className="w-5 h-5 text-emerald-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-black text-emerald-700 uppercase tracking-widest mb-0.5">Instant Cashback:</p>
+                                            <p className="text-base font-black text-slate-900">₹{product.cashback_amount} in Wallet</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
-            {/* Review Dialog */}
-            <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Write a Review</DialogTitle>
-                        <DialogDescription>Share your experience with this product.</DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold">Rating</label>
-                            <div className="flex gap-2">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button key={star} onClick={() => setNewRating(star)} className="focus:outline-none transition-transform hover:scale-110">
-                                        <Star className={cn("w-8 h-8", star <= newRating ? "fill-amber-500 text-amber-500" : "text-slate-200")} />
-                                    </button>
+                            <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-slate-100">
+                                <div className="flex items-center bg-slate-50 border border-slate-100 rounded-2xl h-14 p-1">
+                                    <button
+                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        className="w-10 h-full flex items-center justify-center hover:bg-white hover:shadow-sm rounded-xl transition-all font-black"
+                                    >-</button>
+                                    <span className="w-12 text-center font-black text-slate-900">{quantity}</span>
+                                    <button
+                                        onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
+                                        className="w-10 h-full flex items-center justify-center hover:bg-white hover:shadow-sm rounded-xl transition-all font-black"
+                                    >+</button>
+                                </div>
+                                <Button
+                                    onClick={handleAddToCart}
+                                    disabled={product.stock_quantity === 0}
+                                    className="flex-1 h-14 rounded-2xl bg-slate-900 hover:bg-black text-white font-black uppercase tracking-widest text-xs shadow-xl transition-all hover:scale-[1.02]"
+                                >
+                                    {product.stock_quantity > 0 ? "ADD TO CART" : "SOLD OUT"}
+                                </Button>
+                            </div>
+
+                            <Button
+                                onClick={handleBuyNow}
+                                className="w-full h-18 rounded-[1.5rem] bg-primary text-black font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all hover:scale-[1.02] active:scale-95"
+                            >
+                                BUY NOW
+                            </Button>
+
+                            <div className="grid grid-cols-3 gap-4 text-center">
+                                {[
+                                    { icon: Truck, label: "Fast Delivery", sub: "2-4 Days" },
+                                    { icon: ShieldCheck, label: "Secure Pay", sub: "Encrypted" },
+                                    { icon: RotateCcw, label: "Easy Return", sub: "7 Days" }
+                                ].map((item, i) => (
+                                    <div key={i} className="p-4 rounded-2xl bg-white border border-slate-100">
+                                        <item.icon className="w-6 h-6 mx-auto mb-2 text-primary" />
+                                        <p className="font-bold text-xs text-slate-900">{item.label}</p>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">{item.sub}</p>
+                                    </div>
                                 ))}
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold">Comment</label>
-                            <Textarea
-                                placeholder="What did you like or dislike?"
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                className="h-32 resize-none"
-                            />
-                        </div>
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowReviewDialog(false)}>Cancel</Button>
-                        <Button onClick={handleSubmitReview} disabled={submittingReview || !newComment}>
-                            {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit Review"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
 
-            {/* Share Dialog */}
-            <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Affiliate Link Generated</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex items-center gap-2 p-3 bg-slate-100 rounded-lg">
-                        <code className="text-xs flex-1 break-all">{affiliateLink}</code>
-                        <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(affiliateLink); setCopied(true); }}>
-                            {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                        </Button>
+                    <div className="mt-20">
+                        <Tabs defaultValue="desc" className="w-full">
+                            <TabsList className="w-full justify-start border-b border-slate-200 bg-transparent p-0 mb-8 overflow-x-auto">
+                                <TabsTrigger value="desc" className="px-8 py-4 text-base font-bold bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary rounded-none">Description</TabsTrigger>
+                                <TabsTrigger value="specs" className="px-8 py-4 text-base font-bold bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary rounded-none">Specifications</TabsTrigger>
+                                <TabsTrigger value="reviews" className="px-8 py-4 text-base font-bold bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary rounded-none">Reviews ({reviews.length})</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="desc" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="prose prose-lg max-w-none text-slate-600 dark:text-slate-300">
+                                    <p className="whitespace-pre-line">{product.description}</p>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="specs">
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {product.specifications ? Object.entries(product.specifications).map(([k, v]: any) => (
+                                        <div key={k} className="flex justify-between p-4 bg-white border border-slate-100 rounded-xl">
+                                            <span className="font-semibold text-slate-500 capitalize">{k.replace(/_/g, " ")}</span>
+                                            <span className="font-bold text-slate-900">{v}</span>
+                                        </div>
+                                    )) : <p>No specifications available.</p>}
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="reviews">
+                                <div className="flex justify-between items-center mb-8">
+                                    <h3 className="text-2xl font-bold">Customer Reviews</h3>
+                                    <Button onClick={() => setShowReviewDialog(true)} className="gap-2 rounded-xl">
+                                        <PenLine className="w-4 h-4" /> Write Review
+                                    </Button>
+                                </div>
+
+                                {reviews.length > 0 ? (
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        {reviews.map(review => (
+                                            <div key={review.id} className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar>
+                                                            <AvatarImage src={review.profiles?.avatar_url} />
+                                                            <AvatarFallback>U</AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-bold text-sm text-slate-900">{review.profiles?.full_name || 'Anonymous'}</p>
+                                                            <div className="flex text-amber-500 text-xs">
+                                                                {[...Array(5)].map((_, i) => (
+                                                                    <Star key={i} className={cn("w-3 h-3", i < review.rating ? "fill-current" : "text-slate-200")} />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</span>
+                                                </div>
+                                                <p className="text-slate-600 text-sm leading-relaxed">{review.comment}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                                        <Star className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                                        <p>No reviews yet. Be the first to review!</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+                        </Tabs>
                     </div>
-                </DialogContent>
-            </Dialog>
+
+                    <div className="mt-24">
+                        <ProductSection
+                            title="Related Products"
+                            type="scroll"
+                            limit={4}
+                            categoryId={product.category_id}
+                            excludeProductId={product.id}
+                            onAddToCart={() => { }}
+                            onAddToWishlist={() => { }}
+                        />
+                    </div>
+                </div>
+
+                {/* Review Dialog */}
+                <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Write a Review</DialogTitle>
+                            <DialogDescription>Share your experience with this product.</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold">Rating</label>
+                                <div className="flex gap-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button key={star} onClick={() => setNewRating(star)} className="focus:outline-none transition-transform hover:scale-110">
+                                            <Star className={cn("w-8 h-8", star <= newRating ? "fill-amber-500 text-amber-500" : "text-slate-200")} />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold">Comment</label>
+                                <Textarea
+                                    placeholder="What did you like or dislike?"
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    className="h-32 resize-none"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setShowReviewDialog(false)}>Cancel</Button>
+                            <Button onClick={handleSubmitReview} disabled={submittingReview || !newComment}>
+                                {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit Review"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Share Dialog */}
+                <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Affiliate Link Generated</DialogTitle>
+                        </DialogHeader>
+                        <div className="flex items-center gap-2 p-3 bg-slate-100 rounded-lg">
+                            <code className="text-xs flex-1 break-all">{affiliateLink}</code>
+                            <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(affiliateLink); setCopied(true); }}>
+                                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
         </div>
     );
 };

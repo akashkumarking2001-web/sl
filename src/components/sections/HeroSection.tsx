@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle2, ArrowRight, Play, Sparkles, GraduationCap, TrendingUp } from "lucide-react";
+import { CheckCircle2, ArrowRight, Play, Sparkles, GraduationCap, TrendingUp, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import heroStudent from "@/assets/hero-student.png";
@@ -104,17 +104,20 @@ const HeroSection = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500 fill-mode-both">
               <Link to={content.ctaLink || "/register"}>
-                <Button className="btn-premium w-full sm:w-auto h-auto text-lg px-8 py-4 rounded-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all">
+                <Button className="btn-premium w-full sm:w-auto h-auto text-lg px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all">
                   {content.ctaText || "Start Learning Now"}
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <a href="https://youtube.com/@skilllearners" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="xl" className="w-full sm:w-auto group rounded-lg border-2 h-auto text-lg px-8 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:scale-105">
-                  <Play className="w-5 h-5 mr-2" />
-                  Watch Demo
-                </Button>
-              </a>
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto group rounded-xl border-2 h-auto text-lg px-8 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:scale-105"
+                onClick={() => document.getElementById('app-download')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                <Smartphone className="w-5 h-5 mr-2" />
+                Download App
+              </Button>
             </div>
 
             {/* Trust badges */}

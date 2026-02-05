@@ -23,11 +23,14 @@ const MobileAppInitializer = () => {
 
                 try {
                     // Status Bar setup
-                    await StatusBar.setStyle({ style: Style.Dark });
-                    await StatusBar.setBackgroundColor({ color: '#0F172A' });
+                    await StatusBar.setStyle({ style: Style.Light });
+                    await StatusBar.setBackgroundColor({ color: '#FDFCFB' }); // Matches Light Mode background
 
                     // Hide Splash Screen after app is ready
-                    await SplashScreen.hide();
+                    // Small delay to ensure React Splash is mounted to prevent white flicker
+                    setTimeout(async () => {
+                        await SplashScreen.hide();
+                    }, 500);
 
                     // Initial haptic feedback to signal app ready
                     await Haptics.impact({ style: ImpactStyle.Light });

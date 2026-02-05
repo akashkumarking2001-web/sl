@@ -30,31 +30,15 @@ const CategoryCircles = ({ onSelectCategory, selectedCategoryId }: CategoryCircl
         fetchCategories();
     }, []);
 
-    // Fallback constants
-    const SUPABASE_URL = "https://vwzqaloqlvlewvijiqeu.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3enFhbG9xbHZsZXd2aWppcWV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNjMwMjQsImV4cCI6MjA4NDkzOTAyNH0.oEuQrpidyXbKYdy3SpuMDTHZveqZNHaJHMY3TK3ir2E";
-
     const fetchCategories = async (retryCount = 0) => {
         try {
-            const url = new URL(`${SUPABASE_URL}/rest/v1/product_categories`);
-            url.searchParams.append("select", "*");
-            url.searchParams.append("is_active", "eq.true");
-            url.searchParams.append("order", "display_order.asc");
+            const { data, error } = await supabase
+                .from("product_categories")
+                .select("*")
+                .eq("is_active", true)
+                .order("display_order", { ascending: true });
 
-            const response = await fetch(url.toString(), {
-                method: "GET",
-                headers: {
-                    "apikey": SUPABASE_ANON_KEY,
-                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP Error: ${response.status}`);
-            }
-
-            const data = await response.json();
+            if (error) throw error;
             setCategories(data || []);
             setLoading(false);
         } catch (error: any) {

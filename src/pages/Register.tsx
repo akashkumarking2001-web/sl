@@ -251,104 +251,121 @@ const Register = () => {
 
   if (isNative) {
     return (
-      <div className="min-h-screen premium-mesh-bg text-white flex flex-col p-6 font-sans relative overflow-hidden">
-        {/* Dynamic Abstract Shapes */}
+      <div className="min-h-screen premium-bg-light text-foreground flex flex-col p-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] font-sans relative overflow-hidden transition-colors duration-700">
+        {/* Dynamic Abstract Shapes - Light Mode */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[5%] right-[5%] w-64 h-64 bg-primary/5 rounded-full blur-[100px] float-shape" />
-          <div className="absolute bottom-[10%] left-[5%] w-72 h-72 bg-amber-500/5 rounded-full blur-[110px] float-shape [animation-delay:3s]" />
+          <div className="absolute top-[5%] right-[5%] w-64 h-64 bg-primary/10 rounded-full blur-[90px] float-shape opacity-60" />
+          <div className="absolute bottom-[10%] left-[5%] w-72 h-72 bg-amber-500/5 rounded-full blur-[100px] float-shape [animation-delay:3s] opacity-50" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-mesh opacity-20" />
         </div>
 
-        <div className="max-w-md mx-auto w-full space-y-8 py-10 relative z-10">
-          <div className="text-center space-y-3 animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="p-3 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 w-fit mx-auto shadow-xl">
-              <img src={logo} alt="Skill Learners" className="h-14 mx-auto drop-shadow-lg" />
+        <div className="max-w-md mx-auto w-full space-y-8 py-4 relative z-10 scrollbar-hide flex-1 overflow-y-auto">
+          <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="p-4 rounded-[2.5rem] bg-white/40 backdrop-blur-3xl border border-white/60 w-fit mx-auto shadow-[0_15px_40px_rgba(45,30,10,0.06)] logo-float">
+              <img src={logo} alt="Skill Learners" className="h-14 mx-auto drop-shadow-md" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight leading-tight pt-2">Join the Academy</h1>
-            <p className="text-gray-400 font-bold text-sm">Create your pathway to excellence</p>
+            <div className="pt-2">
+              <h1 className="text-3xl font-black tracking-tight text-foreground">Join the Academy</h1>
+              <p className="text-muted-foreground font-bold text-sm mt-1">Create your pathway to excellence</p>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 pb-20">
             <div className="grid grid-cols-1 gap-5">
+              {/* Referral ID */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 ml-1">Referral Code (Optional)</label>
-                <input type="text" value={formData.sponsorId} onChange={(e) => setFormData({ ...formData, sponsorId: e.target.value.toUpperCase() })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600 uppercase" placeholder="Sponsor ID" />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 ml-1">Full Name</label>
-                <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="John Doe" />
-              </div>
-
-              <div className="grid grid-cols-1 gap-5">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 ml-1">Email Address</label>
-                  <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="john@example.com" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 ml-1">Mobile Number</label>
-                  <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="+91 0000000000" />
+                <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Referral Code (Optional)</label>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                  <input type="text" value={formData.sponsorId} onChange={(e) => setFormData({ ...formData, sponsorId: e.target.value.toUpperCase() })} className="relative w-full h-13 px-5 rounded-2xl bg-white/60 border border-black/5 dark:border-white/10 text-sm font-bold text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/40 uppercase shadow-sm" placeholder="Sponsor ID" />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 ml-1">Date of Birth</label>
-                <input type="date" required value={formData.dob} onChange={(e) => setFormData({ ...formData, dob: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+              {/* Basic Info Group */}
+              <div className="p-5 rounded-[2rem] bg-white/30 backdrop-blur-xl border border-white/50 space-y-5 shadow-sm">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Full Name</label>
+                  <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/60 border border-black/5 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/40 text-sm font-bold" placeholder="your legal name" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Email Address</label>
+                  <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/60 border border-black/5 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/40 text-sm font-bold" placeholder="email@address.com" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Mobile Number</label>
+                  <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/60 border border-black/5 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/40 text-sm font-bold" placeholder="+91 0000000000" />
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Personal Details Group */}
+              <div className="p-5 rounded-[2rem] bg-white/30 backdrop-blur-xl border border-white/50 space-y-5 shadow-sm">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 ml-1">Country</label>
-                  <div className="relative">
-                    <select required value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white appearance-none focus:ring-2 focus:ring-primary/20 outline-none transition-all">
-                      <option value="" className="bg-black">Select</option>
-                      {countries.map(c => <option key={c.code} value={c.name} className="bg-black">{c.name}</option>)}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                  <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Date of Birth</label>
+                  <input type="date" required value={formData.dob} onChange={(e) => setFormData({ ...formData, dob: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/60 border border-black/5 focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm font-bold" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Country</label>
+                    <div className="relative">
+                      <select required value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/60 border border-black/5 text-sm font-bold text-foreground appearance-none focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                        <option value="">Select</option>
+                        {countries.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 pointer-events-none" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">State</label>
+                    <div className="relative">
+                      <select required value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/60 border border-black/5 text-sm font-bold text-foreground appearance-none focus:ring-2 focus:ring-primary/20 outline-none transition-all disabled:opacity-50" disabled={!formData.country}>
+                        <option value="">{formData.country ? "Select" : "..."}</option>
+                        {availableStates.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
+
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 ml-1">State</label>
-                  <div className="relative">
-                    <select required value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white appearance-none focus:ring-2 focus:ring-primary/20 outline-none transition-all disabled:opacity-50" disabled={!formData.country}>
-                      <option value="" className="bg-black">{formData.country ? "Select" : "..."}</option>
-                      {availableStates.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-                  </div>
+                  <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Full Address</label>
+                  <input type="text" required value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/60 border border-black/5 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/40 text-sm font-bold" placeholder="Street, City, Area" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Pincode</label>
+                  <input type="text" required value={formData.pincode} onChange={(e) => setFormData({ ...formData, pincode: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/60 border border-black/5 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/40 text-sm font-bold" placeholder="000000" />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 ml-1">Full Address</label>
-                <input type="text" required value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="Street, City, Area" />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 ml-1">Pincode</label>
-                <input type="text" required value={formData.pincode} onChange={(e) => setFormData({ ...formData, pincode: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="000000" />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 ml-1">Password</label>
-                <div className="relative">
-                  <input type={showPassword ? "text" : "password"} required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/5 border border-white/10 text-sm font-black text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-600" placeholder="••••••••" />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+              {/* Password Group */}
+              <div className="p-5 rounded-[2rem] bg-white/30 backdrop-blur-xl border border-white/50 space-y-5 shadow-sm">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Security Password</label>
+                  <div className="relative">
+                    <input type={showPassword ? "text" : "password"} required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full h-12 px-5 rounded-xl bg-white/60 border border-black/5 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/40 text-sm font-bold" placeholder="••••••••" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/40">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-start gap-2 pt-2">
-              <input type="checkbox" required checked={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 text-primary focus:ring-primary" />
-              <p className="text-[10px] font-bold text-gray-500 leading-tight">I accept the Academy's <Link to="/terms" className="text-primary underline">Terms of Service</Link></p>
+            <div className="flex items-start gap-3 pt-2">
+              <div className="flex items-center h-5">
+                <input type="checkbox" required checked={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.checked })} className="w-5 h-5 rounded-lg border-black/10 text-primary focus:ring-primary bg-white/60 shadow-sm" />
+              </div>
+              <p className="text-[11px] font-bold text-muted-foreground leading-snug pt-0.5">I agree to the Academy's <Link to="/terms" className="text-primary underline">Terms of Service</Link> and <Link to="/privacy" className="text-primary underline">Privacy Policy</Link></p>
             </div>
 
-            <Button type="submit" className="w-full h-18 rounded-2xl bg-primary text-black font-black text-xl shadow-[0_15px_30px_rgba(251,191,36,0.3)] hover:scale-[1.02] active:scale-[0.95] transition-all" disabled={isLoading}>
-              {isLoading ? <Loader2 className="animate-spin w-7 h-7" /> : "Initiate Enrollment"}
+            <Button type="submit" className="w-full h-18 rounded-3xl bg-gradient-to-r from-primary to-amber-500 text-primary-foreground font-black text-xl shadow-[0_15px_35px_-5px_rgba(251,191,36,0.35)] hover:scale-[1.02] active:scale-[0.95] transition-all border-none" disabled={isLoading}>
+              {isLoading ? <Loader2 className="animate-spin w-8 h-8" /> : "Initiate Enrollment"}
             </Button>
 
-            <p className="text-center text-sm font-bold text-gray-400">Member already? <Link to="/login" className="text-primary font-black ml-1">Login</Link></p>
+            <p className="text-center text-sm font-bold text-muted-foreground">Member already? <Link to="/login" className="text-primary font-black ml-1.5 underline decoration-2 underline-offset-4">Login here</Link></p>
           </form>
         </div>
       </div>

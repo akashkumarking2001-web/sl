@@ -52,7 +52,7 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, className }: Produ
             onClick={handleCardClick}
         >
             {/* Image Container */}
-            <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+            <div className="relative aspect-square overflow-hidden bg-muted flex-shrink-0">
                 <img
                     src={product.image_url || "/placeholder.png"}
                     alt={product.name}
@@ -60,58 +60,55 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, className }: Produ
                 />
 
                 {/* Badges */}
-                <div className="absolute top-3 left-3 flex flex-col gap-2">
+                <div className="absolute top-2 left-2 flex flex-col gap-1.5 z-10">
                     {product.is_featured && (
-                        <Badge className="bg-foreground hover:bg-foreground/90 text-background border-0 rounded-md px-2 py-1 text-[10px] tracking-tight font-bold shadow-md">
+                        <Badge className="bg-[#FBBF24] hover:bg-[#FBBF24]/90 text-black border-0 rounded-lg px-2 py-0.5 text-[9px] tracking-tight font-black shadow-md uppercase">
                             Featured
                         </Badge>
                     )}
                     {discount > 0 && (
-                        <Badge className="bg-destructive hover:bg-destructive/90 text-destructive-foreground border-0 rounded-md px-2 py-1 text-[10px] tracking-tight font-bold shadow-md">
+                        <Badge className="bg-destructive hover:bg-destructive/90 text-destructive-foreground border-0 rounded-lg px-2 py-0.5 text-[9px] tracking-tight font-black shadow-md uppercase">
                             -{discount}%
                         </Badge>
                     )}
                 </div>
 
-                {/* Hover Actions - Visible on mobile, slide-up on desktop hover */}
-                <div className="absolute bottom-4 left-4 right-4 flex gap-2 transition-all duration-300 transform translate-y-0 opacity-100 lg:translate-y-4 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100">
+                {/* Action Buttons - Always visible for better UX */}
+                <div className="absolute bottom-3 left-3 right-3 flex gap-2 transition-all duration-300">
                     <Button
                         onClick={(e) => handleAction(e, () => onAddToCart(product))}
-                        data-testid="add-to-cart-button"
-                        className="flex-1 bg-primary text-black hover:bg-primary/90 font-bold shadow-lg rounded-xl h-10 border-none"
+                        className="flex-1 bg-primary text-primary-foreground hover:bg-white hover:text-black font-black shadow-xl rounded-xl h-10 border-none transition-all active:scale-90"
                         disabled={product.stock_quantity === 0}
                     >
                         <ShoppingCart className="w-4 h-4 mr-2" />
-                        {product.stock_quantity === 0 ? "Out of stock" : "Add to cart"}
-                    </Button>
-                    <Button
-                        size="icon"
-                        variant="secondary"
-                        className="bg-card hover:bg-muted text-foreground shadow-lg rounded-xl h-10 w-10 shrink-0 border border-border/10"
-                        onClick={(e) => handleAction(e, () => onAddToWishlist(product.id))}
-                        data-testid="wishlist-button"
-                    >
-                        <Heart className="w-5 h-5" />
+                        {product.stock_quantity === 0 ? "Out of Stock" : "Add to Cart"}
                     </Button>
                 </div>
             </div>
 
             {/* Content */}
-            <div className="p-4 flex flex-col flex-1">
-                <h3 className="font-bold text-foreground text-base leading-tight mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+            <div className="p-3.5 flex flex-col flex-1 gap-1">
+                <h3 className="font-bold text-foreground text-[14px] md:text-base leading-tight line-clamp-2 min-h-[2.5rem]">
                     {product.name}
                 </h3>
 
-                <div className="mt-auto pt-3 flex items-end justify-between border-t border-border/50">
-                    <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground line-through font-medium">₹{product.mrp.toLocaleString()}</span>
-                        <span className="text-lg font-bold text-foreground">₹{product.price.toLocaleString()}</span>
-                    </div>
-                    {product.cashback_amount > 0 && (
-                        <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full border border-emerald-100 dark:border-emerald-900">
-                            +₹{product.cashback_amount} Cashback
+                <div className="mt-auto">
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="flex flex-col">
+                            <span className="text-sm md:text-lg font-black text-foreground">₹{product.price.toLocaleString()}</span>
+                            {discount > 0 && (
+                                <span className="text-[10px] text-muted-foreground line-through font-bold opacity-60">₹{product.mrp.toLocaleString()}</span>
+                            )}
                         </div>
-                    )}
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="rounded-full h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50"
+                            onClick={(e) => handleAction(e, () => onAddToWishlist(product.id))}
+                        >
+                            <Heart className="w-4 h-4" />
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -9,8 +9,8 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 2000,
-      backgroundColor: "#0F172A",
+      launchShowDuration: 3000,
+      backgroundColor: "#FFFFFF",
       showSpinner: true,
       androidSpinnerStyle: "large",
       iosSpinnerStyle: "small",
@@ -19,12 +19,12 @@ const config: CapacitorConfig = {
       splashImmersive: true,
     },
     StatusBar: {
-      style: "DARK",
-      backgroundColor: "#0F172A",
+      style: "LIGHT",
+      backgroundColor: "#FFFFFF",
     },
     Keyboard: {
       resize: "body",
-      style: "DARK",
+      style: "LIGHT",
     }
   }
 };

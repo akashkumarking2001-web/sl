@@ -107,8 +107,8 @@ const Navbar = () => {
         className={cn(
           "fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ease-in-out",
           scrolled
-            ? "bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] border-b border-border/30 py-2"
-            : "bg-white/60 dark:bg-slate-950/60 backdrop-blur-md py-3"
+            ? "bg-white dark:bg-slate-950 shadow-[0_4px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.4)] border-b border-border/50 py-2"
+            : "bg-transparent py-4"
         )}
       >
         <div className="container mx-auto px-6">
@@ -270,44 +270,24 @@ const Navbar = () => {
             isOpen ? "translate-x-0" : "translate-x-full"
           )}
         >
-          {/* User Header */}
-          <div className="relative p-6 bg-gradient-to-br from-primary/95 to-primary text-white overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5">
-              <Shield className="w-32 h-32" />
-            </div>
-            <div className="relative z-10 flex items-center gap-3 mb-5">
-              <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                <UserIcon className="w-6 h-6 text-white" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-semibold text-lg truncate">{user ? (user.email?.split('@')[0]) : 'Guest Student'}</h3>
-                <p className="text-xs text-white/80 font-medium">{user ? 'Premium Member' : 'Welcome to Academy'}</p>
-              </div>
-            </div>
-
-            {!user ? (
-              <div className="flex gap-2.5 relative z-10">
-                <Link to="/login" onClick={() => setIsOpen(false)} className="flex-1">
-                  <Button size="lg" variant="secondary" className="w-full font-medium rounded-lg shadow-sm">Login</Button>
-                </Link>
-                <Link to="/register" onClick={() => setIsOpen(false)} className="flex-1">
-                  <Button size="lg" className="w-full font-medium bg-white text-primary hover:bg-white/90 rounded-lg shadow-sm">Join</Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 relative z-10">
-                <div className="px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-[10px] font-medium text-white">
-                  ✓ Verified Account
-                </div>
-              </div>
-            )}
+          {/* Sidebar Header - Clean Logo Integration */}
+          <div className="p-8 pb-4 flex items-center justify-between">
+            <Link to="/" onClick={() => setIsOpen(false)}>
+              <img src={logo} alt="Skill Learners" className="h-10 w-auto" />
+            </Link>
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="rounded-full hover:bg-muted transition-colors">
+              <X className="w-5 h-5" />
+            </Button>
           </div>
 
-          {/* Nav Links */}
-          <div className="flex-1 overflow-y-auto py-8">
-            <div className="px-6 mb-8">
-              <h4 className="text-xs font-semibold text-muted-foreground/60 mb-6 px-2">Main Navigation</h4>
-              <nav className="space-y-2">
+          <div className="px-8 py-2">
+            <div className="h-[1px] w-full bg-border/50" />
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
+            <div className="mb-4">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-3 mb-2">Main Navigation</p>
+              <nav className="space-y-1">
                 {navLinks.map((link) => (
                   <button
                     key={link.name}
@@ -323,10 +303,10 @@ const Navbar = () => {
               </nav>
             </div>
 
-            {user && (
-              <div className="px-6 pb-8">
-                <h4 className="text-xs font-semibold text-muted-foreground/60 mb-6 px-2">Quick Access</h4>
-                <nav className="space-y-2">
+            {user ? (
+              <div className="mb-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-3 mb-2">Quick Access</p>
+                <nav className="space-y-1">
                   <button
                     onClick={() => handleNavClick("/user-home")}
                     className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-emerald-500/5 transition-all group active:scale-[0.98]"
@@ -346,6 +326,22 @@ const Navbar = () => {
                     <span className="font-semibold text-sm group-hover:text-blue-500">Shop Marketplace</span>
                   </button>
                 </nav>
+              </div>
+            ) : (
+              <div className="px-3 space-y-3 mt-4">
+                <Button
+                  onClick={() => handleNavClick("/login")}
+                  className="w-full h-12 rounded-xl bg-primary text-black font-black uppercase text-[10px] tracking-widest shadow-lg shadow-primary/20"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleNavClick("/register")}
+                  className="w-full h-12 rounded-xl border-border font-black uppercase text-[10px] tracking-widest"
+                >
+                  Create Account
+                </Button>
               </div>
             )}
           </div>

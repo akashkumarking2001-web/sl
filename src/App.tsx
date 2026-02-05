@@ -45,6 +45,7 @@ const UserOrders = lazy(() => import("./pages/UserOrders"));
 const ShoppingWalletPage = lazy(() => import("./pages/ShoppingWalletPage"));
 const AddressesPage = lazy(() => import("./pages/AddressesPage"));
 const ShoppingProfilePage = lazy(() => import("./pages/ShoppingProfilePage"));
+const PaymentProof = lazy(() => import("./pages/PaymentProof"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminForgotPassword = lazy(() => import("./pages/AdminForgotPassword"));
@@ -55,6 +56,9 @@ const PackageDetailPage = lazy(() => import("./pages/PackageDetailPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
 const PlansPage = lazy(() => import("./pages/PlansPage"));
 const AllCoursesPage = lazy(() => import("./pages/AllCoursesPage"));
+
+import { useState, useEffect } from "react";
+import SplashScreen from "@/components/SplashScreen";
 
 const queryClient = new QueryClient();
 
@@ -92,174 +96,189 @@ const PageLoader = () => (
   </div>
 );
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true
-        }}
-      >
-        <AuthProvider>
-          <MobileAppInitializer />
-          <CartProvider>
-            <ReferralNotificationProvider>
-              <MobileSimulator>
-                <Suspense fallback={<PageLoader />}>
-                  <PageTransition>
-                    <Routes>
-                      {/* Public Routes */}
-                      <Route path="/" element={<Index />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      <Route path="/registration-success" element={<RegistrationSuccess />} />
-                      <Route path="/payment" element={<PaymentGateway />} />
-                      <Route path="/course/:courseId" element={<CourseDetailPage />} />
-                      <Route path="/package/:packageId" element={<PackageDetailPage />} />
-                      <Route path="/admin-login" element={<AdminLogin />} />
-                      <Route path="/admin-forgot-password" element={<AdminForgotPassword />} />
-                      <Route path="/reset-password" element={<ResetPassword />} />
+const App = () => {
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-                      {/* Protected Routes */}
-                      <Route path="/user-home" element={
-                        <ProtectedRoute>
-                          <UserHome />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/affiliate" element={
-                        <ProtectedRoute>
-                          <AffiliateDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/courses" element={
-                        <ProtectedRoute>
-                          <UserCourses />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/learners" element={
-                        <ProtectedRoute>
-                          <LearnersPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/income/:type" element={
-                        <ProtectedRoute>
-                          <IncomeReportPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/wallet" element={
-                        <ProtectedRoute>
-                          <WalletPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/leaderboard" element={
-                        <ProtectedRoute>
-                          <LeaderboardPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/analytics" element={
-                        <ProtectedRoute>
-                          <AnalyticsPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/network" element={
-                        <ProtectedRoute>
-                          <NetworkPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/matrix" element={
-                        <ProtectedRoute>
-                          <MatrixPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/tasks" element={
-                        <ProtectedRoute>
-                          <TasksPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/profile" element={
-                        <ProtectedRoute>
-                          <ProfilePage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/submit-course" element={
-                        <ProtectedRoute>
-                          <SubmitCoursePage />
-                        </ProtectedRoute>
-                      } />
-                      {/* Shopping & E-Commerce Routes */}
-                      <Route path="/shopping" element={<ShoppingWrapper />} />
-                      <Route path="/shopping/cart" element={<CartPage />} />
-                      <Route path="/product/:slug" element={<ProductDetailPage />} />
-                      <Route path="/affiliate-program" element={<AffiliateApplicationPage />} />
-                      <Route path="/dashboard/affiliate-earnings" element={
-                        <ProtectedRoute>
-                          <AffiliateEarningsPage />
-                        </ProtectedRoute>
-                      } />
+  useEffect(() => {
+    // Simulate app initialization or wait for essential data
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 2500); // Show branded splash for at least 2.5s for premium feel
 
-                      <Route path="/dashboard/shopping" element={
-                        <ProtectedRoute>
-                          <ShoppingWrapper />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/my-orders" element={
-                        <ProtectedRoute>
-                          <MyOrdersPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/wishlist" element={
-                        <ProtectedRoute>
-                          <WishlistPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/orders" element={
-                        <ProtectedRoute>
-                          <UserOrders />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/shopping-wallet" element={
-                        <ProtectedRoute>
-                          <ShoppingWalletPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/addresses" element={
-                        <ProtectedRoute>
-                          <AddressesPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dashboard/shopping-profile" element={
-                        <ProtectedRoute>
-                          <ShoppingProfilePage />
-                        </ProtectedRoute>
-                      } />
+    return () => clearTimeout(timer);
+  }, []);
 
-                      {/* Admin Routes */}
-                      <Route path="/admin" element={
-                        <ProtectedRoute requireAdmin={true}>
-                          <SkillLearnersAdmin />
-                        </ProtectedRoute>
-                      } />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        {isInitialLoading && <SplashScreen />}
+        <Toaster />
+        <Sonner />
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
+          <AuthProvider>
+            <MobileAppInitializer />
+            <CartProvider>
+              <ReferralNotificationProvider>
+                <MobileSimulator>
+                  <Suspense fallback={<PageLoader />}>
+                    <PageTransition>
+                      <Routes>
+                        {/* Public Routes */}
+                        <Route path="/" element={<Index />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="/registration-success" element={<RegistrationSuccess />} />
+                        <Route path="/payment" element={<PaymentGateway />} />
+                        <Route path="/payment-proof" element={<PaymentProof />} />
+                        <Route path="/course/:courseId" element={<CourseDetailPage />} />
+                        <Route path="/package/:packageId" element={<PackageDetailPage />} />
+                        <Route path="/admin-login" element={<AdminLogin />} />
+                        <Route path="/admin-forgot-password" element={<AdminForgotPassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
 
-                      <Route path="/plans" element={<PlansPage />} />
-                      <Route path="/courses" element={<AllCoursesPage />} />
+                        {/* Protected Routes */}
+                        <Route path="/user-home" element={
+                          <ProtectedRoute>
+                            <UserHome />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/affiliate" element={
+                          <ProtectedRoute>
+                            <AffiliateDashboard />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/courses" element={
+                          <ProtectedRoute>
+                            <UserCourses />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/learners" element={
+                          <ProtectedRoute>
+                            <LearnersPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/income/:type" element={
+                          <ProtectedRoute>
+                            <IncomeReportPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/wallet" element={
+                          <ProtectedRoute>
+                            <WalletPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/leaderboard" element={
+                          <ProtectedRoute>
+                            <LeaderboardPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/analytics" element={
+                          <ProtectedRoute>
+                            <AnalyticsPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/network" element={
+                          <ProtectedRoute>
+                            <NetworkPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/matrix" element={
+                          <ProtectedRoute>
+                            <MatrixPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/tasks" element={
+                          <ProtectedRoute>
+                            <TasksPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/profile" element={
+                          <ProtectedRoute>
+                            <ProfilePage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/submit-course" element={
+                          <ProtectedRoute>
+                            <SubmitCoursePage />
+                          </ProtectedRoute>
+                        } />
+                        {/* Shopping & E-Commerce Routes */}
+                        <Route path="/shopping" element={<ShoppingWrapper />} />
+                        <Route path="/shopping/cart" element={<CartPage />} />
+                        <Route path="/product/:slug" element={<ProductDetailPage />} />
+                        <Route path="/affiliate-program" element={<AffiliateApplicationPage />} />
+                        <Route path="/dashboard/affiliate-earnings" element={
+                          <ProtectedRoute>
+                            <AffiliateEarningsPage />
+                          </ProtectedRoute>
+                        } />
 
-                      {/* 404 */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </PageTransition>
-                </Suspense>
-              </MobileSimulator>
-              <AIChatbot />
-              <MobileBottomNav />
-            </ReferralNotificationProvider>
-          </CartProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+                        <Route path="/dashboard/shopping" element={
+                          <ProtectedRoute>
+                            <ShoppingWrapper />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/my-orders" element={
+                          <ProtectedRoute>
+                            <MyOrdersPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/wishlist" element={
+                          <ProtectedRoute>
+                            <WishlistPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/orders" element={
+                          <ProtectedRoute>
+                            <UserOrders />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/shopping-wallet" element={
+                          <ProtectedRoute>
+                            <ShoppingWalletPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/addresses" element={
+                          <ProtectedRoute>
+                            <AddressesPage />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard/shopping-profile" element={
+                          <ProtectedRoute>
+                            <ShoppingProfilePage />
+                          </ProtectedRoute>
+                        } />
+
+                        {/* Admin Routes */}
+                        <Route path="/admin" element={
+                          <ProtectedRoute requireAdmin={true}>
+                            <SkillLearnersAdmin />
+                          </ProtectedRoute>
+                        } />
+
+                        <Route path="/plans" element={<PlansPage />} />
+                        <Route path="/courses" element={<AllCoursesPage />} />
+
+                        {/* 404 */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </PageTransition>
+                  </Suspense>
+                </MobileSimulator>
+                <AIChatbot />
+                <MobileBottomNav />
+              </ReferralNotificationProvider>
+            </CartProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

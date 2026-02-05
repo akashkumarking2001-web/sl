@@ -68,65 +68,80 @@ const Login = () => {
 
   if (isNative) {
     return (
-      <div className="min-h-screen premium-mesh-bg text-white flex flex-col p-6 font-sans relative overflow-hidden">
-        {/* Dynamic Abstract Shapes */}
+      <div className="min-h-screen premium-bg-light text-foreground flex flex-col p-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] font-sans relative overflow-hidden transition-colors duration-700">
+        {/* Dynamic Abstract Shapes - Light Mode */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[10%] left-[5%] w-64 h-64 bg-primary/5 rounded-full blur-[100px] float-shape" />
-          <div className="absolute bottom-[10%] right-[5%] w-72 h-72 bg-amber-500/5 rounded-full blur-[110px] float-shape [animation-delay:2s]" />
+          <div className="absolute top-[10%] left-[5%] w-64 h-64 bg-primary/10 rounded-full blur-[90px] float-shape opacity-60" />
+          <div className="absolute bottom-[15%] right-[5%] w-72 h-72 bg-amber-500/5 rounded-full blur-[100px] float-shape [animation-delay:2s] opacity-50" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-mesh opacity-20" />
         </div>
 
-        <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-10 relative z-10">
+        <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-10 relative z-10 scale-[1.02]">
           <div className="space-y-4 text-center animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="p-3 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 w-fit mx-auto shadow-xl">
-              <img src={logo} alt="Skill Learners" className="h-14 w-auto mx-auto drop-shadow-lg" />
+            <div className="p-4 rounded-[2.5rem] bg-white/40 backdrop-blur-3xl border border-white/60 w-fit mx-auto shadow-[0_15px_40px_rgba(45,30,10,0.06)] logo-float">
+              <img src={logo} alt="Skill Learners" className="h-15 w-auto mx-auto drop-shadow-md" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight pt-2">Welcome Back</h1>
-            <p className="text-gray-400 font-bold text-sm">Continue your professional journey</p>
+            <div className="pt-2">
+              <h1 className="text-4xl font-black tracking-tight text-foreground">Welcome Back</h1>
+              <p className="text-muted-foreground font-bold text-sm mt-1">Continue your professional journey</p>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 ml-1">Email or Student ID</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full h-14 px-6 rounded-2xl bg-white/5 border border-white/10 text-sm font-black focus:ring-2 focus:ring-primary/20 outline-none transition-all text-white placeholder:text-gray-600"
-                  placeholder="Enter credentials"
-                />
+              <div className="space-y-2">
+                <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Email or Student ID</label>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                  <input
+                    type="text"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="relative w-full h-15 px-6 rounded-2xl bg-white/60 border border-black/5 dark:border-white/10 text-[15px] font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground placeholder:text-muted-foreground/40 shadow-sm"
+                    placeholder="Enter credentials"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 ml-1">Password</label>
-                <div className="relative">
+              <div className="space-y-2">
+                <label className="text-[11px] font-black text-foreground/40 ml-2 uppercase tracking-widest">Password</label>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
                   <input
                     type={showPassword ? "text" : "password"}
                     required
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full h-14 px-6 rounded-2xl bg-white/5 border border-white/10 text-sm font-black focus:ring-2 focus:ring-primary/20 outline-none transition-all text-white placeholder:text-gray-600"
+                    className="relative w-full h-15 px-6 rounded-2xl bg-white/60 border border-black/5 dark:border-white/10 text-[15px] font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground placeholder:text-muted-foreground/40 shadow-sm"
                     placeholder="••••••••"
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/60 transition-colors hover:text-primary">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-16 rounded-2xl bg-primary text-black font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.95] transition-all" disabled={isLoading}>
-              {isLoading ? <Loader2 className="animate-spin w-6 h-6" /> : "Sign In"}
+            <Button type="submit" className="w-full h-16 rounded-3xl bg-gradient-to-r from-primary to-amber-500 text-primary-foreground font-black text-lg shadow-[0_15px_30px_-5px_rgba(251,191,36,0.3)] hover:scale-[1.02] active:scale-[0.95] transition-all border-none" disabled={isLoading}>
+              {isLoading ? <Loader2 className="animate-spin w-7 h-7" /> : "Sign In"}
             </Button>
 
-            <div className="text-center space-y-4">
-              <Link to="/forgot" className="block text-xs font-black text-primary tracking-wider">Forgot Password?</Link>
-              <div className="h-px bg-white/10 w-1/2 mx-auto" />
-              <p className="text-sm font-bold text-gray-400">New here? <Link to="/register" className="text-primary ml-1">Create Account</Link></p>
+            <div className="text-center space-y-6 pt-2">
+              <Link to="/forgot" className="block text-xs font-black text-primary tracking-widest uppercase hover:opacity-80 transition-opacity">Forgot Password?</Link>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-black/5" />
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase font-black text-muted-foreground/30 px-4 bg-transparent">or</div>
+              </div>
+              <p className="text-[13px] font-bold text-muted-foreground">New here? <Link to="/register" className="text-primary ml-1.5 font-black">Create Account</Link></p>
             </div>
           </form>
         </div>
+
+        {/* Bottom spacer for safe area */}
+        <div className="h-[env(safe-area-inset-bottom,0px)] w-full" />
       </div>
     );
   }

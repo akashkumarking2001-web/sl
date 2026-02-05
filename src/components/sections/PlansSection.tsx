@@ -147,7 +147,7 @@ const tierConfig: Record<string, {
   courseCount: string;
   name: string;
   icon: React.ElementType;
-  cardBg: string; // Tailored gradient for each tier
+  cardBg: string; // Solid premium deep colors
   borderColor: string;
   textColor: string;
   badgeColor: string;
@@ -161,17 +161,17 @@ const tierConfig: Record<string, {
   iconGlow: string;
 }> = {
   bronze: {
-    levelName: "BEGINNER",
+    levelName: "Beginner",
     courseCount: "5 Courses",
-    name: "Basic",
+    name: "Beginner",
     icon: Zap,
-    cardBg: "bg-gradient-to-b from-slate-900 to-slate-950",
-    borderColor: "border-blue-500/20 hover:border-blue-500/50",
+    cardBg: "bg-slate-900",
+    borderColor: "border-blue-500/30 hover:border-blue-500/60",
     textColor: "text-blue-400",
     badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/20",
     buttonColor: "bg-blue-600 hover:bg-blue-500 text-white",
-    buttonShadow: "shadow-lg shadow-blue-900/20",
-    checkColor: "text-blue-500 bg-blue-500/10 border-blue-500/20",
+    buttonShadow: "shadow-lg shadow-blue-500/20",
+    checkColor: "text-blue-400 bg-blue-400/10 border-blue-400/20",
     iconBg: "bg-blue-500/10",
     accentColor: "text-blue-400",
     accent: "bg-blue-600",
@@ -179,17 +179,17 @@ const tierConfig: Record<string, {
     iconGlow: "drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]"
   },
   silver: {
-    levelName: "INTERMEDIATE",
+    levelName: "Intermediate",
     courseCount: "15 Courses",
-    name: "Starter",
+    name: "Intermediate",
     icon: Sparkles,
-    cardBg: "bg-gradient-to-b from-slate-900 to-slate-950",
-    borderColor: "border-emerald-500/20 hover:border-emerald-500/50",
+    cardBg: "bg-teal-950",
+    borderColor: "border-emerald-500/30 hover:border-emerald-500/60",
     textColor: "text-emerald-400",
     badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     buttonColor: "bg-emerald-600 hover:bg-emerald-500 text-white",
-    buttonShadow: "shadow-lg shadow-emerald-900/20",
-    checkColor: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+    buttonShadow: "shadow-lg shadow-emerald-500/20",
+    checkColor: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
     iconBg: "bg-emerald-500/10",
     accentColor: "text-emerald-400",
     accent: "bg-emerald-600",
@@ -197,35 +197,35 @@ const tierConfig: Record<string, {
     iconGlow: "drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]"
   },
   gold: {
-    levelName: "ADVANCED",
+    levelName: "Advanced",
     courseCount: "35 Courses",
-    name: "Professional",
+    name: "Advanced",
     icon: Star,
-    cardBg: "bg-gradient-to-b from-slate-900 to-slate-950",
-    borderColor: "border-amber-500/20 hover:border-amber-500/50",
+    cardBg: "bg-zinc-950",
+    borderColor: "border-amber-500/40 hover:border-amber-500/70",
     textColor: "text-amber-400",
     badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    buttonColor: "bg-amber-500 hover:bg-amber-400 text-black font-bold",
-    buttonShadow: "shadow-lg shadow-amber-900/20",
-    checkColor: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+    buttonColor: "bg-amber-500 hover:bg-amber-400 text-black font-black",
+    buttonShadow: "shadow-xl shadow-amber-500/20",
+    checkColor: "text-amber-400 bg-amber-400/10 border-amber-400/20",
     iconBg: "bg-amber-500/10",
     accentColor: "text-amber-400",
     accent: "bg-amber-500",
-    glowColor: "hover:shadow-amber-500/10",
-    iconGlow: "drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]"
+    glowColor: "hover:shadow-amber-500/15",
+    iconGlow: "drop-shadow-[0_0_12px_rgba(251,191,36,0.5)]"
   },
   platinum: {
-    levelName: "EXPERT",
+    levelName: "Expert",
     courseCount: "60 Courses",
-    name: "Premium",
+    name: "Expert",
     icon: Gem,
-    cardBg: "bg-gradient-to-b from-slate-900 to-slate-950",
-    borderColor: "border-violet-500/20 hover:border-violet-500/50",
+    cardBg: "bg-indigo-950",
+    borderColor: "border-violet-500/30 hover:border-violet-500/60",
     textColor: "text-violet-400",
     badgeColor: "bg-violet-500/10 text-violet-400 border-violet-500/20",
     buttonColor: "bg-violet-600 hover:bg-violet-500 text-white",
-    buttonShadow: "shadow-lg shadow-violet-900/20",
-    checkColor: "text-violet-500 bg-violet-500/10 border-violet-500/20",
+    buttonShadow: "shadow-lg shadow-violet-500/20",
+    checkColor: "text-violet-400 bg-violet-400/10 border-violet-400/20",
     iconBg: "bg-violet-500/10",
     accentColor: "text-violet-400",
     accent: "bg-violet-600",
@@ -233,17 +233,17 @@ const tierConfig: Record<string, {
     iconGlow: "drop-shadow-[0_0_8px_rgba(167,139,250,0.5)]"
   },
   diamond: {
-    levelName: "MASTER",
+    levelName: "Master",
     courseCount: "100 Courses",
-    name: "Enterprise",
+    name: "Master",
     icon: Crown,
-    cardBg: "bg-gradient-to-b from-slate-900 to-slate-950",
-    borderColor: "border-emerald-500/20 hover:border-emerald-500/50",
+    cardBg: "bg-emerald-950",
+    borderColor: "border-emerald-500/30 hover:border-emerald-500/60",
     textColor: "text-emerald-400",
     badgeColor: "bg-emerald-600/10 text-emerald-400 border-emerald-600/20",
     buttonColor: "bg-emerald-600 hover:bg-emerald-500 text-white",
-    buttonShadow: "shadow-lg shadow-emerald-900/20",
-    checkColor: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+    buttonShadow: "shadow-lg shadow-emerald-500/20",
+    checkColor: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
     iconBg: "bg-emerald-500/10",
     accentColor: "text-emerald-400",
     accent: "bg-emerald-800",
@@ -297,10 +297,12 @@ const PlanCard = ({ plan, index, allPackages }: { plan: Package; index: number; 
           {/* Header Compact */}
           <div className="flex items-start justify-between mb-6">
             <div className="space-y-1">
-              <span className={cn("text-[10px] font-black uppercase tracking-[0.2em] block", tier.textColor)}>{tier.levelName}</span>
-              <h3 className="text-2xl font-black text-white leading-none">
-                {plan.name}
+              <h3 className="text-3xl font-black text-white leading-none tracking-tight">
+                {tier.levelName}
               </h3>
+              <p className={cn("text-[10px] font-bold uppercase tracking-[0.1em]", tier.textColor)}>
+                {plan.headline}
+              </p>
             </div>
             <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center border border-white/5", tier.iconBg)}>
               <TierIcon className={cn("w-6 h-6", tier.textColor)} />
@@ -308,15 +310,15 @@ const PlanCard = ({ plan, index, allPackages }: { plan: Package; index: number; 
           </div>
 
           {/* Pricing Compact */}
-          <div className="mb-6 bg-black/20 rounded-2xl p-4 border border-white/5">
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-medium text-slate-400 line-through">MRP ₹{mrp.toLocaleString()}</span>
-              <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded border", tier.badgeColor)}>
+          <div className="mb-6 bg-white/[0.03] rounded-2xl p-5 border border-white/10 group-hover:border-white/20 transition-colors">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[10px] font-black text-slate-500 line-through">MRP ₹{mrp.toLocaleString()}</span>
+              <span className={cn("text-[10px] font-black px-2 py-0.5 rounded border", tier.badgeColor)}>
                 SAVE {discount}%
               </span>
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-4xl font-black text-white tracking-tight">
+              <span className="text-5xl font-black text-white tracking-tighter">
                 ₹{plan.price.toLocaleString()}
               </span>
               <span className="text-xs font-bold text-slate-500">/one-time</span>
@@ -347,13 +349,13 @@ const PlanCard = ({ plan, index, allPackages }: { plan: Package; index: number; 
           </ul>
 
           {/* Button */}
-          <Link to={`/package/${plan.code}`} className="mt-auto">
+          <Link to={`/payment?plan=${plan.name}`} className="mt-auto">
             <Button className={cn(
               "w-full h-12 rounded-xl font-bold text-base shadow-lg transition-transform active:scale-[0.98]",
               tier.buttonColor,
               tier.buttonShadow
             )}>
-              Get Started <ChevronRight className="w-4 h-4 ml-2" />
+              Buy Now <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
 

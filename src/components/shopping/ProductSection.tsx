@@ -35,57 +35,42 @@ const ProductSection = ({
         fetchProducts();
     }, [sortBy, limit, categoryId, excludeProductId]);
 
-    // Fallback constants to bypass potentially unstable supabase client instance
-    const SUPABASE_URL = "https://vwzqaloqlvlewvijiqeu.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3enFhbG9xbHZsZXd2aWppcWV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNjMwMjQsImV4cCI6MjA4NDkzOTAyNH0.oEuQrpidyXbKYdy3SpuMDTHZveqZNHaJHMY3TK3ir2E";
-
     const fetchProducts = async (retryCount = 0) => {
         try {
-            // Native Fetch Construction
-            const url = new URL(`${SUPABASE_URL}/rest/v1/products`);
-            url.searchParams.append("select", "*");
-            url.searchParams.append("is_active", "eq.true");
-            url.searchParams.append("limit", limit.toString());
+            let query = supabase
+                .from("products")
+                .select("*")
+                .eq("is_active", true)
+                .limit(limit);
 
             if (categoryId) {
-                url.searchParams.append("category_id", `eq.${categoryId}`);
+                query = query.eq("category_id", categoryId);
             }
 
             if (excludeProductId) {
-                url.searchParams.append("id", `neq.${excludeProductId}`);
+                query = query.neq("id", excludeProductId);
             }
 
             // Apply sorting
-            if (sortBy === "newest") url.searchParams.append("order", "created_at.desc");
-            else if (sortBy === "price_low") url.searchParams.append("order", "price.asc");
-            else if (sortBy === "price_high") url.searchParams.append("order", "price.desc");
+            if (sortBy === "newest") query = query.order("created_at", { ascending: false });
+            else if (sortBy === "price_low") query = query.order("price", { ascending: true });
+            else if (sortBy === "price_high") query = query.order("price", { ascending: false });
             else if (sortBy === "featured") {
-                url.searchParams.append("is_featured", "eq.true");
-                url.searchParams.append("order", "created_at.desc");
+                query = query.eq("is_featured", true).order("created_at", { ascending: false });
             }
-            else if (sortBy === "discount") url.searchParams.append("order", "price.asc");
+            else if (sortBy === "discount") query = query.order("price", { ascending: true });
 
-            const response = await fetch(url.toString(), {
-                method: "GET",
-                headers: {
-                    "apikey": SUPABASE_ANON_KEY,
-                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                    "Content-Type": "application/json"
-                }
-            });
+            const { data, error } = await query;
 
-            if (!response.ok) {
-                throw new Error(`HTTP Error: ${response.status}`);
-            }
+            if (error) throw error;
 
-            const data = await response.json();
-            setProducts(data || []);
+            setProducts((data as any) || []);
             setLoading(false);
         } catch (error: any) {
             console.warn(`Fetch attempt ${retryCount + 1} failed:`, error.message);
 
             if (retryCount < 3) {
-                setTimeout(() => fetchProducts(retryCount + 1), 1000 * (retryCount + 1)); // Increased delay
+                setTimeout(() => fetchProducts(retryCount + 1), 1000 * (retryCount + 1));
                 return;
             }
 
@@ -181,7 +166,7 @@ const ProductSection = ({
             <div className={
                 type === "scroll"
                     ? "flex gap-4 overflow-x-auto pb-8 -mx-4 px-4 scroll-smooth scrollbar-hide snap-x"
-                    : "grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6"
+                    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6"
             }>
                 {products.map((product) => (
                     <div key={product.id} className={type === "scroll" ? "min-w-[280px] w-[280px] snap-start" : ""}>

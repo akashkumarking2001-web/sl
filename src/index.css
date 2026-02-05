@@ -278,6 +278,30 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
     /* Smooth theme transitions */
     transition: background-color 0.5s ease, color 0.3s ease;
+
+    /* Handle Safe Area Insets for Mobile */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+
+    /* Apple-standard fluidity */
+    -webkit-overflow-scrolling: touch;
+    text-rendering: optimizeLegibility;
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .ios-fluid-scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 
   h1,
@@ -793,6 +817,41 @@
   50% {
     box-shadow: 0 0 40px hsl(43 96% 56% / 0.6);
   }
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+
+  20% {
+    left: 100%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+.animate-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent);
+  transform: skewX(-25deg);
+  pointer-events: none;
+  animation: shine 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @keyframes slideInRight {
