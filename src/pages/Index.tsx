@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/sections/HeroSection";
@@ -20,14 +22,25 @@ import { ScrollAnimate } from "@/components/ui/ScrollAnimate";
 const Index = () => {
   const [scrollY, setScrollY] = useState(0);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
+    // Check if user is logged in
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/dashboard");
+      }
+    };
+    checkUser();
+
     const handleScroll = () => {
       setScrollY(window.scrollY);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">

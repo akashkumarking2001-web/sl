@@ -2,14 +2,35 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Home, PlayCircle, Wallet, User, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Capacitor } from "@capacitor/core";
+import { useEffect, useState } from "react";
 
 const MobileBottomNav = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [isVisible, setIsVisible] = useState(true);
     const isNative = Capacitor.isNativePlatform();
 
-    // Only show on native platforms or small mobile screens
-    if (!isNative && window.innerWidth > 768) return null;
+    useEffect(() => {
+        let lastScrollY = window.scrollY;
+
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+
+            // Logic: Hide when near bottom (footer area) to prevent overlap
+            const isNearBottom = windowHeight + currentScrollY >= documentHeight - 300; // 300px buffer for footer
+
+            // Also optional: Hide on scroll down, show on scroll up (classic mobile behavior)
+            // But user specifically asked about "overlap with footer".
+
+            setIsVisible(!isNearBottom);
+            lastScrollY = currentScrollY;
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     const navItems = [
         { label: "Home", icon: Home, path: "/user-home" },
@@ -20,7 +41,12 @@ const MobileBottomNav = () => {
     ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-[100] bg-background/80 backdrop-blur-lg border-t border-border pb-safe">
+        <div
+            className={cn(
+                "fixed bottom-0 left-0 right-0 z-[100] bg-background/80 backdrop-blur-lg border-t border-border pb-safe transition-transform duration-300 md:hidden",
+                isVisible ? "translate-y-0" : "translate-y-full"
+            )}
+        >
             <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
