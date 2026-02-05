@@ -191,7 +191,7 @@ const ProductDetailPage = () => {
 
             // STRATEGY 1: Exact Case-Insensitive Match (Best Case)
             console.log("Strategy 1: Trying exact case-insensitive match...");
-            let query1 = supabase
+            const query1 = supabase
                 .from("products")
                 .select("*, category:category_id(name)")
                 .ilike("slug", cleanSlug)
@@ -212,7 +212,7 @@ const ProductDetailPage = () => {
             // STRATEGY 2: Match by ID if numeric
             if (!data && cleanSlug && /^\d+$/.test(cleanSlug) && !signal?.aborted) {
                 console.log("Strategy 2: Numeric slug detected, trying to fetch by ID...");
-                let query2 = supabase
+                const query2 = supabase
                     .from("products")
                     .select("*, category:category_id(name)")
                     .eq("id", cleanSlug)
@@ -230,7 +230,7 @@ const ProductDetailPage = () => {
             // STRATEGY 3: Fetch all and filter (Brute Force / Resilience)
             if (!data && !signal?.aborted) {
                 console.log("Strategy 3: Still no product, fetching all products to find match...");
-                let query3 = supabase
+                const query3 = supabase
                     .from("products")
                     .select("*, category:category_id(name)");
 
@@ -249,7 +249,7 @@ const ProductDetailPage = () => {
             // STRATEGY 4: Partial Match as last resort
             if (!data && !signal?.aborted) {
                 console.log("Strategy 4: Trying partial ilike match...");
-                let query4 = supabase
+                const query4 = supabase
                     .from("products")
                     .select("*, category:category_id(name)")
                     .ilike("slug", `%${cleanSlug}%`)
@@ -293,7 +293,7 @@ const ProductDetailPage = () => {
     const fetchReviews = async (productId: string, signal?: AbortSignal) => {
         setLoadingReviews(true);
         try {
-            let query = supabase
+            const query = supabase
                 .from("reviews")
                 .select("*, profiles(full_name, avatar_url)")
                 .eq("product_id", productId)

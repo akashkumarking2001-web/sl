@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const sessionPromise = supabase.auth.getSession();
 
-        let { data, error } = await Promise.race([sessionPromise, timeoutPromise]);
+        const { data, error } = await Promise.race([sessionPromise, timeoutPromise]);
 
         if (error) throw error;
 

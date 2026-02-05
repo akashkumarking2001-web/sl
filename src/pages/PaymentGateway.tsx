@@ -156,7 +156,7 @@ const PaymentGateway = () => {
 
   // 2. Calculate Totals
   useEffect(() => {
-    let basePrice = isCartSource ? cartSubtotal : (productData ? productData.price : selectedPlan.price);
+    const basePrice = isCartSource ? cartSubtotal : (productData ? productData.price : selectedPlan.price);
     setFinalCalculatedPrice(Math.max(0, basePrice - (couponDiscount || 0)));
   }, [cartSubtotal, productData, selectedPlan, couponDiscount, isCartSource]);
 
