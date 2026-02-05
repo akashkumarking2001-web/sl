@@ -58,6 +58,7 @@ import { ScrollAnimate } from "@/components/ui/ScrollAnimate";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
 import NativeHeader from "@/components/layout/NativeHeader";
+import OnboardingTour from "@/components/OnboardingTour";
 
 // Ads data
 const adsData = [
@@ -402,7 +403,7 @@ const UserHome = () => {
               </div>
 
               {/* Quick Navigation Cards - Standard & Compact */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" data-tour="quick-actions">
                 {quickActions.map((action) => (
                   <Link key={action.label} to={action.locked ? "#" : action.href} onClick={(e) => {
                     if (action.locked) { e.preventDefault(); toast({ title: "Locked Feature", description: "Purchase a plan to unlock this earnings wallet.", variant: "destructive" }); }
@@ -524,6 +525,9 @@ const UserHome = () => {
           Skill Learners Academy &copy; 2024 • Excellence in Education
         </footer>
       )}
+
+      {/* Onboarding Tour */}
+      <OnboardingTour page="dashboard" />
     </div>
   );
 };

@@ -80,6 +80,24 @@
 
     --radius: 0.75rem;
 
+    /* Standardized Spacing Tokens (UX Consistency) */
+    --spacing-xs: 0.5rem;    /* 8px - tight spacing */
+    --spacing-sm: 0.75rem;   /* 12px - small gaps */
+    --spacing-md: 1rem;      /* 16px - default spacing */
+    --spacing-lg: 1.5rem;    /* 24px - section spacing */
+    --spacing-xl: 2rem;      /* 32px - large sections */
+    --spacing-2xl: 3rem;     /* 48px - page sections */
+    --spacing-3xl: 4rem;     /* 64px - hero sections */
+
+    /* Component Spacing Standards */
+    --card-padding: var(--spacing-lg);        /* 24px for cards */
+    --section-gap: var(--spacing-xl);         /* 32px between sections */
+    --grid-gap: var(--spacing-md);            /* 16px for grids */
+    --button-padding-x: var(--spacing-md);    /* 16px horizontal */
+    --button-padding-y: var(--spacing-sm);    /* 12px vertical */
+    --input-padding: var(--spacing-md);       /* 16px for inputs */
+    --page-padding: var(--spacing-lg);        /* 24px page edges */
+
     /* Extended Design Tokens - Premium Gold */
     --gold: 45 85% 55%;
     --gold-light: 48 90% 65%;

@@ -1,270 +1,334 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { X, ChevronRight, ChevronLeft, Check, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-
-interface TourStep {
-  target: string;
-  title: string;
-  description: string;
-  position: 'top' | 'bottom' | 'left' | 'right';
-}
-
-const tourSteps: TourStep[] = [
-  {
-    target: '[data-tour="welcome"]',
-    title: 'Welcome to Your Dashboard! 🎉',
-    description: 'This is your personalized learning hub where you can track progress, access courses, and manage your earnings.',
-    position: 'bottom'
-  },
-  {
-    target: '[data-tour="quick-actions"]',
-    title: 'Quick Actions',
-    description: 'Access key features instantly - browse courses, check earnings, manage your referrals, and more.',
-    position: 'bottom'
-  },
-  {
-    target: '[data-tour="progress"]',
-    title: 'Track Your Progress',
-    description: 'Monitor your learning journey with detailed analytics and completion rates for all your courses.',
-    position: 'top'
-  },
-  {
-    target: '[data-tour="referral"]',
-    title: 'Share & Earn',
-    description: 'Use your unique referral code to invite friends and earn rewards for every successful referral.',
-    position: 'top'
-  },
-  {
-    target: '[data-tour="recommendations"]',
-    title: 'AI-Powered Recommendations',
-    description: 'Get personalized course suggestions based on your interests and learning patterns.',
-    position: 'top'
-  }
-];
+import { useState, useEffect } from 'react';
+import Joyride, { CallBackProps, STATUS, Step, Styles } from 'react-joyride';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface OnboardingTourProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onComplete: () => void;
+  page: 'dashboard' | 'affiliate' | 'shopping' | 'courses';
 }
 
-const OnboardingTour: React.FC<OnboardingTourProps> = ({ isOpen, onClose, onComplete }) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-  const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
+const OnboardingTour = ({ page }: OnboardingTourProps) => {
+  const { user } = useAuth();
+  const [run, setRun] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
 
-  const updatePosition = useCallback(() => {
-    const step = tourSteps[currentStep];
-    const element = document.querySelector(step.target);
-    
-    if (element) {
-      const rect = element.getBoundingClientRect();
-      setHighlightRect(rect);
-      
-      const tooltipWidth = 320;
-      const tooltipHeight = 180;
-      const offset = 16;
-      
-      let top = 0;
-      let left = 0;
-      
-      switch (step.position) {
-        case 'bottom':
-          top = rect.bottom + offset;
-          left = rect.left + rect.width / 2 - tooltipWidth / 2;
-          break;
-        case 'top':
-          top = rect.top - tooltipHeight - offset;
-          left = rect.left + rect.width / 2 - tooltipWidth / 2;
-          break;
-        case 'left':
-          top = rect.top + rect.height / 2 - tooltipHeight / 2;
-          left = rect.left - tooltipWidth - offset;
-          break;
-        case 'right':
-          top = rect.top + rect.height / 2 - tooltipHeight / 2;
-          left = rect.right + offset;
-          break;
-      }
-      
-      // Keep within viewport
-      left = Math.max(16, Math.min(left, window.innerWidth - tooltipWidth - 16));
-      top = Math.max(16, Math.min(top, window.innerHeight - tooltipHeight - 16));
-      
-      setTooltipPosition({ top, left });
-      
-      // Scroll element into view
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [currentStep]);
-
+  // Check if user has completed onboarding
   useEffect(() => {
-    if (isOpen) {
-      updatePosition();
-      window.addEventListener('resize', updatePosition);
-      window.addEventListener('scroll', updatePosition);
-      
-      return () => {
-        window.removeEventListener('resize', updatePosition);
-        window.removeEventListener('scroll', updatePosition);
-      };
+    const checkOnboarding = async () => {
+      if (!user?.id) return;
+
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('user_id', user.id)
+          .single();
+
+        // Check if onboarding_completed exists (will be added via migration)
+        // For now, check localStorage as fallback
+        const hasCompletedOnboarding = localStorage.getItem(`onboarding_completed_${user.id}`);
+
+        // Start tour if not completed
+        if (!hasCompletedOnboarding) {
+          setTimeout(() => setRun(true), 1000); // Delay for page load
+        }
+      } catch (error) {
+        console.error('Error checking onboarding:', error);
+        // If error, show tour anyway (better UX)
+        setTimeout(() => setRun(true), 1000);
+      }
+    };
+
+    checkOnboarding();
+  }, [user?.id]);
+
+  // Mark onboarding as completed
+  const completeOnboarding = async () => {
+    if (!user?.id) return;
+
+    try {
+      // Try to update database (will work after migration)
+      await supabase
+        .from('profiles')
+        .update({ onboarding_completed: true } as any)
+        .eq('user_id', user.id);
+    } catch (error) {
+      console.log('Database update pending migration, using localStorage');
     }
-  }, [isOpen, updatePosition]);
 
-  const handleNext = () => {
-    if (currentStep < tourSteps.length - 1) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      handleComplete();
+    // Always save to localStorage as backup
+    localStorage.setItem(`onboarding_completed_${user.id}`, 'true');
+  };
+
+  // Handle tour callbacks
+  const handleJoyrideCallback = (data: CallBackProps) => {
+    const { status, index, type } = data;
+
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
+      setRun(false);
+      completeOnboarding();
+    }
+
+    if (type === 'step:after') {
+      setStepIndex(index + 1);
     }
   };
 
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
+  // Define steps for each page
+  const dashboardSteps: Step[] = [
+    {
+      target: 'body',
+      content: (
+        <div className="space-y-3">
+          <h2 className="text-xl font-bold text-foreground">Welcome to Skill Learners! 🎉</h2>
+          <p className="text-muted-foreground">
+            Let's take a quick tour to help you get started with our platform.
+          </p>
+        </div>
+      ),
+      placement: 'center',
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="quick-actions"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Quick Actions</h3>
+          <p className="text-sm text-muted-foreground">
+            Access your most-used features quickly from here: courses, shopping, and affiliate tools.
+          </p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    {
+      target: '[data-tour="referral-code"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Your Referral Code</h3>
+          <p className="text-sm text-muted-foreground">
+            Share this code to earn commissions when others join using your link!
+          </p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    {
+      target: '[data-tour="earnings"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Track Your Earnings</h3>
+          <p className="text-sm text-muted-foreground">
+            Monitor your income from referrals, levels, and other sources here.
+          </p>
+        </div>
+      ),
+      placement: 'top',
+    },
+    {
+      target: '[data-tour="navigation"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Navigation Menu</h3>
+          <p className="text-sm text-muted-foreground">
+            Use this menu to explore courses, shopping, affiliate dashboard, and more.
+          </p>
+        </div>
+      ),
+      placement: 'right',
+    },
+  ];
+
+  const affiliateSteps: Step[] = [
+    {
+      target: '[data-tour="affiliate-stats"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Affiliate Dashboard</h3>
+          <p className="text-sm text-muted-foreground">
+            View your referral statistics, earnings, and team performance at a glance.
+          </p>
+        </div>
+      ),
+      placement: 'bottom',
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="income-streams"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Income Streams</h3>
+          <p className="text-sm text-muted-foreground">
+            Track income from different sources: referrals, levels, global pool, and more.
+          </p>
+        </div>
+      ),
+      placement: 'top',
+    },
+    {
+      target: '[data-tour="referral-network"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Your Network</h3>
+          <p className="text-sm text-muted-foreground">
+            See your direct referrals and downline members. Click to view detailed network tree.
+          </p>
+        </div>
+      ),
+      placement: 'top',
+    },
+  ];
+
+  const shoppingSteps: Step[] = [
+    {
+      target: '[data-tour="categories"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Browse Categories</h3>
+          <p className="text-sm text-muted-foreground">
+            Explore products by category. Click any category to filter products.
+          </p>
+        </div>
+      ),
+      placement: 'bottom',
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="search"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Search Products</h3>
+          <p className="text-sm text-muted-foreground">
+            Quickly find what you're looking for using the search bar.
+          </p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+    {
+      target: '[data-tour="cart"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Shopping Cart</h3>
+          <p className="text-sm text-muted-foreground">
+            Add items to your cart and checkout when ready. Your cart syncs across all devices!
+          </p>
+        </div>
+      ),
+      placement: 'left',
+    },
+  ];
+
+  const coursesSteps: Step[] = [
+    {
+      target: '[data-tour="course-grid"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">Available Courses</h3>
+          <p className="text-sm text-muted-foreground">
+            Browse all available courses. Click any course to view details and enroll.
+          </p>
+        </div>
+      ),
+      placement: 'top',
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="my-courses"]',
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-bold text-foreground">My Courses</h3>
+          <p className="text-sm text-muted-foreground">
+            Access your enrolled courses and track your learning progress.
+          </p>
+        </div>
+      ),
+      placement: 'bottom',
+    },
+  ];
+
+  // Select steps based on page
+  const getSteps = (): Step[] => {
+    switch (page) {
+      case 'dashboard':
+        return dashboardSteps;
+      case 'affiliate':
+        return affiliateSteps;
+      case 'shopping':
+        return shoppingSteps;
+      case 'courses':
+        return coursesSteps;
+      default:
+        return dashboardSteps;
     }
   };
 
-  const handleComplete = () => {
-    onComplete();
-    setCurrentStep(0);
+  // Custom styles matching your theme
+  const styles: Partial<Styles> = {
+    options: {
+      primaryColor: 'hsl(42 80% 58%)', // Primary gold
+      backgroundColor: 'hsl(228 28% 13%)', // Card background
+      textColor: 'hsl(45 20% 97%)', // Foreground
+      overlayColor: 'rgba(0, 0, 0, 0.7)',
+      arrowColor: 'hsl(228 28% 13%)',
+      zIndex: 10000,
+    },
+    tooltip: {
+      borderRadius: '12px',
+      padding: '20px',
+      fontSize: '14px',
+    },
+    tooltipContainer: {
+      textAlign: 'left',
+    },
+    buttonNext: {
+      backgroundColor: 'hsl(42 80% 58%)',
+      color: 'hsl(30 25% 8%)',
+      borderRadius: '8px',
+      padding: '8px 16px',
+      fontSize: '14px',
+      fontWeight: '600',
+    },
+    buttonBack: {
+      color: 'hsl(220 15% 65%)',
+      marginRight: '8px',
+    },
+    buttonSkip: {
+      color: 'hsl(220 15% 65%)',
+    },
+    beacon: {
+      backgroundColor: 'hsl(42 80% 58%)',
+    },
+    beaconInner: {
+      backgroundColor: 'hsl(42 80% 58%)',
+    },
+    beaconOuter: {
+      backgroundColor: 'hsl(42 80% 58% / 0.2)',
+      border: '2px solid hsl(42 80% 58%)',
+    },
   };
-
-  const handleSkip = () => {
-    onClose();
-    setCurrentStep(0);
-  };
-
-  if (!isOpen) return null;
-
-  const step = tourSteps[currentStep];
-  const isLastStep = currentStep === tourSteps.length - 1;
 
   return (
-    <div className="fixed inset-0 z-[100]">
-      {/* Backdrop with spotlight cutout */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleSkip}>
-        {highlightRect && (
-          <div
-            className="absolute transition-all duration-300 ease-out"
-            style={{
-              top: highlightRect.top - 8,
-              left: highlightRect.left - 8,
-              width: highlightRect.width + 16,
-              height: highlightRect.height + 16,
-              boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.7)',
-              borderRadius: '12px',
-              border: '2px solid hsl(var(--primary))',
-              animation: 'pulse-spotlight 2s ease-in-out infinite'
-            }}
-          />
-        )}
-      </div>
-      
-      {/* Tooltip */}
-      <div
-        className="absolute z-[101] w-80 transition-all duration-300 ease-out"
-        style={{ top: tooltipPosition.top, left: tooltipPosition.left }}
-      >
-        <div className="glass-card-premium p-5 rounded-2xl shadow-2xl border-primary/30">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-primary" />
-              </div>
-              <span className="text-xs text-muted-foreground font-medium">
-                Step {currentStep + 1} of {tourSteps.length}
-              </span>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 rounded-full"
-              onClick={handleSkip}
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-          
-          {/* Content */}
-          <h3 className="text-lg font-bold text-foreground mb-2">{step.title}</h3>
-          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{step.description}</p>
-          
-          {/* Progress dots */}
-          <div className="flex items-center justify-center gap-1.5 mb-4">
-            {tourSteps.map((_, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "w-2 h-2 rounded-full transition-all duration-300",
-                  index === currentStep 
-                    ? "w-6 bg-primary" 
-                    : index < currentStep 
-                      ? "bg-primary/60" 
-                      : "bg-muted-foreground/30"
-                )}
-              />
-            ))}
-          </div>
-          
-          {/* Actions */}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSkip}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Skip tour
-            </Button>
-            
-            <div className="flex items-center gap-2">
-              {currentStep > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePrev}
-                  className="gap-1"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Back
-                </Button>
-              )}
-              <Button
-                size="sm"
-                onClick={handleNext}
-                className="gap-1 bg-primary hover:bg-primary/90"
-              >
-                {isLastStep ? (
-                  <>
-                    Complete
-                    <Check className="w-4 h-4" />
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-        {/* Arrow pointer */}
-        <div
-          className={cn(
-            "absolute w-4 h-4 bg-card border-primary/30 transform rotate-45",
-            step.position === 'bottom' && "-top-2 left-1/2 -translate-x-1/2 border-l border-t",
-            step.position === 'top' && "-bottom-2 left-1/2 -translate-x-1/2 border-r border-b",
-            step.position === 'left' && "-right-2 top-1/2 -translate-y-1/2 border-t border-r",
-            step.position === 'right' && "-left-2 top-1/2 -translate-y-1/2 border-b border-l"
-          )}
-        />
-      </div>
-    </div>
+    <Joyride
+      steps={getSteps()}
+      run={run}
+      stepIndex={stepIndex}
+      continuous
+      showProgress
+      showSkipButton
+      callback={handleJoyrideCallback}
+      styles={styles}
+      locale={{
+        back: 'Back',
+        close: 'Close',
+        last: 'Finish',
+        next: 'Next',
+        skip: 'Skip Tour',
+      }}
+      floaterProps={{
+        disableAnimation: false,
+      }}
+    />
   );
 };
 

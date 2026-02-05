@@ -8,15 +8,18 @@ interface ProtectedRouteProps {
 }
 
 
+import { security } from "@/utils/security";
+
 const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
   const { user, profile, loading } = useAuth();
   const location = useLocation();
 
+  const isDebugAllowed = security.allowDebugFeatures();
+  const isEmergencyAdmin = isDebugAllowed && typeof window !== 'undefined' && localStorage.getItem('is_emergency_admin') === 'true';
+
   // 0. Loading State
-  // If loading is true, we show spinner unless we have a local emergency flag that says "trust me, I'm admin"
   if (loading) {
-    const isEmergAdmin = typeof window !== 'undefined' && localStorage.getItem('is_emergency_admin') === 'true';
-    if (!isEmergAdmin) {
+    if (!isEmergencyAdmin) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="text-center">
@@ -29,8 +32,6 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
   }
 
   // 1. Check Auth State
-  const isEmergencyAdmin = typeof window !== 'undefined' && localStorage.getItem('is_emergency_admin') === 'true';
-
   // If not logged in AND not an emergency admin, redirect
   if (!user && !loading && !isEmergencyAdmin) {
     const redirectPath = requireAdmin ? "/admin-login" : "/login";

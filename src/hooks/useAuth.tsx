@@ -378,7 +378,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('is_emergency_admin', 'true');
         const mockUser = { id: 'admin-id', email: 'admin@ascendacademy.com' } as any;
         setUser(mockUser);
-        setProfile({ full_name: 'Master Admin', email: 'admin@ascendacademy.com', role: 'admin' } as any);
+        setProfile({
+          id: 'admin-id',
+          user_id: 'admin-id',
+          full_name: 'Master Admin',
+          email: 'admin@ascendacademy.com',
+          role: 'admin',
+          created_at: new Date().toISOString(),
+          phone: null,
+          referral_code: null,
+          referred_by: null,
+          has_purchased: null,
+          purchased_plan: null,
+          avatar_url: null
+        } as any);
         setLoading(false);
       }
     }}>

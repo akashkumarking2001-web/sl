@@ -29,7 +29,8 @@ import AdminProfile from "@/components/admin/moneyworld/AdminProfile";
 import PackagePurchaseApproval from "@/components/admin/moneyworld/PackagePurchaseApproval";
 import { IncomeSettings } from "@/components/admin/skilllearners/IncomeSettings";
 import IndexPageEditor from "@/components/admin/skilllearners/IndexPageEditor";
-import AuditLogs from "@/components/admin/skilllearners/AuditLogs";
+import AuditLogsViewer from "@/components/admin/AuditLogsViewer";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import PackagesManager from "@/pages/admin/PackagesManager";
 import StoreManager from "@/pages/admin/StoreManager";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -464,7 +465,7 @@ const SkillLearnersAdmin = () => {
       case "index-editor":
         return <IndexPageEditor />;
       case "audit-logs":
-        return <AuditLogs />;
+        return <AuditLogsViewer />;
       case "packages-manager":
         return <PackagesManager />;
       case "store-manager":
@@ -489,7 +490,7 @@ const SkillLearnersAdmin = () => {
       "inactive-students": "Inactive Students",
       "course-only-students": "Course-Only Students",
       "combo-plan-students": "Combo Plan Students",
-      "package-requests": "Course Requests",
+      "package-requests": "Package Requests",
       "course-requests": "Course Requests",
       "affiliate-requests": "Affiliate Requests",
       "income-settings": "Income Settings",
