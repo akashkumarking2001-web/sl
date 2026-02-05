@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    name: Build APK
+    name: Build & Release APK
     runs-on: ubuntu-latest
     
     steps:
@@ -25,7 +27,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
 
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
@@ -33,24 +34,31 @@ jobs:
       - name: Build Web Assets
         run: npm run build
 
-      - name: Restore Android Folder Name
+      - name: Rename Android Folder (Fix)
         run: |
           if [ -d "Android_App" ]; then
             mv Android_App android
-            echo "Renamed Android_App to android"
           fi
 
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build APK (Debug)
+      - name: Build APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v3
+      - name: Rename APK for Release
+        run: mv android/app/build/outputs/apk/debug/app-debug.apk skill-learners.apk
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: app-debug.apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          tag_name: nightly
+          name: Nightly Development Build
+          files: skill-learners.apk
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

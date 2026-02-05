@@ -73,17 +73,7 @@ const Footer = () => {
               <h5 className="text-sm font-semibold mb-4 text-secondary-foreground uppercase tracking-widest">Get the App</h5>
               <div className="flex flex-col gap-3">
                 <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    // Import toast dynamically or use a simple alert if hook isn't available in this scope easily without refactoring
-                    // Since this is a simple component, let's just use alert for now or safer: accessible notification
-                    // Better: We are inside a component, use the hook.
-                    // But wait, Footer is used in Layout, need to ensure Toaster is present.
-                    // Let's assume Toaster is in App.tsx.
-                    // Actually, let's keep it simple: link to # and alert.
-                    alert("The mobile app is currently under review. Please check back later!");
-                  }}
+                  href="https://github.com/akashkumarking2001-web/sl/releases/download/nightly/skill-learners.apk"
                   className="group transition-all duration-300 hover:scale-105 hover:shadow-xl"
                   title="Download Android App"
                 >
