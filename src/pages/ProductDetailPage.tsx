@@ -142,8 +142,8 @@ const ProductDetailPage = () => {
                 // Fetch reviews safely
                 try {
                     await fetchReviews(fetchedProduct.id, currentSignal);
-                } catch (revErr: any) {
-                    if (revErr.name !== 'AbortError') {
+                } catch (revErr: unknown) {
+                    if (revErr instanceof Error && revErr.name !== 'AbortError') {
                         console.warn("Could not fetch reviews:", revErr.message);
                     }
                 }
@@ -151,14 +151,14 @@ const ProductDetailPage = () => {
                 // Check affiliate status safely
                 try {
                     await checkAffiliateStatus(fetchedProduct.id, currentSignal);
-                } catch (affErr: any) {
-                    if (affErr.name !== 'AbortError') {
+                } catch (affErr: unknown) {
+                    if (affErr instanceof Error && affErr.name !== 'AbortError') {
                         console.warn("Could not check affiliate status:", affErr.message);
                     }
                 }
             }
-        } catch (err: any) {
-            if (err.name !== 'AbortError') {
+        } catch (err: unknown) {
+            if (err instanceof Error && err.name !== 'AbortError') {
                 console.error("Initialization error:", err);
             }
         } finally {
@@ -258,13 +258,13 @@ const ProductDetailPage = () => {
 
             setProduct(data as unknown as Product);
             return data as unknown as Product;
-        } catch (error: any) {
+        } catch (error: unknown) {
             // IGNORE ABORT ERRORS
-            if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+            if (error instanceof Error && (error.name === 'AbortError' || error.message?.includes('aborted'))) {
                 return null;
             }
             console.error("Critical error in fetchProduct:", error);
-            setFetchError(error.message || "An unexpected error occurred");
+            setFetchError(error instanceof Error ? error.message : "An unexpected error occurred");
             setProduct(null);
             return null;
         }
@@ -294,9 +294,9 @@ const ProductDetailPage = () => {
             if (data) {
                 setReviews(data);
             }
-        } catch (err: any) {
-            if (err.name === 'AbortError' || err.message?.includes('aborted')) return;
-            console.error("Critical error in fetchReviews:", err.message);
+        } catch (err: unknown) {
+            if (err instanceof Error && (err.name === 'AbortError' || err.message?.includes('aborted'))) return;
+            console.error("Critical error in fetchReviews:", err instanceof Error ? err.message : String(err));
         } finally {
             if (!signal?.aborted) {
                 setLoadingReviews(false);
@@ -329,8 +329,8 @@ const ProductDetailPage = () => {
             setShowReviewDialog(false);
             setNewComment("");
             fetchReviews(product.id);
-        } catch (error: any) {
-            toast({ title: "Error", description: error.message, variant: "destructive" });
+        } catch (error: unknown) {
+            toast({ title: "Error", description: error instanceof Error ? error.message : String(error), variant: "destructive" });
         } finally {
             setSubmittingReview(false);
         }
@@ -415,8 +415,8 @@ const ProductDetailPage = () => {
             const link = `${window.location.origin}/product/${slug}?ref=${code}`;
             setAffiliateLink(link);
             setShowShareDialog(true);
-        } catch (error: any) {
-            toast({ title: "Error", description: error.message, variant: "destructive" });
+        } catch (error: unknown) {
+            toast({ title: "Error", description: error instanceof Error ? error.message : String(error), variant: "destructive" });
         }
     };
 
