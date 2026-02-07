@@ -34,9 +34,12 @@ test.describe('Affiliate Wallet Dedicated Page', () => {
             await route.fulfill({ json: [] });
         });
 
-        // 2. Login Bypass
+        // 2. Login Bypass & Purchase Mock
         await page.goto('/');
-        await page.evaluate(() => localStorage.setItem('is_emergency_admin', 'true'));
+        await page.evaluate(() => {
+            localStorage.setItem('is_emergency_admin', 'true');
+            localStorage.setItem('mock_has_purchased', 'true'); // Simulate Admin Approval
+        });
     });
 
     test('Verify Dedicated Wallet Page Balance and Withdraw', async ({ page }) => {

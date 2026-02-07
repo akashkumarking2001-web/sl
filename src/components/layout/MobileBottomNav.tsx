@@ -10,7 +10,19 @@ const MobileBottomNav = () => {
     const location = useLocation();
     const { user, profile } = useAuth();
     const [isVisible, setIsVisible] = useState(true);
+    const [isMobileScreen, setIsMobileScreen] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobileScreen(window.innerWidth <= 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     const isNative = Capacitor.isNativePlatform() || ['8080', '5174'].includes(window.location.port);
+    const shouldShow = isNative || isMobileScreen;
 
     // Visibility logic: Only after login and not on landing/auth pages
     const publicPaths = ["/", "/login", "/register", "/admin-login", "/admin-forgot-password", "/reset-password"];
@@ -19,7 +31,7 @@ const MobileBottomNav = () => {
     const hasUnlockedWallet = !!(profile?.purchased_plan && profile.purchased_plan !== "");
 
     useEffect(() => {
-        if (!isNative || !user || isPublicPath) return;
+        if (!shouldShow || !user || isPublicPath) return;
 
         let lastScrollY = window.scrollY;
 
@@ -37,10 +49,10 @@ const MobileBottomNav = () => {
 
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [isNative, user, isPublicPath]);
+    }, [shouldShow, user, isPublicPath]);
 
     // Render check moved AFTER all hooks
-    if (!isNative || !user || isPublicPath) return null;
+    if (!shouldShow || !user || isPublicPath) return null;
 
     const navItems = [
         { label: "Home", icon: Home, path: "/user-home" },
@@ -52,6 +64,7 @@ const MobileBottomNav = () => {
 
     return (
         <div
+            data-testid="mobile-nav"
             className={cn(
                 "fixed left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[350px] z-[100] transition-all duration-500 md:hidden",
                 "bottom-[calc(1rem+env(safe-area-inset-bottom,0px))]",

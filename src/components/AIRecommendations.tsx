@@ -32,7 +32,7 @@ const AIRecommendations = ({ userName, purchasedPlan }: AIRecommendationsProps) 
         setIsLoading(false);
       }, 1000);
 
-    } catch (err: any) {
+    } catch (err) {
       setError('Unable to load recommendations');
       setRecommendations('Explore our courses to find the perfect fit for your learning goals!');
       setIsLoading(false);

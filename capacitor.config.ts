@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.skilllearners.academy',
-  appName: 'Skill Learners Academy',
+  appName: 'Skill Learners',
   webDir: 'dist',
   server: {
     androidScheme: 'https'

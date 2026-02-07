@@ -31,7 +31,7 @@ const SplashScreen = () => {
                     <img
                         src={logo}
                         alt="Skill Learners"
-                        className="relative z-10 w-full h-full object-contain invert dark:invert-0 drop-shadow-2xl"
+                        className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
                     />
                 </div>
 
@@ -69,7 +69,7 @@ const SplashScreen = () => {
             {/* Bottom Tagline */}
             <div className="absolute bottom-12 text-center">
                 <p className="text-[10px] font-bold text-slate-300 dark:text-zinc-600 uppercase tracking-widest">
-                    Skill Learners Academy • iOS Edition
+                    Skill Learners • Mobile Edition
                 </p>
             </div>
 

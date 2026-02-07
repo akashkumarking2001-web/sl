@@ -49,7 +49,7 @@ const WalletPage = () => {
   const [walletHistory, setWalletHistory] = useState<WalletHistory[]>([]);
   const [withdrawalHistory, setWithdrawalHistory] = useState<WithdrawalRequest[]>([]);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, profile } = useAuth(); // Destructure profile
   const [hasPurchased, setHasPurchased] = useState(false);
   const navigate = useNavigate();
 
@@ -60,23 +60,11 @@ const WalletPage = () => {
       fetchWalletData();
       checkPurchaseStatus();
     }
-  }, [user]);
+  }, [user, profile]); // Add profile to dependency
 
-  const checkPurchaseStatus = async () => {
-    if (!user) return;
-    try {
-      const { data } = await (supabase as any)
-        .from('course_requests')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'approved')
-        .eq('is_package', true);
-
-      if (data && data.length > 0) {
-        setHasPurchased(true);
-      }
-    } catch (error) {
-      console.error("Error checking purchase status:", error);
+  const checkPurchaseStatus = () => {
+    if (profile?.has_purchased) {
+      setHasPurchased(true);
     }
   };
 

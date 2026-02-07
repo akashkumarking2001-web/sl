@@ -78,30 +78,26 @@ const Footer = () => {
                   title="Download Android App"
                 >
                   <img
-                    src="/google-play-badge.png"
+                    src="/google-play-badge.png?v=2026_update"
                     alt="Get it on Google Play"
                     className="h-12 w-auto"
                   />
                 </a>
 
                 <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    alert("The iOS app is currently under review. Please check back later!");
-                  }}
+                  href="https://github.com/akashkumarking2001-web/sl/releases/download/nightly/skill-learners.ipa"
                   className="group transition-all duration-300 hover:scale-105 hover:shadow-xl"
                   title="Download iOS App"
                 >
                   <img
-                    src="/app-store-badge.png"
+                    src="/app-store-badge.png?v=2026_update"
                     alt="Download on the App Store"
                     className="h-12 w-auto"
                   />
                 </a>
               </div>
-              <p className="text-xs text-secondary-foreground/50 mt-3">
-                Apps coming soon to official stores.
+              <p className="text-xs text-secondary-foreground/50 mt-3 italic">
+                Official store releases pending verification.
               </p>
             </div>
           </div>

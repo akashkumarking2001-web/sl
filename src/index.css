@@ -518,27 +518,42 @@
 
   /* Premium button styles */
   .btn-premium {
-    @apply relative overflow-hidden transition-all duration-300 px-8 py-3;
-    background: linear-gradient(135deg, hsl(45 88% 58%) 0%, hsl(40 85% 50%) 100%);
-    border-radius: 9999px;
-    color: white;
-    font-weight: 600;
-    box-shadow: 0 4px 15px hsl(45 88% 58% / 0.4);
+    @apply relative overflow-hidden transition-all duration-500 px-8 py-4;
+    background: linear-gradient(135deg, #F2B035 0%, #E09E2B 50%, #F2B035 100%);
+    background-size: 200% auto;
+    border-radius: 12px;
+    color: #1a1a1a;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 10px 25px -5px rgba(242, 176, 53, 0.4),
+      inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(0, 0, 0, 0.05);
   }
 
   .btn-premium:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px hsl(45 88% 58% / 0.5);
+    background-position: right center;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 35px -5px rgba(242, 176, 53, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.5);
   }
 
-  .btn-premium::before {
+  .btn-premium::after {
     content: '';
     @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(135deg, hsl(45 100% 70%) 0%, hsl(43 96% 56%) 100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transform: translateX(-100%) skewX(-15deg);
   }
 
-  .btn-premium:hover::before {
-    @apply opacity-100;
+  .btn-premium:hover::after {
+    animation: shine-btn 1.5s infinite;
+    opacity: 1;
+  }
+
+  @keyframes shine-btn {
+    100% {
+      transform: translateX(100%) skewX(-15deg);
+    }
   }
 
   /* Horizontal scroll for mobile plans */
@@ -1444,5 +1459,114 @@ html {
 
   50% {
     box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7), 0 0 30px 8px hsl(var(--primary) / 0.5);
+  }
+}
+
+/* --- COMPREHENSIVE MOBILE OPTIMIZATION (Web & Native) --- */
+@media only screen and (max-width: 768px) {
+
+  /* Prevent horizontal scrolling globally */
+  html,
+  body {
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
+  /* Universal Touch-Friendly Targets (Min 44px) */
+  button,
+  a,
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Responsive Font Scaling for Small Screens */
+  h1 {
+    font-size: clamp(1.75rem, 8vw, 2.5rem) !important;
+    line-height: 1.2 !important;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 7vw, 2rem) !important;
+  }
+
+  h3 {
+    font-size: clamp(1.25rem, 6vw, 1.5rem) !important;
+  }
+
+  p,
+  span,
+  div {
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Section Padding Optimization */
+  section {
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+
+  /* Image & Banner Responsive Scaling */
+  img,
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Container Width Fixes */
+  .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    margin: 0 auto !important;
+  }
+
+  /* Stack all grids on mobile */
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+
+  /* Adjust Hero Spacing */
+  .hero-content {
+    padding-top: 1rem !important;
+    text-align: center !important;
+  }
+
+  /* Hide unnecessary desktop elements */
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Bottom Navigation Compensation */
+  body {
+    padding-bottom: 5rem !important;
+    /* Space for bottom nav */
+  }
+
+  /* Improve Input Experience */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+    /* Prevents auto-zoom on iOS */
+    padding: 12px !important;
+  }
+}
+
+/* Safe area insets for notched phones */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }

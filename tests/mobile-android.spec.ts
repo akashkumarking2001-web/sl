@@ -22,14 +22,21 @@ test.describe('Android Mobile App - Core Functions', () => {
         await page.goto('http://localhost:5173/');
         await page.evaluate(() => localStorage.setItem('is_emergency_admin', 'true'));
         await page.goto('http://localhost:5173/user-home');
-        await page.waitForLoadState('domcontentloaded');
 
-        // Test bottom nav clicks (more specific selectors)
-        await page.locator('nav, div').filter({ has: page.locator('button') }).getByText('Courses').first().click();
+        // Wait for Splash Screen or Initial Loading Overlay to disappear
+        await page.locator('div[class*="z-[9999]"]').waitFor({ state: 'hidden', timeout: 15000 }).catch(() => { });
+        await page.waitForLoadState('networkidle');
+
+        // Robust locator for the button itself, avoiding the hidden label span
+        const nav = page.locator('div[class*="fixed"]').filter({ has: page.locator('button') });
+        const coursesBtn = nav.locator('button').filter({ hasText: 'Courses' }).first();
+        await coursesBtn.click();
+
         await expect(page).toHaveURL(/.*dashboard\/courses/, { timeout: 15000 });
         console.log('✅ Android: Bottom nav - Courses works');
 
-        await page.locator('nav, div').filter({ has: page.locator('button') }).getByText('Store').first().click();
+        const storeBtn = nav.locator('button').filter({ hasText: 'Store' }).first();
+        await storeBtn.click();
         await expect(page).toHaveURL(/.*shopping/, { timeout: 15000 });
         console.log('✅ Android: Bottom nav - Store works');
     });
@@ -37,15 +44,19 @@ test.describe('Android Mobile App - Core Functions', () => {
     test('should handle touch interactions', async ({ page }) => {
         await page.goto('http://localhost:5173/');
 
-        // Test button touch targets (should be at least 40px)
-        const loginButton = page.getByRole('link', { name: 'LOGIN' }).filter({ visible: true }).first();
-        await expect(loginButton).toBeVisible({ timeout: 10000 });
-        const box = await loginButton.boundingBox();
+        // In mobile view, find the primary CTA. If "Start Learning" isn't found, fallback to "Sign In"
+        const startBtn = page.getByRole('link', { name: 'Start Learning' }).first();
+        const signInBtn = page.getByRole('button', { name: /Sign In|LOGIN/i }).first();
 
+        // Use visible locator
+        const target = await startBtn.isVisible() ? startBtn : signInBtn;
+        await expect(target).toBeVisible({ timeout: 10000 });
+
+        const box = await target.boundingBox();
         if (box) {
-            expect(box.height).toBeGreaterThanOrEqual(35); // Mobile buttons
-            expect(box.width).toBeGreaterThanOrEqual(40);
-            console.log('✅ Android: Touch targets are properly sized');
+            expect(box.height).toBeGreaterThanOrEqual(44); // Premium 44px touch target
+            expect(box.width).toBeGreaterThanOrEqual(44);
+            console.log('✅ Android: Touch targets are properly sized (44px+)');
         }
     });
 
@@ -122,10 +133,9 @@ test.describe('Android Mobile App - Advanced Features', () => {
         await page.evaluate(() => localStorage.setItem('is_emergency_admin', 'true'));
         await page.goto('http://localhost:5173/dashboard/courses');
 
-        const heading = page.getByRole('heading', { name: /Courses|Learning/i }).first();
-        const bottomNavText = page.locator('span').filter({ hasText: 'Courses' }).first();
-
-        await expect(heading.or(bottomNavText)).toBeVisible({ timeout: 20000 });
+        // Explicitly target the section heading to avoid strict mode violations with bottom nav
+        const heading = page.locator('h1, h2, h3').filter({ hasText: /Courses|Learning/i }).first();
+        await expect(heading).toBeVisible({ timeout: 20000 });
         console.log('✅ Android: Course browsing works');
     });
 

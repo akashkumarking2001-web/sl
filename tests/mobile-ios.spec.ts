@@ -23,14 +23,21 @@ test.describe('iOS Mobile App - Core Functions', () => {
         await page.goto('http://localhost:5173/');
         await page.evaluate(() => localStorage.setItem('is_emergency_admin', 'true'));
         await page.goto('http://localhost:5173/user-home');
-        await page.waitForLoadState('domcontentloaded');
 
-        // Test bottom nav clicks (using more specific selectors)
-        await page.locator('nav, div').filter({ has: page.locator('button') }).getByText('Courses').first().click();
+        // Wait for Splash Screen or Initial Loading Overlay to disappear
+        await page.locator('div[class*="z-[9999]"]').waitFor({ state: 'hidden', timeout: 15000 }).catch(() => { });
+        await page.waitForLoadState('networkidle');
+
+        // Robust locator for the button itself, matching Android fix
+        const nav = page.locator('div[class*="fixed"]').filter({ has: page.locator('button') });
+        const coursesBtn = nav.locator('button').filter({ hasText: 'Courses' }).first();
+        await coursesBtn.click();
+
         await expect(page).toHaveURL(/.*dashboard\/courses/, { timeout: 15000 });
         console.log('✅ iOS: Bottom nav - Courses works');
 
-        await page.locator('nav, div').filter({ has: page.locator('button') }).getByText('Store').first().click();
+        const storeBtn = nav.locator('button').filter({ hasText: 'Store' }).first();
+        await storeBtn.click();
         await expect(page).toHaveURL(/.*shopping/, { timeout: 15000 });
         console.log('✅ iOS: Bottom nav - Store works');
     });
@@ -38,15 +45,18 @@ test.describe('iOS Mobile App - Core Functions', () => {
     test('should handle touch interactions with iOS standards', async ({ page }) => {
         await page.goto('http://localhost:5173/');
 
-        // iOS requires 44x44pt minimum touch targets
-        const loginButton = page.getByRole('link', { name: 'LOGIN' }).filter({ visible: true }).first();
-        await expect(loginButton).toBeVisible({ timeout: 10000 });
-        const box = await loginButton.boundingBox();
+        // In mobile view, find the primary CTA. Fallback to Sign In if Start Learning is not found.
+        const startBtn = page.getByRole('link', { name: 'Start Learning' }).first();
+        const signInBtn = page.getByRole('button', { name: /Sign In|LOGIN/i }).first();
 
+        const target = await startBtn.isVisible() ? startBtn : signInBtn;
+        await expect(target).toBeVisible({ timeout: 10000 });
+
+        const box = await target.boundingBox();
         if (box) {
-            expect(box.height).toBeGreaterThanOrEqual(38);
-            expect(box.width).toBeGreaterThanOrEqual(40);
-            console.log('✅ iOS: Touch targets meet Apple HIG standards');
+            expect(box.height).toBeGreaterThanOrEqual(44); // Premium 44px touch target
+            expect(box.width).toBeGreaterThanOrEqual(44);
+            console.log('✅ iOS: Touch targets are properly sized (44px+)');
         }
     });
 
@@ -129,11 +139,9 @@ test.describe('iOS Mobile App - Advanced Features', () => {
         await page.evaluate(() => localStorage.setItem('is_emergency_admin', 'true'));
         await page.goto('http://localhost:5173/dashboard/courses');
 
-        // Look for heading or content
-        const heading = page.getByRole('heading', { name: /Courses|Learning/i }).first();
-        const bottomNavText = page.locator('span').filter({ hasText: 'Courses' }).first();
-
-        await expect(heading.or(bottomNavText)).toBeVisible({ timeout: 20000 });
+        // Explicitly target section headings to avoid strict mode violations with bottom nav
+        const heading = page.locator('h1, h2, h3').filter({ hasText: /Courses|Learning/i }).first();
+        await expect(heading).toBeVisible({ timeout: 20000 });
         console.log('✅ iOS: Course browsing works');
     });
 

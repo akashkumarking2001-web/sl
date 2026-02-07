@@ -76,6 +76,7 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, className }: Produ
                 {/* Action Buttons - Always visible for better UX */}
                 <div className="absolute bottom-3 left-3 right-3 flex gap-2 transition-all duration-300">
                     <Button
+                        data-testid="add-to-cart-button"
                         onClick={(e) => handleAction(e, () => onAddToCart(product))}
                         className="flex-1 bg-primary text-primary-foreground hover:bg-white hover:text-black font-black shadow-xl rounded-xl h-10 border-none transition-all active:scale-90"
                         disabled={product.stock_quantity === 0}
@@ -101,6 +102,7 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, className }: Produ
                             )}
                         </div>
                         <Button
+                            data-testid="wishlist-button"
                             size="icon"
                             variant="ghost"
                             className="rounded-full h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50"

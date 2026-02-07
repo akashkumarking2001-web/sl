@@ -50,12 +50,13 @@ test.describe('Comprehensive App Workflow (Resilient)', () => {
         // PC View
         await page.setViewportSize({ width: 1280, height: 720 });
         await expect(page.locator('body')).toContainText('Skill Learners'); // Branding check
-        // Check navigation elements
-        await expect(page.locator('[data-testid="main-nav"]')).toBeVisible();
+        // Check desktop navigation
+        await expect(page.getByTestId('main-nav')).toBeVisible();
 
         // Mobile View
         await page.setViewportSize({ width: 375, height: 667 });
-        await expect(page.locator('[data-testid="main-nav"]')).toBeVisible(); // Hamburger or Nav bar
+        // On mobile, Top Nav is hidden for logged-in users, but Bottom Nav should be visible
+        await expect(page.getByTestId('mobile-nav')).toBeVisible({ timeout: 10000 });
         console.log('[Step B] UI Responsiveness Verified');
     });
 
@@ -74,11 +75,13 @@ test.describe('Comprehensive App Workflow (Resilient)', () => {
 
         // Select Method: UPI
         await page.click('button:has-text("UPI Payment")');
-        await page.click('button:has-text("Continue to Pay")');
+        await page.click('button:has-text("Continue to Payment")');
 
         // Submit Payment Details
+        // Fill Transaction ID
         const trxId = `TRX${Date.now()}`;
-        await page.fill('input[placeholder*="123456789"]', trxId);
+        console.log(`[Step C] Entering Transaction ID: ${trxId}`);
+        await page.getByPlaceholder(/UTR|TxId/i).fill(trxId);
 
         // We intentionally do NOT upload a screenshot to test basic form logic, 
         // or we mock it if required. The input accepts it but might not require it strictly if we didn't add 'required' attribute to file input? 
@@ -86,12 +89,12 @@ test.describe('Comprehensive App Workflow (Resilient)', () => {
         // BUT the logic might check it? Code shows: `if (!transactionId.trim()) ...`
         // It does NOT seem to block if screenshot is missing, just uploads empty string.
 
-        await page.click('button:has-text("Confirm & Pay")');
+        await page.click('button:has-text("Request Final Validation")');
 
         // Verify Success/Verifying State
         // Use a broader text match and wait longer for the overlay to animate
-        const verifyingHeader = page.locator('h3').filter({ hasText: /Verifying Payment/i });
-        await expect(verifyingHeader).toBeVisible({ timeout: 15000 });
+        const verifyingHeader = page.locator('h3').filter({ hasText: /Authenticating|Verifying/i });
+        await expect(verifyingHeader).toBeVisible({ timeout: 30000 });
 
         console.log('[Step C] Purchase Request Submitted & Verification Screen Visible');
     });

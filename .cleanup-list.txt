@@ -1,0 +1,27 @@
+# Temporary and Generated Files
+# These files should be cleaned up
+
+# Test artifacts
+detailed_failure.json
+failure_log.txt
+full_site_result.txt
+test_report.json
+test_results.txt
+
+# Build errors (archived)
+build_error.txt
+build_short_error.txt
+eslint_errors.txt
+
+# Backup/Original files
+.original_index.tsx
+.original_login.tsx
+.original_register.tsx
+.original_userhome.tsx
+original_index.txt
+original_login.txt
+original_register.txt
+original_userhome.txt
+login_old.txt
+register_initial.txt
+register_old.txt

@@ -367,8 +367,10 @@ const PaymentGateway = () => {
 
           if (error) throw error;
 
-          // Update profile plan immediately (Background)
-          await supabase.from("profiles").update({ purchased_plan: selectedPlan.name }).eq("user_id", user.id);
+          // NOTE: We do NOT update the profile here. 
+          // The profile (purchased_plan, has_purchased) must ONLY be updated 
+          // after the Admin explicitly APPROVES the payment in the Admin Panel.
+          // await supabase.from("profiles").update({ purchased_plan: selectedPlan.name }).eq("user_id", user.id);
 
           if (data) {
             setCurrentPaymentId(data.id);

@@ -43,9 +43,11 @@ const Navbar = () => {
   const { isAdmin } = useAdminCheck();
   const { totalItems } = useCart();
   const isNative = Capacitor.isNativePlatform();
+  const isMobile = window.innerWidth <= 768;
+  const isPublicPath = ["/", "/login", "/register", "/admin-login", "/admin-forgot-password", "/reset-password"].includes(location.pathname);
 
-  // On Native Mobile, we hide the traditional web navbar to use Bottom Navigation instead
-  if (isNative && !location.pathname.includes('/admin')) return null;
+  // Hide traditional web navbar on mobile for logged-in users to use Bottom Navigation instead
+  if ((isNative || isMobile) && user && !isPublicPath && !location.pathname.includes('/admin')) return null;
 
   const isIndexPage = location.pathname === "/";
 
@@ -104,6 +106,7 @@ const Navbar = () => {
   return (
     <>
       <nav
+        data-testid="main-nav"
         className={cn(
           "fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ease-in-out",
           scrolled

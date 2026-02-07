@@ -59,7 +59,7 @@ interface Product {
     stock_quantity: number;
     is_featured: boolean;
     tags: string[];
-    specifications: any;
+    specifications: Record<string, string>;
     category_id: string;
     average_rating?: number;
     review_count?: number;
@@ -127,23 +127,18 @@ const ProductDetailPage = () => {
     }, [slug]);
 
     const loadInitialData = async () => {
-        console.log("Loading initial data for slug:", slug);
-        console.time("ProductLoad");
         setLoading(true);
 
         const currentSignal = abortControllerRef.current?.signal;
 
         // Safety timeout for INSTANT LOAD
         const timeout = setTimeout(() => {
-            console.warn("Product load timeout triggered");
             setLoading(false);
         }, 500);
 
         try {
             const fetchedProduct = await fetchProduct(currentSignal);
             if (fetchedProduct && !currentSignal?.aborted) {
-                console.log("Product fetched, now checking affiliate and reviews");
-
                 // Fetch reviews safely
                 try {
                     await fetchReviews(fetchedProduct.id, currentSignal);
@@ -168,8 +163,6 @@ const ProductDetailPage = () => {
             }
         } finally {
             if (!currentSignal?.aborted) {
-                console.log("Initialization complete, clearing timeout and setting loading to false");
-                console.timeEnd("ProductLoad");
                 clearTimeout(timeout);
                 setLoading(false);
             }
@@ -178,11 +171,9 @@ const ProductDetailPage = () => {
 
     // Fetches the product data from Supabase
     const fetchProduct = async (signal?: AbortSignal) => {
-        console.time("fetchProduct");
         try {
             setFetchError(null);
             const cleanSlug = slug?.replace(/\/$/, "");
-            console.log("🔍 fetchProduct sequence started for:", cleanSlug);
 
             if (!cleanSlug) {
                 console.error("No slug provided in URL params");
@@ -190,7 +181,6 @@ const ProductDetailPage = () => {
             }
 
             // STRATEGY 1: Exact Case-Insensitive Match (Best Case)
-            console.log("Strategy 1: Trying exact case-insensitive match...");
             const query1 = supabase
                 .from("products")
                 .select("*, category:category_id(name)")
@@ -211,7 +201,6 @@ const ProductDetailPage = () => {
 
             // STRATEGY 2: Match by ID if numeric
             if (!data && cleanSlug && /^\d+$/.test(cleanSlug) && !signal?.aborted) {
-                console.log("Strategy 2: Numeric slug detected, trying to fetch by ID...");
                 const query2 = supabase
                     .from("products")
                     .select("*, category:category_id(name)")
@@ -222,14 +211,12 @@ const ProductDetailPage = () => {
                 const { data: idData } = await query2;
 
                 if (idData) {
-                    console.log("Strategy 2 Success: Found by ID");
                     data = idData;
                 }
             }
 
             // STRATEGY 3: Fetch all and filter (Brute Force / Resilience)
             if (!data && !signal?.aborted) {
-                console.log("Strategy 3: Still no product, fetching all products to find match...");
                 const query3 = supabase
                     .from("products")
                     .select("*, category:category_id(name)");
@@ -242,13 +229,11 @@ const ProductDetailPage = () => {
                         p.slug?.toLowerCase() === cleanSlug.toLowerCase() ||
                         p.name?.toLowerCase().replace(/\s+/g, '-') === cleanSlug.toLowerCase()
                     );
-                    if (data) console.log("Strategy 3 Success: Found in full list");
                 }
             }
 
             // STRATEGY 4: Partial Match as last resort
             if (!data && !signal?.aborted) {
-                console.log("Strategy 4: Trying partial ilike match...");
                 const query4 = supabase
                     .from("products")
                     .select("*, category:category_id(name)")
@@ -260,7 +245,6 @@ const ProductDetailPage = () => {
                 const { data: partialData } = await query4;
 
                 if (partialData) {
-                    console.log("Strategy 4 Success: Found partial match");
                     data = partialData;
                 }
             }
@@ -272,21 +256,17 @@ const ProductDetailPage = () => {
                 return null;
             }
 
-            console.log("✅ Final Strategy Success:", data.name);
-            setProduct(data);
-            return data;
+            setProduct(data as unknown as Product);
+            return data as unknown as Product;
         } catch (error: any) {
             // IGNORE ABORT ERRORS
             if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-                console.log("Fetch aborted gracefully");
                 return null;
             }
             console.error("Critical error in fetchProduct:", error);
             setFetchError(error.message || "An unexpected error occurred");
             setProduct(null);
             return null;
-        } finally {
-            console.timeEnd("fetchProduct");
         }
     };
 
@@ -571,7 +551,6 @@ const ProductDetailPage = () => {
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Button
                             onClick={() => {
-                                console.log("Manual retry triggered");
                                 loadInitialData();
                             }}
                             className="rounded-xl font-bold px-8 h-12 bg-primary text-black hover:bg-primary/90 min-w-[160px]"
@@ -661,7 +640,6 @@ const ProductDetailPage = () => {
                             </div>
                         </div>
 
-                        {/* Buy Now Button - Floating / Fixed at bottom? User said clickable. I'll make it prominent. */}
                         <div className="pt-4 flex gap-3">
                             <Button
                                 onClick={handleAddToCart}
@@ -683,7 +661,7 @@ const ProductDetailPage = () => {
                     <div className="px-6 mt-8 pb-12">
                         <h3 className="text-lg font-black tracking-tight italic mb-4">Specifications</h3>
                         <div className="space-y-2">
-                            {product.specifications ? Object.entries(product.specifications).map(([k, v]: any) => (
+                            {product.specifications ? Object.entries(product.specifications).map(([k, v]) => (
                                 <div key={k} className="flex justify-between items-center p-4 rounded-2xl bg-white/[0.03] border border-white/5">
                                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{k.replace(/_/g, ' ')}</span>
                                     <span className="text-xs font-black text-gray-200">{v}</span>
@@ -866,10 +844,10 @@ const ProductDetailPage = () => {
 
                             <TabsContent value="specs">
                                 <div className="grid md:grid-cols-2 gap-4">
-                                    {product.specifications ? Object.entries(product.specifications).map(([k, v]: any) => (
+                                    {product.specifications ? Object.entries(product.specifications).map(([k, v]) => (
                                         <div key={k} className="flex justify-between p-4 bg-white border border-slate-100 rounded-xl">
                                             <span className="font-semibold text-slate-500 capitalize">{k.replace(/_/g, " ")}</span>
-                                            <span className="font-bold text-slate-900">{v}</span>
+                                            <span className="font-bold text-slate-900">{String(v)}</span>
                                         </div>
                                     )) : <p>No specifications available.</p>}
                                 </div>

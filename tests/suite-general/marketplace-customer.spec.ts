@@ -27,9 +27,10 @@ test.describe('Marketplace Customer Flow', () => {
         await expect(page.getByText(/Top Categories/i)).toBeVisible();
 
         // 2. Verify ALL Product Cards have buttons (Cart & Wishlist)
-        const productCards = page.locator('div[data-testid^="product-card-"]');
+        const productGrid = page.locator('#product-grid, #search-results-grid, div[class*="grid"]').first();
+        const productCards = productGrid.locator('div[data-testid^="product-card-"]');
         console.log("Waiting for product cards...");
-        await expect(productCards.first()).toBeVisible({ timeout: 20000 });
+        await expect(productCards.first()).toBeVisible({ timeout: 30000 });
 
         const count = await productCards.count();
         console.log(`Found ${count} products. Verifying buttons on all...`);

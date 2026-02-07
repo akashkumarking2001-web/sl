@@ -115,15 +115,15 @@ const AffiliateEarningsPage = () => {
             .maybeSingle();
 
         // 2. Get Stats: Clicks
-        const { count: clicksCount } = await (supabase
+        const { count: clicksCount } = await (supabase as any)
             .from("affiliate_clicks")
-            .select("id", { count: 'exact', head: true }) as any)
+            .select("id", { count: 'exact', head: true })
             .eq("affiliate_id", user.id);
 
         // 3. Get Stats: Conversions (from wallet_history) 
-        const { data: earningsData } = await (supabase
+        const { data: earningsData } = await (supabase as any)
             .from("wallet_history")
-            .select("amount") as any)
+            .select("amount")
             .eq("user_id", user.id)
             .eq("reference_type", "affiliate_commission");
 
@@ -136,7 +136,7 @@ const AffiliateEarningsPage = () => {
         });
 
         // 4. Get Recent Clicks
-        const { data: clicksData } = await supabase
+        const { data: clicksData } = await (supabase as any)
             .from("affiliate_clicks")
             .select("created_at, product_id, products(name)")
             .eq("affiliate_id", user.id)
@@ -146,7 +146,7 @@ const AffiliateEarningsPage = () => {
         setRecentClicks(clicksData || []);
 
         // 5. Load Products for Link Generator
-        const { data: productsData } = await supabase
+        const { data: productsData } = await (supabase as any)
             .from("products")
             .select("id, name, slug, image_url, price")
             .eq("is_active", true)
@@ -155,9 +155,9 @@ const AffiliateEarningsPage = () => {
         setProducts(productsData || []);
 
         // 6. Load Wallet History
-        const { data: historyData } = await (supabase
+        const { data: historyData } = await (supabase as any)
             .from("wallet_history")
-            .select("*") as any)
+            .select("*")
             .eq("user_id", user.id)
             .order("created_at", { ascending: false })
             .limit(50);
